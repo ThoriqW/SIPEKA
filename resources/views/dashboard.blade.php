@@ -1,0 +1,88 @@
+@extends('layouts.admin')
+
+@section('content')
+<div class="py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-6">
+            <h1 class="text-2xl font-semibold text-gray-900">Dashboard</h1>
+            <p class="text-sm text-gray-500 mt-1">Selamat datang, {{ auth()->user()->name }}</p>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">Total Pegawai</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ number_format($totalPegawai ?? 0) }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">P</div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">PNS</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ number_format($totalPns ?? 0) }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">P</div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">PPPK</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ number_format($totalPppk ?? 0) }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600 font-bold">K</div>
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500">{{ auth()->user()->isBkd() ? 'Total OPD' : 'Jabatan' }}</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ number_format(auth()->user()->isBkd() ? ($totalOpd ?? 0) : ($jabatanCount ?? 0)) }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">O</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Komposisi Chart -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Komposisi Pegawai</h3>
+                @php $maxKomposisi = max(array_merge($komposisi ?? ['PNS' => 0, 'PPPK' => 0], [1])); @endphp
+                @foreach(($komposisi ?? ['PNS' => 0, 'PPPK' => 0]) as $label => $count)
+                <div class="mb-3">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="font-medium">{{ $label }}</span>
+                        <span>{{ number_format($count) }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="h-2.5 rounded-full {{ $label === 'PNS' ? 'bg-green-500' : 'bg-yellow-500' }}" style="width: {{ $maxKomposisi > 0 ? ($count / $maxKomposisi) * 100 : 0 }}%"></div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <!-- Daftar OPD -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Daftar OPD</h3>
+                <div class="overflow-y-auto max-h-64">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50"><tr><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">OPD</th><th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Pegawai</th></tr></thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @forelse($opdList ?? [] as $item)
+                            <tr><td class="px-4 py-2 text-sm">{{ $item->nama_opd }}</td><td class="px-4 py-2 text-sm text-right">{{ number_format($item->pegawai_count ?? 0) }}</td></tr>
+                            @empty
+                            <tr><td colspan="2" class="px-4 py-4 text-center text-sm text-gray-500">Belum ada data</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
