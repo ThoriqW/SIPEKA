@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Jabatan;
 use App\Models\Opd;
+use App\Enums\Jenjang;
 use App\Enums\JenisJabatan;
 use Illuminate\Http\Request;
 
@@ -29,13 +30,18 @@ class JabatanController extends Controller
     public function create()
     {
         $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
-        $indukQuery = Jabatan::where('jenis_jabatan', 'Struktural')->orderBy('nama_jabatan');
+        $indukQuery = Jabatan::with('opd')->where('jenis_jabatan', 'Struktural')->orderBy('nama_jabatan');
         if (auth()->user()->role === 'admin_opd') $indukQuery->where('opd_id', auth()->user()->opd_id);
-        $indukList = $indukQuery->pluck('nama_jabatan', 'id');
+        $indukList = $indukQuery->get()->mapWithKeys(fn($j) => [$j->id => ($j->opd->nama_opd ?? '?') . ' › ' . $j->nama_jabatan]);
         return view('admin.jabatan.create', [
             'opdList' => $opdList,
             'indukList' => $indukList,
             'jenisJabatanList' => JenisJabatan::labels(),
+            'jenjangOptions' => json_encode([
+                'Struktural' => Jenjang::forJenisJabatan('Struktural'),
+                'Fungsional' => Jenjang::forJenisJabatan('Fungsional'),
+                'Pelaksana' => Jenjang::forJenisJabatan('Pelaksana'),
+            ]),
         ]);
     }
 
@@ -46,6 +52,7 @@ class JabatanController extends Controller
             'kode_jabatan' => 'required|string|max:50',
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
+            'jenjang' => 'required|string|max:255',
             'kebutuhan' => 'required_if:jenis_jabatan,Fungsional,Pelaksana|integer|min:0|nullable',
             'opd_id' => 'required|exists:opd,id',
             'induk_jabatan_id' => 'nullable|exists:jabatan,id',
@@ -68,14 +75,19 @@ class JabatanController extends Controller
     public function edit(Jabatan $jabatan)
     {
         $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
-        $indukQuery = Jabatan::where('id', '!=', $jabatan->id)->where('jenis_jabatan', 'Struktural')->orderBy('nama_jabatan');
+        $indukQuery = Jabatan::with('opd')->where('id', '!=', $jabatan->id)->where('jenis_jabatan', 'Struktural')->orderBy('nama_jabatan');
         if (auth()->user()->role === 'admin_opd') $indukQuery->where('opd_id', auth()->user()->opd_id);
-        $indukList = $indukQuery->pluck('nama_jabatan', 'id');
+        $indukList = $indukQuery->get()->mapWithKeys(fn($j) => [$j->id => ($j->opd->nama_opd ?? '?') . ' › ' . $j->nama_jabatan]);
         return view('admin.jabatan.edit', [
             'jabatan' => $jabatan,
             'opdList' => $opdList,
             'indukList' => $indukList,
             'jenisJabatanList' => JenisJabatan::labels(),
+            'jenjangOptions' => json_encode([
+                'Struktural' => Jenjang::forJenisJabatan('Struktural'),
+                'Fungsional' => Jenjang::forJenisJabatan('Fungsional'),
+                'Pelaksana' => Jenjang::forJenisJabatan('Pelaksana'),
+            ]),
         ]);
     }
 
@@ -86,6 +98,7 @@ class JabatanController extends Controller
             'kode_jabatan' => 'required|string|max:50',
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
+            'jenjang' => 'required|string|max:255',
             'kebutuhan' => 'required_if:jenis_jabatan,Fungsional,Pelaksana|integer|min:0|nullable',
             'opd_id' => 'required|exists:opd,id',
             'induk_jabatan_id' => 'nullable|exists:jabatan,id',
@@ -115,7 +128,14 @@ class JabatanController extends Controller
     public function getByOpd(Request $request)
     {
         $request->validate(['opd_id' => 'required|exists:opd,id']);
-        $jabatanList = Jabatan::where('opd_id', $request->opd_id)->orderBy('nama_jabatan')->get(['id', 'nama_jabatan', 'jenis_jabatan']);
+        $jabatanList = Jabatan::with('induk')->withCount('pegawai')->where('opd_id', $request->opd_id)->orderBy('nama_jabatan')->get()
+            ->map(fn($j) => [
+                'id' => $j->id,
+                'nama' => ($j->induk ? $j->induk->nama_jabatan . ' › ' : '') . $j->nama_jabatan,
+                'jenis_jabatan' => $j->jenis_jabatan,
+                'jenjang' => $j->jenjang,
+                'pegawai_count' => $j->pegawai_count,
+            ]);
         return response()->json(['success' => true, 'data' => $jabatanList]);
     }
 }

@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Jabatan;
 use App\Models\Pegawai;
 use App\Models\Opd;
-use App\Models\Jabatan;
 use App\Enums\GolonganPangkat;
 use App\Enums\JenisKepegawaian;
-use App\Enums\Jenjang;
 use App\Enums\Pendidikan;
 use App\Services\NipParser;
 use Illuminate\Http\Request;
@@ -34,15 +33,10 @@ class PegawaiController extends Controller
     public function create()
     {
         $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
-        $jabatanQuery = Jabatan::orderBy('nama_jabatan');
-        if (auth()->user()->role === 'admin_opd') $jabatanQuery->where('opd_id', auth()->user()->opd_id);
-        $jabatanList = $jabatanQuery->pluck('nama_jabatan', 'id');
         return view('admin.pegawai.create', [
             'opdList' => $opdList,
-            'jabatanList' => $jabatanList,
             'golonganPangkatList' => GolonganPangkat::labels(),
             'jenisKepegawaianList' => JenisKepegawaian::labels(),
-            'jenjangList' => Jenjang::labels(),
             'pendidikanList' => Pendidikan::labels(),
         ]);
     }
@@ -56,10 +50,22 @@ class PegawaiController extends Controller
             'tanggal_lahir' => 'required|date',
             'golongan_pangkat' => 'required',
             'pendidikan' => 'required',
-            'jenjang' => 'required',
             'opd_id' => 'required|exists:opd,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
+
+        // Jenjang otomatis dari jabatan yang dipilih
+        if (!empty($validated['jabatan_id'])) {
+            $jabatan = Jabatan::withCount('pegawai')->find($validated['jabatan_id']);
+            if ($jabatan) {
+                // Jabatan Struktural hanya boleh diisi 1 pegawai
+                if ($jabatan->jenis_jabatan === 'Struktural' && $jabatan->pegawai_count >= 1) {
+                    return back()->withInput()->with('error', 'Jabatan Struktural "' . $jabatan->nama_jabatan . '" sudah terisi. Hanya boleh 1 pegawai per jabatan struktural.');
+                }
+                $validated['jenjang'] = $jabatan->jenjang;
+            }
+        }
+
         if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         Pegawai::create($validated);
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
@@ -68,16 +74,11 @@ class PegawaiController extends Controller
     public function edit(Pegawai $pegawai)
     {
         $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
-        $jabatanQuery = Jabatan::orderBy('nama_jabatan');
-        if (auth()->user()->role === 'admin_opd') $jabatanQuery->where('opd_id', auth()->user()->opd_id);
-        $jabatanList = $jabatanQuery->pluck('nama_jabatan', 'id');
         return view('admin.pegawai.edit', [
             'pegawai' => $pegawai,
             'opdList' => $opdList,
-            'jabatanList' => $jabatanList,
             'golonganPangkatList' => GolonganPangkat::labels(),
             'jenisKepegawaianList' => JenisKepegawaian::labels(),
-            'jenjangList' => Jenjang::labels(),
             'pendidikanList' => Pendidikan::labels(),
         ]);
     }
@@ -91,10 +92,24 @@ class PegawaiController extends Controller
             'tanggal_lahir' => 'required|date',
             'golongan_pangkat' => 'required',
             'pendidikan' => 'required',
-            'jenjang' => 'required',
             'opd_id' => 'required|exists:opd,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
+
+        // Jenjang otomatis dari jabatan yang dipilih
+        if (!empty($validated['jabatan_id'])) {
+            $jabatan = Jabatan::withCount('pegawai')->find($validated['jabatan_id']);
+            if ($jabatan) {
+                // Jabatan Struktural hanya boleh diisi 1 pegawai (kecuali pegawai ini sendiri)
+                if ($validated['jabatan_id'] != $pegawai->jabatan_id
+                    && $jabatan->jenis_jabatan === 'Struktural'
+                    && $jabatan->pegawai_count >= 1) {
+                    return back()->withInput()->with('error', 'Jabatan Struktural "' . $jabatan->nama_jabatan . '" sudah terisi. Hanya boleh 1 pegawai per jabatan struktural.');
+                }
+                $validated['jenjang'] = $jabatan->jenjang;
+            }
+        }
+
         if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         $pegawai->update($validated);
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil diperbarui.');

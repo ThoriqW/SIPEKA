@@ -15,6 +15,7 @@ class JabatanSeeder extends Seeder
             'kode_jabatan' => 'DIKBUD-001',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
+            'jenjang' => 'Pimpinan Tinggi',
             'kebutuhan' => null,
             'opd_id' => 1,
             'induk_jabatan_id' => null,
@@ -25,6 +26,7 @@ class JabatanSeeder extends Seeder
             'kode_jabatan' => 'DIKBUD-002',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 13,
+            'jenjang' => 'Ahli Madya',
             'kebutuhan' => null,
             'opd_id' => 1,
             'induk_jabatan_id' => $kepala_opd1->id,
@@ -35,50 +37,51 @@ class JabatanSeeder extends Seeder
             'kode_jabatan' => 'DIKBUD-003',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 12,
+            'jenjang' => 'Ahli Muda',
             'kebutuhan' => null,
             'opd_id' => 1,
             'induk_jabatan_id' => $kepala_opd1->id,
         ]);
 
-        // Level 3 - Sub Bagian Sekretariat
         $sub_keuangan = Jabatan::create([
             'nama_jabatan' => 'Sub Bagian Keuangan',
             'kode_jabatan' => 'DIKBUD-004',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 10,
+            'jenjang' => 'Ahli Pertama',
             'kebutuhan' => null,
             'opd_id' => 1,
             'induk_jabatan_id' => $sekretariat->id,
         ]);
 
-        // Level 4 - Pelaksana di Sub Bagian Keuangan
         Jabatan::create([
             'nama_jabatan' => 'Pengelola Keuangan',
             'kode_jabatan' => 'DIKBUD-005',
             'jenis_jabatan' => 'Pelaksana',
             'kelas_jabatan' => 6,
+            'jenjang' => 'Pelaksana',
             'kebutuhan' => 3,
             'opd_id' => 1,
             'induk_jabatan_id' => $sub_keuangan->id,
         ]);
 
-        // Level 3 - Fungsional
         $guru_sd = Jabatan::create([
             'nama_jabatan' => 'Guru Sekolah Dasar',
             'kode_jabatan' => 'DIKBUD-006',
             'jenis_jabatan' => 'Fungsional',
             'kelas_jabatan' => 8,
+            'jenjang' => 'Ahli Pertama',
             'kebutuhan' => 10,
             'opd_id' => 1,
             'induk_jabatan_id' => $bidang_sd->id,
         ]);
 
-        // Level 4
         Jabatan::create([
             'nama_jabatan' => 'Operator Sekolah',
             'kode_jabatan' => 'DIKBUD-007',
             'jenis_jabatan' => 'Pelaksana',
             'kelas_jabatan' => 5,
+            'jenjang' => 'Pelaksana',
             'kebutuhan' => 5,
             'opd_id' => 1,
             'induk_jabatan_id' => $guru_sd->id,
@@ -90,6 +93,7 @@ class JabatanSeeder extends Seeder
             'kode_jabatan' => 'DINKES-001',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
+            'jenjang' => 'Pimpinan Tinggi',
             'kebutuhan' => null,
             'opd_id' => 2,
             'induk_jabatan_id' => null,
@@ -100,28 +104,29 @@ class JabatanSeeder extends Seeder
             'kode_jabatan' => 'DINKES-002',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 12,
+            'jenjang' => 'Ahli Muda',
             'kebutuhan' => null,
             'opd_id' => 2,
             'induk_jabatan_id' => $kepala_opd2->id,
         ]);
 
-        // Level 3 - Fungsional
         $dokter = Jabatan::create([
             'nama_jabatan' => 'Dokter Umum',
             'kode_jabatan' => 'DINKES-003',
             'jenis_jabatan' => 'Fungsional',
             'kelas_jabatan' => 9,
+            'jenjang' => 'Ahli Pertama',
             'kebutuhan' => 5,
             'opd_id' => 2,
             'induk_jabatan_id' => $bidang_pelayanan->id,
         ]);
 
-        // Level 4
         Jabatan::create([
             'nama_jabatan' => 'Perawat',
             'kode_jabatan' => 'DINKES-004',
             'jenis_jabatan' => 'Fungsional',
             'kelas_jabatan' => 7,
+            'jenjang' => 'Keterampilan - Terampil',
             'kebutuhan' => 8,
             'opd_id' => 2,
             'induk_jabatan_id' => $dokter->id,

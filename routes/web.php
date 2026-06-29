@@ -24,15 +24,15 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
         Route::resource('opd', \App\Http\Controllers\Admin\OpdController::class);
     });
 
-    // Pegawai & Jabatan (both roles, filtered by controller)
-    Route::resource('pegawai', \App\Http\Controllers\Admin\PegawaiController::class);
-    Route::resource('jabatan', \App\Http\Controllers\Admin\JabatanController::class);
-
-    // AJAX endpoints
+    // AJAX endpoints — MUST be before resource routes
     Route::get('pegawai/extract-tanggal-lahir', [\App\Http\Controllers\Admin\PegawaiController::class, 'extractTanggalLahir'])
         ->name('pegawai.extract-tanggal-lahir');
     Route::get('jabatan/by-opd', [\App\Http\Controllers\Admin\JabatanController::class, 'getByOpd'])
         ->name('jabatan.by-opd');
+
+    // Pegawai & Jabatan (both roles, filtered by controller)
+    Route::resource('pegawai', \App\Http\Controllers\Admin\PegawaiController::class);
+    Route::resource('jabatan', \App\Http\Controllers\Admin\JabatanController::class);
 });
 
 require __DIR__.'/auth.php';

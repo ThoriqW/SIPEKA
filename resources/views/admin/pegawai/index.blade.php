@@ -36,6 +36,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPD</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jabatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenjang</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
@@ -48,6 +49,7 @@
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $p->nama }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $p->opd->nama_opd ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $p->jabatan->nama_jabatan ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $p->jenjang }}</td>
                             <td class="px-6 py-4 text-sm text-center"><span class="px-2 py-1 text-xs rounded-full {{ $p->jenis_kepegawaian === 'PNS' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">{{ $p->jenis_kepegawaian }}</span></td>
                             <td class="px-6 py-4 text-sm text-center">
                                 <a href="{{ route('admin.pegawai.edit', $p) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">Edit</a>
@@ -58,7 +60,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">Tidak ada data pegawai.</td></tr>
+                        <tr><td colspan="8" class="px-6 py-10 text-center text-gray-500">Tidak ada data pegawai.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

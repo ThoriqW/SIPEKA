@@ -131,7 +131,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1982-04-30',
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
-            'jenjang' => 'Guru',
+            'jenjang' => 'Ahli Pertama',
             'opd_id' => 1,
             'jabatan_id' => 6,
         ]);
@@ -143,7 +143,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1988-07-15',
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
-            'jenjang' => 'Guru',
+            'jenjang' => 'Ahli Pertama',
             'opd_id' => 1,
             'jabatan_id' => 6,
         ]);
@@ -155,7 +155,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1991-01-01',
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
-            'jenjang' => 'Guru',
+            'jenjang' => 'Ahli Pertama',
             'opd_id' => 1,
             'jabatan_id' => 6,
         ]);
@@ -257,7 +257,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1988-12-01',
             'golongan_pangkat' => 'II/d',
             'pendidikan' => 'D3',
-            'jenjang' => 'Keterampilan',
+            'jenjang' => 'Keterampilan - Terampil',
             'opd_id' => 2,
             'jabatan_id' => 11,
         ]);
@@ -269,7 +269,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1990-06-15',
             'golongan_pangkat' => 'II/c',
             'pendidikan' => 'D3',
-            'jenjang' => 'Keterampilan',
+            'jenjang' => 'Keterampilan - Terampil',
             'opd_id' => 2,
             'jabatan_id' => 11,
         ]);
@@ -281,7 +281,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1993-02-20',
             'golongan_pangkat' => 'II/b',
             'pendidikan' => 'D3',
-            'jenjang' => 'Keterampilan',
+            'jenjang' => 'Keterampilan - Terampil',
             'opd_id' => 2,
             'jabatan_id' => 11,
         ]);
@@ -293,7 +293,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1995-07-10',
             'golongan_pangkat' => 'II/a',
             'pendidikan' => 'D3',
-            'jenjang' => 'Keterampilan',
+            'jenjang' => 'Keterampilan - Terampil',
             'opd_id' => 2,
             'jabatan_id' => 11,
         ]);

@@ -7,7 +7,7 @@
             <h1 class="text-2xl font-semibold text-gray-900">Edit Pegawai</h1>
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.pegawai.index') }}" class="hover:text-gray-700">Pegawai</a> / Edit</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="{}">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()" x-init="loadJabatan({{ $pegawai->opd_id }})">
             <form action="{{ route('admin.pegawai.update', $pegawai) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -46,22 +46,20 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
-                        <select name="jenjang" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            @foreach($jenjangList as $val => $label)<option value="{{ $val }}" {{ old('jenjang', $pegawai->jenjang) == $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach
-                        </select>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang (otomatis)</label>
+                        <input type="hidden" name="jenjang" x-ref="jenjangInput" value="{{ $pegawai->jenjang }}">
+                        <p x-ref="jenjangDisplay" class="w-full rounded-md bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-700">{{ $pegawai->jenjang ?: '-- Pilih jabatan --' }}</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
-                        <select name="opd_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <select name="opd_id" x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id', $pegawai->opd_id) == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
                     </div>
-                    <div>
+                    <div x-show="opdSelected">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
-                        <select name="jabatan_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Pilih --</option>
-                            @foreach($jabatanList as $id => $nama)<option value="{{ $id }}" {{ old('jabatan_id', $pegawai->jabatan_id) == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
+                        <select name="jabatan_id" x-ref="jabatanSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">-- Memuat... --</option>
                         </select>
                     </div>
                 </div>
@@ -74,3 +72,60 @@
     </div>
 </div>
 @endsection
+
+@section('scripts')
+<script>
+function pegawaiForm() {
+    var currentJabatanId = {{ $pegawai->jabatan_id ?? 'null' }};
+    return {
+        opdSelected: true,
+        loadJabatan(opdId) {
+            this.opdSelected = !!opdId;
+            var select = this.$refs.jabatanSelect;
+            select.innerHTML = '<option value="">-- Memuat... --</option>';
+            if (!opdId) {
+                return;
+            }
+            fetch('/admin/jabatan/by-opd?opd_id=' + opdId)
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    select.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
+                    if (d.success && d.data) {
+                        d.data.forEach(function(j) {
+                            var opt = document.createElement('option');
+                            opt.value = j.id;
+                            opt.setAttribute('data-jenjang', j.jenjang || '');
+                            var label = j.nama;
+                            if (j.id == currentJabatanId) {
+                                // Allow current jabatan even if full (own position)
+                            } else if (j.jenis_jabatan === 'Struktural' && j.pegawai_count >= 1) {
+                                label += ' (Terisi)';
+                                opt.style.color = '#ef4444';
+                            }
+                            opt.textContent = label;
+                            if (j.id == currentJabatanId) opt.selected = true;
+                            select.appendChild(opt);
+                        });
+                        // Set initial jenjang display from selected option
+                        var sel = select.options[select.selectedIndex];
+                        if (sel) {
+                            var jj = sel.getAttribute('data-jenjang') || '';
+                            this.$refs.jenjangInput.value = jj;
+                            this.$refs.jenjangDisplay.textContent = jj || '-- Pilih jabatan --';
+                        }
+                    }
+                }.bind(this))
+                .catch(function() {
+                    select.innerHTML = '<option value="">-- Gagal memuat --</option>';
+                });
+            select.onchange = function() {
+                var selected = select.options[select.selectedIndex];
+                var jenjang = selected ? selected.getAttribute('data-jenjang') : '';
+                this.$refs.jenjangInput.value = jenjang;
+                this.$refs.jenjangDisplay.textContent = jenjang || '-- Pilih jabatan --';
+            }.bind(this);
+        }
+    }
+}
+</script>
+@append
