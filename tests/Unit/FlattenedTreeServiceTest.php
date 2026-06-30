@@ -194,4 +194,53 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertNull($kepala['kebutuhan']);
         $this->assertNull($kepala['selisih']);
     }
+
+    /** @test */
+    public function it_computes_projections_per_jabatan_not_per_opd()
+    {
+        // Create another jabatan in same OPD with an OLD employee (near retirement)
+        $opd = Opd::first();
+
+        $jabatanTua = Jabatan::create([
+            'nama_jabatan' => 'Jabatan Pegawai Tua',
+            'kode_jabatan' => 'DT-TUA',
+            'jenis_jabatan' => 'Pelaksana',
+            'kelas_jabatan' => 6,
+            'jenjang' => 'Pelaksana',
+            'kebutuhan' => 2,
+            'opd_id' => $opd->id,
+            'induk_jabatan_id' => null,
+        ]);
+
+        // Pegawai tua: lahir 1970, Pelaksana → BUP 58 → pensiun 2028 = Tahun ke-3 (T=2026)
+        Pegawai::create([
+            'nama' => 'Pegawai Tua',
+            'nip' => '197001012020011001',
+            'jenis_kepegawaian' => 'PNS',
+            'tanggal_lahir' => '1970-01-01',
+            'golongan_pangkat' => 'III/a',
+            'pendidikan' => 'S1',
+            'jenjang' => 'Pelaksana',
+            'opd_id' => $opd->id,
+            'jabatan_id' => $jabatanTua->id,
+        ]);
+
+        // Re-run with projections
+        $tree = $this->service->buildFlatTree(opdId: $opd->id, withProjections: true);
+
+        // Find rows by jabatan name
+        $rowTua = collect($tree)->first(fn($r) => $r['nama_jabatan'] === 'Jabatan Pegawai Tua');
+        $rowMuda = collect($tree)->first(fn($r) => $r['nama_jabatan'] === 'Pengelola Keuangan');
+
+        $this->assertNotNull($rowTua, 'Jabatan Tua should be in tree');
+        $this->assertNotNull($rowMuda, 'Pengelola Keuangan should be in tree');
+
+        // Pegawai Tua (1970) → pensiun 2028 → proyeksi tahun ke-3 = 1
+        $this->assertEquals(1, $rowTua['pensiun_proyeksi'][3], 'Old employee should retire in year 3');
+        $this->assertEquals(1, $rowTua['kebutuhan_proyeksi'][3], 'Jabatan Tua should need replacement in year 3');
+
+        // Pegawai Muda (1990) → pensiun 2048 → TIDAK ada di 5 tahun proyeksi
+        $this->assertEquals(0, $rowMuda['pensiun_proyeksi'][3], 'Young employee should NOT retire in year 3');
+        $this->assertEquals(0, $rowMuda['kebutuhan_proyeksi'][3], 'Jabatan Muda should NOT have need in year 3');
+    }
 }

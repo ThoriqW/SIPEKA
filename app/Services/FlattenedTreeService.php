@@ -42,16 +42,16 @@ class FlattenedTreeService
             $childrenMap[$parentKey][] = $j;
         }
 
-        // Pre-compute OPD-level pensiun projections
-        $proyeksiPensiunPerOpd = $withProjections
-            ? $this->projectionService->hitungProyeksiPensiunPerOpd()
+        // Pre-compute per-jabatan pensiun projections
+        $proyeksiPensiunPerJabatan = $withProjections
+            ? $this->projectionService->hitungProyeksiPensiunPerJabatan($opdId)
             : [];
 
         $result = [];
 
         // Optional virtual root
         if ($includeRoot) {
-            $result[] = $this->makeRootRow($allJabatan, $proyeksiPensiunPerOpd, $withProjections);
+            $result[] = $this->makeRootRow($allJabatan, $proyeksiPensiunPerJabatan, $withProjections);
         }
 
         // Depth-first traversal from level-1 roots
@@ -63,7 +63,7 @@ class FlattenedTreeService
                 level: 1,
                 result: $result,
                 childrenMap: $childrenMap,
-                proyeksiPensiunPerOpd: $proyeksiPensiunPerOpd,
+                proyeksiPensiunPerJabatan: $proyeksiPensiunPerJabatan,
                 withProjections: $withProjections,
             );
         }
@@ -80,7 +80,7 @@ class FlattenedTreeService
         int $level,
         array &$result,
         array $childrenMap,
-        array $proyeksiPensiunPerOpd,
+        array $proyeksiPensiunPerJabatan,
         bool $withProjections,
     ): void {
         if ($level > 4) {
@@ -90,7 +90,7 @@ class FlattenedTreeService
         $bezetting = $jabatan->pegawai->count();
         $kebutuhan = $jabatan->kebutuhan;
         $selisih = $kebutuhan !== null ? $bezetting - $kebutuhan : null;
-        $opdPensiun = $proyeksiPensiunPerOpd[$jabatan->opd_id] ?? [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+        $jabatanPensiun = $proyeksiPensiunPerJabatan[$jabatan->id] ?? [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
 
         $row = [
             'id'              => $jabatan->id,
@@ -109,18 +109,18 @@ class FlattenedTreeService
             'has_children'    => !empty($childrenMap[$jabatan->id]),
             'opd_id'          => $jabatan->opd_id,
             'kebutuhan_proyeksi' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
-            'pensiun_proyeksi'   => $opdPensiun,
+            'pensiun_proyeksi'   => $jabatanPensiun,
         ];
 
         if ($withProjections && $kebutuhan !== null) {
             // Kebutuhan Thn 1 = max(kebutuhan - bezetting, 0) + Pensiun Thn 1
-            // Kebutuhan Thn 2-5 = Pensiun Thn N
+            // Kebutuhan Thn 2-5 = Pensiun Thn N (per jabatan)
             $row['kebutuhan_proyeksi'] = [
-                1 => max($kebutuhan - $bezetting, 0) + ($opdPensiun[1] ?? 0),
-                2 => $opdPensiun[2] ?? 0,
-                3 => $opdPensiun[3] ?? 0,
-                4 => $opdPensiun[4] ?? 0,
-                5 => $opdPensiun[5] ?? 0,
+                1 => max($kebutuhan - $bezetting, 0) + ($jabatanPensiun[1] ?? 0),
+                2 => $jabatanPensiun[2] ?? 0,
+                3 => $jabatanPensiun[3] ?? 0,
+                4 => $jabatanPensiun[4] ?? 0,
+                5 => $jabatanPensiun[5] ?? 0,
             ];
         }
 
@@ -135,7 +135,7 @@ class FlattenedTreeService
                     level: $level + 1,
                     result: $result,
                     childrenMap: $childrenMap,
-                    proyeksiPensiunPerOpd: $proyeksiPensiunPerOpd,
+                    proyeksiPensiunPerJabatan: $proyeksiPensiunPerJabatan,
                     withProjections: $withProjections,
                 );
             }
@@ -145,14 +145,14 @@ class FlattenedTreeService
     /**
      * Build the virtual root row (Level 0: "Instansi Pemerintah Kota Palu").
      */
-    private function makeRootRow(Collection $allJabatan, array $proyeksiPensiunPerOpd, bool $withProjections): array
+    private function makeRootRow(Collection $allJabatan, array $proyeksiPensiunPerJabatan, bool $withProjections): array
     {
-        // Aggregate OPD-level totals
+        // Aggregate totals from all jabatans
         $totalPensiun = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
         $totalKebutuhan = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
 
         if ($withProjections) {
-            foreach ($proyeksiPensiunPerOpd as $opdId => $years) {
+            foreach ($proyeksiPensiunPerJabatan as $jabatanId => $years) {
                 for ($n = 1; $n <= 5; $n++) {
                     $totalPensiun[$n] += $years[$n] ?? 0;
                 }

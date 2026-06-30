@@ -91,14 +91,100 @@ class ProjectionService
     }
 
     /**
+     * Hitung proyeksi pensiun untuk satu jabatan spesifik.
+     *
+     * @return array [1 => count, ..., 5 => count]
+     */
+    public function hitungProyeksiPensiunByJabatan(?int $jabatanId): array
+    {
+        $t = (int) date('Y');
+        $result = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+
+        if (!$jabatanId) {
+            return $result;
+        }
+
+        $pegawaiList = Pegawai::query()
+            ->where('jabatan_id', $jabatanId)
+            ->get(['tanggal_lahir', 'jenjang', 'jenis_kepegawaian']);
+
+        foreach ($pegawaiList as $pegawai) {
+            $tanggalPensiun = $this->bupCalculator->hitungTanggalPensiun(
+                $pegawai->tanggal_lahir,
+                $pegawai->jenjang,
+                $pegawai->jenis_kepegawaian
+            );
+            $tahunPensiun = (int) $tanggalPensiun->format('Y');
+
+            for ($n = 1; $n <= 5; $n++) {
+                if ($tahunPensiun === $t + ($n - 1)) {
+                    $result[$n]++;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Hitung proyeksi pensiun per jabatan untuk 5 tahun ke depan.
+     * Returns [jabatan_id => [1 => count, ..., 5 => count]]
+     * Lebih efisien untuk FlattenedTreeService karena satu query untuk semua jabatan.
+     *
+     * @param int|null $opdId Filter by OPD (null = all OPDs)
+     */
+    public function hitungProyeksiPensiunPerJabatan(?int $opdId = null): array
+    {
+        $t = (int) date('Y');
+        $result = [];
+
+        $query = Pegawai::query()
+            ->select(['id', 'tanggal_lahir', 'jenjang', 'jenis_kepegawaian', 'jabatan_id'])
+            ->whereNotNull('jabatan_id');
+
+        if ($opdId !== null) {
+            $query->where('opd_id', $opdId);
+        }
+
+        $pegawaiList = $query->get();
+
+        foreach ($pegawaiList as $pegawai) {
+            $tanggalPensiun = $this->bupCalculator->hitungTanggalPensiun(
+                $pegawai->tanggal_lahir,
+                $pegawai->jenjang,
+                $pegawai->jenis_kepegawaian
+            );
+            $tahunPensiun = (int) $tanggalPensiun->format('Y');
+            $jabatanId = $pegawai->jabatan_id;
+
+            for ($n = 1; $n <= 5; $n++) {
+                if ($tahunPensiun === $t + ($n - 1)) {
+                    $result[$jabatanId][$n] = ($result[$jabatanId][$n] ?? 0) + 1;
+                }
+            }
+        }
+
+        // Pastikan semua jabatan memiliki array lengkap 1..5
+        foreach ($result as $jabatanId => $years) {
+            for ($n = 1; $n <= 5; $n++) {
+                $result[$jabatanId][$n] = $result[$jabatanId][$n] ?? 0;
+            }
+            ksort($result[$jabatanId]);
+        }
+
+        return $result;
+    }
+
+    /**
      * Hitung proyeksi kebutuhan per tahun untuk 5 tahun ke depan.
      *
      * Kebutuhan Thn 1 = max(kebutuhan - Bezetting, 0) + Pensiun Thn 1
-     * Kebutuhan Thn N = Pensiun Thn N   (N = 2..5)
+     * Kebutuhan Thn N = Pensiun Thn N — proyeksi pensiun DIHITUNG PER JABATAN
+     *     (hanya pegawai yang menduduki jabatan INI yang diperhitungkan)
      */
     public function hitungProyeksiKebutuhan(Jabatan $jabatan, ?array $proyeksiPensiun = null): array
     {
-        $proyeksiPensiun = $proyeksiPensiun ?? $this->hitungProyeksiPensiun($jabatan->opd_id);
+        $proyeksiPensiun = $proyeksiPensiun ?? $this->hitungProyeksiPensiunByJabatan($jabatan->id);
 
         $bezetting = $jabatan->pegawai()->count();
         $kebutuhan = $jabatan->kebutuhan ?? 0;
