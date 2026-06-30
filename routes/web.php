@@ -33,6 +33,16 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     // Pegawai & Jabatan (both roles, filtered by controller)
     Route::resource('pegawai', \App\Http\Controllers\Admin\PegawaiController::class);
     Route::resource('jabatan', \App\Http\Controllers\Admin\JabatanController::class);
+
+    // Kebutuhan & Bezetting (tree table views)
+    Route::get('kebutuhan', [\App\Http\Controllers\Admin\KebutuhanController::class, 'index'])
+        ->name('kebutuhan.index');
+    Route::get('kebutuhan/export', [\App\Http\Controllers\Admin\KebutuhanController::class, 'export'])
+        ->name('kebutuhan.export');
+    Route::get('bezetting', [\App\Http\Controllers\Admin\BezettingController::class, 'index'])
+        ->name('bezetting.index');
+    Route::get('bezetting/export', [\App\Http\Controllers\Admin\BezettingController::class, 'export'])
+        ->name('bezetting.export');
 });
 
 require __DIR__.'/auth.php';

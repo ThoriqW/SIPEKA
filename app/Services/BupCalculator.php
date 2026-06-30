@@ -39,6 +39,9 @@ class BupCalculator
 
         if (is_string($tanggalLahir)) {
             $tanggalLahir = new \DateTimeImmutable($tanggalLahir);
+        } elseif (!$tanggalLahir instanceof \DateTimeImmutable) {
+            // Konversi Carbon / DateTime ke DateTimeImmutable
+            $tanggalLahir = \DateTimeImmutable::createFromInterface($tanggalLahir);
         }
 
         return $tanggalLahir->modify("+{$bup} years");

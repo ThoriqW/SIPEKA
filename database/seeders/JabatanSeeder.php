@@ -84,7 +84,7 @@ class JabatanSeeder extends Seeder
             'jenjang' => 'Pelaksana',
             'kebutuhan' => 5,
             'opd_id' => 1,
-            'induk_jabatan_id' => $guru_sd->id,
+            'induk_jabatan_id' => $bidang_sd->id, // Struktural
         ]);
 
         // OPD 2: Dinas Kesehatan
@@ -129,7 +129,7 @@ class JabatanSeeder extends Seeder
             'jenjang' => 'Keterampilan - Terampil',
             'kebutuhan' => 8,
             'opd_id' => 2,
-            'induk_jabatan_id' => $dokter->id,
+            'induk_jabatan_id' => $bidang_pelayanan->id, // Struktural
         ]);
     }
 }

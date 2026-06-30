@@ -50,6 +50,47 @@ class ProjectionService
     }
 
     /**
+     * Hitung proyeksi pensiun per OPD untuk 5 tahun ke depan.
+     * Returns [opd_id => [1 => count, ..., 5 => count]]
+     * Lebih efisien untuk layar Kebutuhan/Bezetting karena satu query untuk semua OPD.
+     */
+    public function hitungProyeksiPensiunPerOpd(): array
+    {
+        $t = (int) date('Y');
+        $result = [];
+
+        $pegawaiList = Pegawai::query()
+            ->select(['id', 'tanggal_lahir', 'jenjang', 'jenis_kepegawaian', 'opd_id'])
+            ->get();
+
+        foreach ($pegawaiList as $pegawai) {
+            $tanggalPensiun = $this->bupCalculator->hitungTanggalPensiun(
+                $pegawai->tanggal_lahir,
+                $pegawai->jenjang,
+                $pegawai->jenis_kepegawaian
+            );
+            $tahunPensiun = (int) $tanggalPensiun->format('Y');
+            $opdId = $pegawai->opd_id;
+
+            for ($n = 1; $n <= 5; $n++) {
+                if ($tahunPensiun === $t + ($n - 1)) {
+                    $result[$opdId][$n] = ($result[$opdId][$n] ?? 0) + 1;
+                }
+            }
+        }
+
+        // Pastikan semua OPD memiliki array lengkap 1..5
+        foreach ($result as $opdId => $years) {
+            for ($n = 1; $n <= 5; $n++) {
+                $result[$opdId][$n] = $result[$opdId][$n] ?? 0;
+            }
+            ksort($result[$opdId]);
+        }
+
+        return $result;
+    }
+
+    /**
      * Hitung proyeksi kebutuhan per tahun untuk 5 tahun ke depan.
      *
      * Kebutuhan Thn 1 = max(kebutuhan - Bezetting, 0) + Pensiun Thn 1
