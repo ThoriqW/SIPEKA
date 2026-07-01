@@ -112,6 +112,6 @@ class BezettingControllerTest extends TestCase
 
         $response->assertSee('treeData');
         $response->assertSee('expandedItems');
-        $response->assertSee('[+]');
+        $response->assertSee('cursor-pointer');
     }
 }

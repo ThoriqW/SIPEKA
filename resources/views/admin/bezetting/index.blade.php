@@ -54,22 +54,20 @@
                         data-parent-id="{{ $row['parent_id'] ?? '' }}"
                         data-level="{{ $row['level'] }}"
                         x-show="isVisible({{ $row['id'] }}, '{{ $row['parent_id'] ?? '' }}')"
-                        class="{{ $row['level'] == 0 ? 'bg-blue-50' : 'hover:bg-gray-50' }}">
+                        @if($row['has_children'])
+                        @click="expanded = !expanded; toggleExpand({{ $row['id'] }}, expanded)"
+                        class="{{ $row['level'] == 0 ? 'bg-blue-50' : 'hover:bg-gray-50' }} cursor-pointer"
+                        @else
+                        class="{{ $row['level'] == 0 ? 'bg-blue-50' : 'hover:bg-gray-50' }}"
+                        @endif
+                        >
                         <td class="px-2 py-2 text-sm text-gray-400 text-center w-10">
                             {{ $no }}
                         </td>
                         <td class="py-2 pr-2 text-sm {{ $row['level'] == 0 ? 'font-bold text-gray-900' : ($row['level'] == 1 ? 'font-semibold text-gray-800' : 'text-gray-700') }}" style="padding-left: {{ max(0, $row['level'] - 1) * 28 + 8 }}px;">
-                            <span class="inline-block" style="width: 26px;">
-                            @if($row['has_children'])
-                            <button type="button"
-                                    @click.stop="expanded = !expanded; toggleExpand({{ $row['id'] }}, expanded)"
-                                    class="text-blue-600 hover:text-blue-800 focus:outline-none font-mono text-xs"
-                                    x-text="expanded ? '[-]' : '[+]'"></button>
-                            @endif
-                            </span>
                             {{ $row['nama_jabatan'] }}
                             @if($row['jenjang'])
-                            <span class="text-xs text-gray-400 ml-1.5">({{ $row['jenjang'] }})</span>
+                            <span class="text-xs text-gray-400">({{ $row['jenjang'] }})</span>
                             @endif
                         </td>
                         <td class="px-2 py-2 text-sm text-center text-gray-600">{{ $row['kelas_jabatan'] ?? '-' }}</td>
@@ -129,7 +127,16 @@ document.addEventListener('alpine:init', () => {
                 this.expandedItems.add(id);
             } else {
                 this.expandedItems.delete(id);
+                this.collapseDescendants(id);
             }
+        },
+
+        collapseDescendants(parentId) {
+            document.querySelectorAll('tr[data-parent-id="' + parentId + '"]').forEach(row => {
+                const childId = parseInt(row.dataset.id);
+                this.expandedItems.delete(childId);
+                this.collapseDescendants(childId);
+            });
         }
     }));
 });
