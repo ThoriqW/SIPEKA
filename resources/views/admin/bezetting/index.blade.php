@@ -49,13 +49,12 @@
                     @php $no = 0; @endphp
                     @foreach($tree as $row)
                     @php $no++; @endphp
-                    <tr x-data="{ expanded: false }"
-                        data-id="{{ $row['id'] }}"
+                    <tr data-id="{{ $row['id'] }}"
                         data-parent-id="{{ $row['parent_id'] ?? '' }}"
                         data-level="{{ $row['level'] }}"
                         x-show="isVisible({{ $row['id'] }}, '{{ $row['parent_id'] ?? '' }}')"
                         @if($row['has_children'])
-                        @click="expanded = !expanded; toggleExpand({{ $row['id'] }}, expanded)"
+                        @click="toggleNode({{ $row['id'] }})"
                         class="{{ $row['level'] == 0 ? 'bg-blue-50' : 'hover:bg-gray-50' }} cursor-pointer"
                         @else
                         class="{{ $row['level'] == 0 ? 'bg-blue-50' : 'hover:bg-gray-50' }}"
@@ -66,7 +65,7 @@
                         </td>
                         <td class="py-2 pr-2 text-sm {{ $row['level'] == 0 ? 'font-bold text-gray-900' : ($row['level'] == 1 ? 'font-semibold text-gray-800' : 'text-gray-700') }}" style="padding-left: {{ max(0, $row['level'] - 1) * 28 + 8 }}px;">
                             @if($row['has_children'])
-                            <span class="text-gray-400 mr-0.5" x-text="expanded ? '▾' : '▸'"></span>
+                            <span class="text-gray-400 mr-0.5" x-text="isExpanded({{ $row['id'] }}) ? '▾' : '▸'"></span>
                             @endif
                             {{ $row['nama_jabatan'] }}
                             @if($row['jenjang'])
@@ -125,13 +124,17 @@ document.addEventListener('alpine:init', () => {
             return this.expandedItems.has(parseInt(parentId));
         },
 
-        toggleExpand(id, expanded) {
-            if (expanded) {
-                this.expandedItems.add(id);
-            } else {
+        toggleNode(id) {
+            if (this.expandedItems.has(id)) {
                 this.expandedItems.delete(id);
                 this.collapseDescendants(id);
+            } else {
+                this.expandedItems.add(id);
             }
+        },
+
+        isExpanded(id) {
+            return this.expandedItems.has(id);
         },
 
         collapseDescendants(parentId) {
