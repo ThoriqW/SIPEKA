@@ -9,7 +9,7 @@ class BupCalculator
      *
      * Aturan:
      *   65  jika jenjang = "Ahli Utama"
-     *   60  jika jenjang ∈ {"Ahli Madya", "Pimpinan Tinggi"}
+     *   60  jika jenjang ∈ {"Ahli Madya", "Pimpinan Tinggi Pratama"}
      *        ATAU (jenis_kepegawaian = "PPPK" DAN jenjang = "Guru")
      *   58  selain itu
      */
@@ -19,7 +19,7 @@ class BupCalculator
             return 65;
         }
 
-        if (in_array($jenjang, ['Ahli Madya', 'Pimpinan Tinggi'], true)) {
+        if (in_array($jenjang, ['Ahli Madya', 'Pimpinan Tinggi Pratama'], true)) {
             return 60;
         }
 

@@ -70,8 +70,8 @@
                         </td>
                         <td class="px-3 py-2 text-sm {{ $row['level'] == 0 ? 'font-bold text-gray-900' : ($row['level'] == 1 ? 'font-semibold text-gray-800' : 'text-gray-700') }}">
                             {{ $row['nama_jabatan'] }}
-                            @if($row['jenis_jabatan'])
-                            <span class="text-xs text-gray-400 ml-1">({{ $row['jenis_jabatan'] }})</span>
+                            @if($row['jenjang'])
+                            <span class="text-xs text-gray-400 ml-1">({{ $row['jenjang'] }})</span>
                             @endif
                         </td>
                         <td class="px-3 py-2 text-sm text-center text-gray-600">{{ $row['kelas_jabatan'] ?? '-' }}</td>

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->date('tanggal_lahir');
             $table->string('golongan_pangkat', 5); // I/a .. IV/e
             $table->string('pendidikan'); // SD .. S3
-            $table->string('jenjang'); // Pelaksana | Ahli Pertama | Ahli Muda | Ahli Madya | Ahli Utama | Keterampilan | Guru | Pimpinan Tinggi
+            $table->string('jenjang'); // Pelaksana | Ahli Pertama | Ahli Muda | Ahli Madya | Ahli Utama | Keterampilan | Guru | Pimpinan Tinggi Pratama
             $table->foreignId('opd_id')->constrained('opd')->cascadeOnDelete();
             $table->foreignId('jabatan_id')->nullable()->constrained('jabatan')->nullOnDelete();
             $table->timestamps();

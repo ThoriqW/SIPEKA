@@ -18,7 +18,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1975-05-15',
             'golongan_pangkat' => 'IV/c',
             'pendidikan' => 'S3',
-            'jenjang' => 'Pimpinan Tinggi',
+            'jenjang' => 'Pimpinan Tinggi Pratama',
             'opd_id' => 1,
             'jabatan_id' => 1,
         ]);

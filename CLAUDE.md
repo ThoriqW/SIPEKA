@@ -28,7 +28,7 @@
 Tabel inti (gunakan migrations untuk semua skema):
 
 - **opd**: `id`, `nama_opd`, `kode_opd`.
-- **pegawai**: `id`, `nama`, `nip` (unik, divalidasi), `jenis_kepegawaian` (PNS | PPPK), `tanggal_lahir`, `golongan_pangkat` (enum I/a … IV/e), `pendidikan` (SD … S3), `jenjang` (Pelaksana, Ahli Pertama, Ahli Muda, Ahli Madya, Ahli Utama, Keterampilan, Guru, Pimpinan Tinggi), `opd_id` (FK), `jabatan_id` (FK, nullable).
+- **pegawai**: `id`, `nama`, `nip` (unik, divalidasi), `jenis_kepegawaian` (PNS | PPPK), `tanggal_lahir`, `golongan_pangkat` (enum I/a … IV/e), `pendidikan` (SD … S3), `jenjang` (Pelaksana, Ahli Pertama, Ahli Muda, Ahli Madya, Ahli Utama, Keterampilan, Guru, Pimpinan Tinggi Pratama), `opd_id` (FK), `jabatan_id` (FK, nullable).
 - **jabatan**: `id`, `nama_jabatan`, `kode_jabatan`, `jenis_jabatan` (Struktural | Fungsional | Pelaksana), `kelas_jabatan` (int), `kebutuhan` (int, **hanya diisi untuk Fungsional & Pelaksana**; NULL untuk Struktural), `opd_id` (FK), `induk_jabatan_id` (self-FK, nullable).
 - **Tabel pendukung:** users & roles dan tabel audit trail.
 
@@ -46,7 +46,7 @@ Letakkan logika ini di service class khusus dan/atau query DB, dan wajib diberi 
 ```
 BUP (Batas Usia Pensiun, dalam tahun):
   65  jika jenjang = "Ahli Utama"
-  60  jika jenjang ∈ {"Ahli Madya", "Pimpinan Tinggi"}
+  60  jika jenjang ∈ {"Ahli Madya", "Pimpinan Tinggi Pratama"}
         ATAU (jenis_kepegawaian = "PPPK" DAN jenjang = "Guru")
   58  selain itu
 

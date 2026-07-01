@@ -32,7 +32,7 @@ class FlattenedTreeServiceTest extends TestCase
             'kode_jabatan' => 'DT-001',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
-            'jenjang' => 'Pimpinan Tinggi',
+            'jenjang' => 'Pimpinan Tinggi Pratama',
             'kebutuhan' => null,
             'opd_id' => $opd->id,
             'induk_jabatan_id' => null,

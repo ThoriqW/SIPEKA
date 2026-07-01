@@ -7,7 +7,7 @@ enum Jenjang: string
     // Struktural
     case Pengawas = 'Pengawas';
     case Administrator = 'Administrator';
-    case PimpinanTinggi = 'Pimpinan Tinggi';
+    case PimpinanTinggi = 'Pimpinan Tinggi Pratama';
 
     // Fungsional
     case AhliPertama = 'Ahli Pertama';
