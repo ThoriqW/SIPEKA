@@ -65,6 +65,9 @@
                             {{ $no }}
                         </td>
                         <td class="py-2 pr-2 text-sm {{ $row['level'] == 0 ? 'font-bold text-gray-900' : ($row['level'] == 1 ? 'font-semibold text-gray-800' : 'text-gray-700') }}" style="padding-left: {{ max(0, $row['level'] - 1) * 28 + 8 }}px;">
+                            @if($row['has_children'])
+                            <span class="text-gray-400 mr-0.5" x-text="expanded ? '▾' : '▸'"></span>
+                            @endif
                             {{ $row['nama_jabatan'] }}
                             @if($row['jenjang'])
                             <span class="text-xs text-gray-400">({{ $row['jenjang'] }})</span>
