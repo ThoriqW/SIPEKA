@@ -172,6 +172,14 @@ class FlattenedTreeService
             }
         }
 
+        $totalBezetting = $allJabatan->flatMap->pegawai->unique('id')->count();
+        $totalKebutuhanCount = 0;
+        foreach ($allJabatan as $j) {
+            if ($j->kebutuhan !== null) {
+                $totalKebutuhanCount += $j->kebutuhan;
+            }
+        }
+
         return [
             'id'                  => 0,
             'parent_id'           => null,
@@ -180,9 +188,9 @@ class FlattenedTreeService
             'jenis_jabatan'       => null,
             'jenjang'             => null,
             'kelas_jabatan'       => null,
-            'kebutuhan'           => null,
-            'bezetting'           => $allJabatan->flatMap->pegawai->unique('id')->count(),
-            'selisih'             => null,
+            'kebutuhan'           => $totalKebutuhanCount,
+            'bezetting'           => $totalBezetting,
+            'selisih'             => $totalBezetting - $totalKebutuhanCount,
             'pegawai'             => [],
             'has_children'        => true,
             'opd_id'              => null,
