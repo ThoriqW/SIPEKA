@@ -52,7 +52,7 @@
                         @error('pendidikan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div x-show="opdSelected">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang (otomatis)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
                         <input type="hidden" name="jenjang" x-ref="jenjangInput">
                         <p x-ref="jenjangDisplay" class="w-full rounded-md bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-700">-- Pilih jabatan --</p>
                         @error('jenjang')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
