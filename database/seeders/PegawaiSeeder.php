@@ -31,7 +31,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1980-02-20',
             'golongan_pangkat' => 'III/d',
             'pendidikan' => 'S2',
-            'jenjang' => 'Ahli Madya',
+            'jenjang' => 'Administrator',
             'opd_id' => 1,
             'jabatan_id' => 2,
         ]);
@@ -44,7 +44,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1978-11-10',
             'golongan_pangkat' => 'III/c',
             'pendidikan' => 'S2',
-            'jenjang' => 'Ahli Muda',
+            'jenjang' => 'Administrator',
             'opd_id' => 1,
             'jabatan_id' => 3,
         ]);
@@ -57,7 +57,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1985-05-25',
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Pertama',
+            'jenjang' => 'Pengawas',
             'opd_id' => 1,
             'jabatan_id' => 4,
         ]);
@@ -194,7 +194,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1970-03-15',
             'golongan_pangkat' => 'IV/c',
             'pendidikan' => 'S2',
-            'jenjang' => 'Ahli Utama',
+            'jenjang' => 'Pimpinan Tinggi Pratama',
             'opd_id' => 2,
             'jabatan_id' => 8,
         ]);
@@ -207,7 +207,7 @@ class PegawaiSeeder extends Seeder
             'tanggal_lahir' => '1975-08-10',
             'golongan_pangkat' => 'III/d',
             'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Madya',
+            'jenjang' => 'Administrator',
             'opd_id' => 2,
             'jabatan_id' => 9,
         ]);

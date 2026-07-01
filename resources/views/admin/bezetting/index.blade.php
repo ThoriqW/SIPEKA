@@ -55,22 +55,21 @@
                         data-level="{{ $row['level'] }}"
                         x-show="isVisible({{ $row['id'] }}, '{{ $row['parent_id'] ?? '' }}')"
                         class="{{ $row['level'] == 0 ? 'bg-blue-50' : 'hover:bg-gray-50' }}">
-                        <td class="px-2 py-2 text-sm text-gray-500 whitespace-nowrap">
-                            <span style="display: inline-block; width: {{ max(0, $row['level'] - 1) * 20 }}px;"></span>
+                        <td class="px-2 py-2 text-sm text-gray-400 text-center w-10">
+                            {{ $no }}
+                        </td>
+                        <td class="py-2 pr-2 text-sm {{ $row['level'] == 0 ? 'font-bold text-gray-900' : ($row['level'] == 1 ? 'font-semibold text-gray-800' : 'text-gray-700') }}" style="padding-left: {{ max(0, $row['level'] - 1) * 28 + 8 }}px;">
+                            <span class="inline-block" style="width: 26px;">
                             @if($row['has_children'])
                             <button type="button"
                                     @click.stop="expanded = !expanded; toggleExpand({{ $row['id'] }}, expanded)"
-                                    class="text-blue-600 hover:text-blue-800 focus:outline-none font-mono text-xs mr-0.5"
+                                    class="text-blue-600 hover:text-blue-800 focus:outline-none font-mono text-xs"
                                     x-text="expanded ? '[-]' : '[+]'"></button>
-                            @else
-                            <span class="inline-block w-7"></span>
                             @endif
-                            <span>{{ $no }}</span>
-                        </td>
-                        <td class="px-2 py-2 text-sm {{ $row['level'] == 0 ? 'font-bold text-gray-900' : ($row['level'] == 1 ? 'font-semibold text-gray-800' : 'text-gray-700') }}">
+                            </span>
                             {{ $row['nama_jabatan'] }}
                             @if($row['jenjang'])
-                            <span class="text-xs text-gray-400 ml-1">({{ $row['jenjang'] }})</span>
+                            <span class="text-xs text-gray-400 ml-1.5">({{ $row['jenjang'] }})</span>
                             @endif
                         </td>
                         <td class="px-2 py-2 text-sm text-center text-gray-600">{{ $row['kelas_jabatan'] ?? '-' }}</td>
