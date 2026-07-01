@@ -96,6 +96,9 @@ function pegawaiForm() {
                             opt.value = j.id;
                             opt.setAttribute('data-jenjang', j.jenjang || '');
                             var label = j.nama;
+                            if (j.jenjang) {
+                                label += ' — ' + j.jenjang;
+                            }
                             if (j.id == currentJabatanId) {
                                 // Allow current jabatan even if full (own position)
                             } else if (j.jenis_jabatan === 'Struktural' && j.pegawai_count >= 1) {
