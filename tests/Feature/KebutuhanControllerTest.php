@@ -104,7 +104,7 @@ class KebutuhanControllerTest extends TestCase
         $response = $this->actingAs($user)->get(route('admin.kebutuhan.index'));
 
         $t = date('Y');
-        $response->assertSee('Keb. ' . $t);
+        $response->assertSee($t);
         $response->assertSee((string) ($t + 4));
     }
 

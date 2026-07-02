@@ -3,12 +3,16 @@
 namespace Database\Seeders;
 
 use App\Models\Jabatan;
+use App\Models\Opd;
 use Illuminate\Database\Seeder;
 
 class JabatanSeeder extends Seeder
 {
     public function run(): void
     {
+        $opdDikbud = Opd::where('kode_opd', 'DIKBUD')->first();
+        $opdDinkes = Opd::where('kode_opd', 'DINKES')->first();
+
         // OPD 1: Dinas Pendidikan dan Kebudayaan
         $kepala_opd1 = Jabatan::create([
             'nama_jabatan' => 'Kepala Dinas Pendidikan dan Kebudayaan',
@@ -17,7 +21,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
             'kebutuhan' => null,
-            'opd_id' => 1,
+            'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => null,
         ]);
 
@@ -28,7 +32,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 13,
             'jenjang' => 'Administrator',
             'kebutuhan' => null,
-            'opd_id' => 1,
+            'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => $kepala_opd1->id,
         ]);
 
@@ -39,7 +43,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 12,
             'jenjang' => 'Administrator',
             'kebutuhan' => null,
-            'opd_id' => 1,
+            'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => $kepala_opd1->id,
         ]);
 
@@ -50,7 +54,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 10,
             'jenjang' => 'Pengawas',
             'kebutuhan' => null,
-            'opd_id' => 1,
+            'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => $sekretariat->id,
         ]);
 
@@ -61,7 +65,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 6,
             'jenjang' => 'Pelaksana',
             'kebutuhan' => 3,
-            'opd_id' => 1,
+            'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => $sub_keuangan->id,
         ]);
 
@@ -72,7 +76,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 8,
             'jenjang' => 'Ahli Pertama',
             'kebutuhan' => 10,
-            'opd_id' => 1,
+            'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => $bidang_sd->id,
         ]);
 
@@ -83,7 +87,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 5,
             'jenjang' => 'Pelaksana',
             'kebutuhan' => 5,
-            'opd_id' => 1,
+            'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => $bidang_sd->id, // Struktural
         ]);
 
@@ -95,7 +99,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
             'kebutuhan' => null,
-            'opd_id' => 2,
+            'opd_id' => $opdDinkes->id,
             'induk_jabatan_id' => null,
         ]);
 
@@ -106,7 +110,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 12,
             'jenjang' => 'Administrator',
             'kebutuhan' => null,
-            'opd_id' => 2,
+            'opd_id' => $opdDinkes->id,
             'induk_jabatan_id' => $kepala_opd2->id,
         ]);
 
@@ -117,7 +121,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 9,
             'jenjang' => 'Ahli Pertama',
             'kebutuhan' => 5,
-            'opd_id' => 2,
+            'opd_id' => $opdDinkes->id,
             'induk_jabatan_id' => $bidang_pelayanan->id,
         ]);
 
@@ -128,7 +132,7 @@ class JabatanSeeder extends Seeder
             'kelas_jabatan' => 7,
             'jenjang' => 'Keterampilan - Terampil',
             'kebutuhan' => 8,
-            'opd_id' => 2,
+            'opd_id' => $opdDinkes->id,
             'induk_jabatan_id' => $bidang_pelayanan->id, // Struktural
         ]);
     }

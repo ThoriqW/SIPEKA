@@ -42,7 +42,7 @@ class KebutuhanExport implements FromArray, WithHeadings, WithStyles
             'Selisih',
             'NIP',
             'Nama',
-            'Keb. ' . $this->tahunLabels[1],
+            $this->tahunLabels[1],
             $this->tahunLabels[2],
             $this->tahunLabels[3],
             $this->tahunLabels[4],

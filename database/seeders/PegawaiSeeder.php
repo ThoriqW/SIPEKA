@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Jabatan;
+use App\Models\Opd;
 use App\Models\Pegawai;
 use Illuminate\Database\Seeder;
 
@@ -9,8 +11,11 @@ class PegawaiSeeder extends Seeder
 {
     public function run(): void
     {
+        $opdDikbud = Opd::where('kode_opd', 'DIKBUD')->first();
+        $opdDinkes = Opd::where('kode_opd', 'DINKES')->first();
+
         // OPD 1 - Dinas Pendidikan dan Kebudayaan
-        // Kepala OPD (jabatan_id=1)
+        // Kepala OPD
         Pegawai::create([
             'nama' => 'Dr. Andi Mahmud, M.Pd.',
             'nip' => '197505152000011001',
@@ -19,11 +24,11 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'IV/c',
             'pendidikan' => 'S3',
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'opd_id' => 1,
-            'jabatan_id' => 1,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-001')->first()->id,
         ]);
 
-        // Sekretariat (jabatan_id=2)
+        // Sekretariat
         Pegawai::create([
             'nama' => 'Siti Rahayu, S.E., M.M.',
             'nip' => '198002202005012002',
@@ -32,11 +37,11 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/d',
             'pendidikan' => 'S2',
             'jenjang' => 'Administrator',
-            'opd_id' => 1,
-            'jabatan_id' => 2,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-002')->first()->id,
         ]);
 
-        // Bidang SD (jabatan_id=3)
+        // Bidang SD
         Pegawai::create([
             'nama' => 'Budi Santoso, S.Pd., M.Si.',
             'nip' => '197811102003011003',
@@ -45,11 +50,11 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/c',
             'pendidikan' => 'S2',
             'jenjang' => 'Administrator',
-            'opd_id' => 1,
-            'jabatan_id' => 3,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-003')->first()->id,
         ]);
 
-        // Sub Bagian Keuangan (jabatan_id=4)
+        // Sub Bagian Keuangan
         Pegawai::create([
             'nama' => 'Dewi Anggraini, S.E.',
             'nip' => '198505252010012004',
@@ -58,11 +63,11 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
             'jenjang' => 'Pengawas',
-            'opd_id' => 1,
-            'jabatan_id' => 4,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-004')->first()->id,
         ]);
 
-        // Pengelola Keuangan (jabatan_id=5) - 2 pegawai
+        // Pengelola Keuangan - 2 pegawai
         Pegawai::create([
             'nama' => 'Ahmad Fauzi',
             'nip' => '199003152015011005',
@@ -71,8 +76,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'II/c',
             'pendidikan' => 'D3',
             'jenjang' => 'Pelaksana',
-            'opd_id' => 1,
-            'jabatan_id' => 5,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-005')->first()->id,
         ]);
 
         Pegawai::create([
@@ -83,11 +88,11 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'II/b',
             'pendidikan' => 'D3',
             'jenjang' => 'Pelaksana',
-            'opd_id' => 1,
-            'jabatan_id' => 5,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-005')->first()->id,
         ]);
 
-        // Guru SD (jabatan_id=6) - 6 pegawai
+        // Guru SD - 6 pegawai
         Pegawai::create([
             'nama' => 'Dra. Nurhayati',
             'nip' => '196501011990012007',
@@ -96,8 +101,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'IV/a',
             'pendidikan' => 'S1',
             'jenjang' => 'Ahli Madya',
-            'opd_id' => 1,
-            'jabatan_id' => 6,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
         ]);
 
         Pegawai::create([
@@ -108,8 +113,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/d',
             'pendidikan' => 'S1',
             'jenjang' => 'Ahli Muda',
-            'opd_id' => 1,
-            'jabatan_id' => 6,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
         ]);
 
         Pegawai::create([
@@ -120,8 +125,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/c',
             'pendidikan' => 'S1',
             'jenjang' => 'Ahli Muda',
-            'opd_id' => 1,
-            'jabatan_id' => 6,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
         ]);
 
         Pegawai::create([
@@ -132,8 +137,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
             'jenjang' => 'Ahli Pertama',
-            'opd_id' => 1,
-            'jabatan_id' => 6,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
         ]);
 
         Pegawai::create([
@@ -144,8 +149,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
             'jenjang' => 'Ahli Pertama',
-            'opd_id' => 1,
-            'jabatan_id' => 6,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
         ]);
 
         Pegawai::create([
@@ -156,11 +161,11 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
             'jenjang' => 'Ahli Pertama',
-            'opd_id' => 1,
-            'jabatan_id' => 6,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
         ]);
 
-        // Operator Sekolah (jabatan_id=7)
+        // Operator Sekolah - 2 pegawai
         Pegawai::create([
             'nama' => 'Bayu Prasetyo',
             'nip' => '199505102020011013',
@@ -169,8 +174,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'II/a',
             'pendidikan' => 'SMA',
             'jenjang' => 'Pelaksana',
-            'opd_id' => 1,
-            'jabatan_id' => 7,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-007')->first()->id,
         ]);
 
         Pegawai::create([
@@ -181,12 +186,12 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'II/a',
             'pendidikan' => 'SMA',
             'jenjang' => 'Pelaksana',
-            'opd_id' => 1,
-            'jabatan_id' => 7,
+            'opd_id' => $opdDikbud->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-007')->first()->id,
         ]);
 
         // OPD 2 - Dinas Kesehatan
-        // Kepala Dinkes (jabatan_id=8)
+        // Kepala Dinkes
         Pegawai::create([
             'nama' => 'dr. Hj. Rahmaniar, M.Kes.',
             'nip' => '197003152005012001',
@@ -195,11 +200,11 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'IV/c',
             'pendidikan' => 'S2',
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'opd_id' => 2,
-            'jabatan_id' => 8,
+            'opd_id' => $opdDinkes->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-001')->first()->id,
         ]);
 
-        // Bidang Pelayanan (jabatan_id=9)
+        // Bidang Pelayanan
         Pegawai::create([
             'nama' => 'drg. Markus Latuconsina',
             'nip' => '197508102000011002',
@@ -208,11 +213,11 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/d',
             'pendidikan' => 'S1',
             'jenjang' => 'Administrator',
-            'opd_id' => 2,
-            'jabatan_id' => 9,
+            'opd_id' => $opdDinkes->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-002')->first()->id,
         ]);
 
-        // Dokter Umum (jabatan_id=10) - 3 pegawai
+        // Dokter Umum - 3 pegawai
         Pegawai::create([
             'nama' => 'dr. Andini Putri',
             'nip' => '198506152010012003',
@@ -221,8 +226,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/b',
             'pendidikan' => 'S1',
             'jenjang' => 'Ahli Pertama',
-            'opd_id' => 2,
-            'jabatan_id' => 10,
+            'opd_id' => $opdDinkes->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-003')->first()->id,
         ]);
 
         Pegawai::create([
@@ -233,8 +238,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
             'jenjang' => 'Ahli Pertama',
-            'opd_id' => 2,
-            'jabatan_id' => 10,
+            'opd_id' => $opdDinkes->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-003')->first()->id,
         ]);
 
         Pegawai::create([
@@ -245,11 +250,11 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
             'jenjang' => 'Ahli Pertama',
-            'opd_id' => 2,
-            'jabatan_id' => 10,
+            'opd_id' => $opdDinkes->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-003')->first()->id,
         ]);
 
-        // Perawat (jabatan_id=11) - 4 pegawai
+        // Perawat - 4 pegawai
         Pegawai::create([
             'nama' => 'Nurul Hidayah, A.Md.Kep.',
             'nip' => '198812012010012008',
@@ -258,8 +263,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'II/d',
             'pendidikan' => 'D3',
             'jenjang' => 'Keterampilan - Terampil',
-            'opd_id' => 2,
-            'jabatan_id' => 11,
+            'opd_id' => $opdDinkes->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-004')->first()->id,
         ]);
 
         Pegawai::create([
@@ -270,8 +275,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'II/c',
             'pendidikan' => 'D3',
             'jenjang' => 'Keterampilan - Terampil',
-            'opd_id' => 2,
-            'jabatan_id' => 11,
+            'opd_id' => $opdDinkes->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-004')->first()->id,
         ]);
 
         Pegawai::create([
@@ -282,8 +287,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'II/b',
             'pendidikan' => 'D3',
             'jenjang' => 'Keterampilan - Terampil',
-            'opd_id' => 2,
-            'jabatan_id' => 11,
+            'opd_id' => $opdDinkes->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-004')->first()->id,
         ]);
 
         Pegawai::create([
@@ -294,8 +299,8 @@ class PegawaiSeeder extends Seeder
             'golongan_pangkat' => 'II/a',
             'pendidikan' => 'D3',
             'jenjang' => 'Keterampilan - Terampil',
-            'opd_id' => 2,
-            'jabatan_id' => 11,
+            'opd_id' => $opdDinkes->id,
+            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-004')->first()->id,
         ]);
     }
 }
