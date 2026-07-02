@@ -61,7 +61,7 @@ class JabatanController extends Controller
     {
         $validated = $request->validate([
             'nama_jabatan' => 'required|string|max:255',
-            'kode_jabatan' => 'required|string|max:50',
+            'kode_jabatan' => 'required|string|max:50|unique:jabatan,kode_jabatan',
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'required|string|max:255',
@@ -119,7 +119,7 @@ class JabatanController extends Controller
     {
         $validated = $request->validate([
             'nama_jabatan' => 'required|string|max:255',
-            'kode_jabatan' => 'required|string|max:50',
+            'kode_jabatan' => 'required|string|max:50|unique:jabatan,kode_jabatan,' . $jabatan->id,
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'required|string|max:255',
