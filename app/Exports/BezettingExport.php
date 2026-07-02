@@ -9,7 +9,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class BezettingExport implements FromArray, WithHeadings, WithStyles
 {
-    public function __construct(private array $tree) {}
+    public function __construct(private array $tree, private array $tahunLabels) {}
 
     public function array(): array
     {
@@ -43,16 +43,16 @@ class BezettingExport implements FromArray, WithHeadings, WithStyles
             'Kelas Jabatan',
             'Kebutuhan',
             'Bezetting',
-            'Pensiun Thn 1',
-            'Pensiun Thn 2',
-            'Pensiun Thn 3',
-            'Pensiun Thn 4',
-            'Pensiun Thn 5',
-            'Kebutuhan Thn 1',
-            'Kebutuhan Thn 2',
-            'Kebutuhan Thn 3',
-            'Kebutuhan Thn 4',
-            'Kebutuhan Thn 5',
+            'Pensiun ' . $this->tahunLabels[1],
+            'Pensiun ' . $this->tahunLabels[2],
+            'Pensiun ' . $this->tahunLabels[3],
+            'Pensiun ' . $this->tahunLabels[4],
+            'Pensiun ' . $this->tahunLabels[5],
+            'Kebutuhan ' . $this->tahunLabels[1],
+            'Kebutuhan ' . $this->tahunLabels[2],
+            'Kebutuhan ' . $this->tahunLabels[3],
+            'Kebutuhan ' . $this->tahunLabels[4],
+            'Kebutuhan ' . $this->tahunLabels[5],
             'NIP',
             'Nama',
         ];

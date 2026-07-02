@@ -6,6 +6,7 @@ use App\Exports\KebutuhanExport;
 use App\Http\Controllers\Controller;
 use App\Models\Opd;
 use App\Services\FlattenedTreeService;
+use App\Services\ProjectionService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -13,6 +14,7 @@ class KebutuhanController extends Controller
 {
     public function __construct(
         private FlattenedTreeService $flattenedTreeService,
+        private ProjectionService $projectionService,
     ) {}
 
     /**
@@ -40,7 +42,9 @@ class KebutuhanController extends Controller
             $opdList = collect();
         }
 
-        return view('admin.kebutuhan.index', compact('tree', 'opdList'));
+        $tahunLabels = $this->projectionService->getTahunLabels();
+
+        return view('admin.kebutuhan.index', compact('tree', 'opdList', 'tahunLabels'));
     }
 
     /**
@@ -65,8 +69,10 @@ class KebutuhanController extends Controller
             );
         }
 
+        $tahunLabels = $this->projectionService->getTahunLabels();
+
         return Excel::download(
-            new KebutuhanExport($tree),
+            new KebutuhanExport($tree, $tahunLabels),
             'kebutuhan-' . date('Y-m-d') . '.xlsx'
         );
     }

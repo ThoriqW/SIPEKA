@@ -14,6 +14,22 @@ class ProjectionService
     ) {}
 
     /**
+     * Dapatkan mapping label tahun untuk 5 tahun proyeksi.
+     * Key 1..5 → tahun aktual berbasis tahun berjalan.
+     *
+     * Contoh (tahun berjalan 2026): [1 => '2026', 2 => '2027', ..., 5 => '2030']
+     */
+    public function getTahunLabels(): array
+    {
+        $t = (int) date('Y');
+        $labels = [];
+        for ($n = 1; $n <= 5; $n++) {
+            $labels[$n] = (string) ($t + $n - 1);
+        }
+        return $labels;
+    }
+
+    /**
      * Hitung proyeksi pensiun per tahun untuk 5 tahun ke depan.
      *
      * T = YEAR(today())

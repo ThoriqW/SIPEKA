@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\BezettingExport;
 use App\Http\Controllers\Controller;
 use App\Services\FlattenedTreeService;
+use App\Services\ProjectionService;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BezettingController extends Controller
 {
     public function __construct(
         private FlattenedTreeService $flattenedTreeService,
+        private ProjectionService $projectionService,
     ) {}
 
     /**
@@ -34,7 +36,9 @@ class BezettingController extends Controller
             );
         }
 
-        return view('admin.bezetting.index', compact('tree'));
+        $tahunLabels = $this->projectionService->getTahunLabels();
+
+        return view('admin.bezetting.index', compact('tree', 'tahunLabels'));
     }
 
     /**
@@ -58,8 +62,10 @@ class BezettingController extends Controller
             );
         }
 
+        $tahunLabels = $this->projectionService->getTahunLabels();
+
         return Excel::download(
-            new BezettingExport($tree),
+            new BezettingExport($tree, $tahunLabels),
             'bezetting-' . date('Y-m-d') . '.xlsx'
         );
     }

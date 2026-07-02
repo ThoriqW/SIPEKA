@@ -32,16 +32,12 @@
                         <th></th>
                         <th></th>
                         <th></th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 1</th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 2</th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 3</th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 4</th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 5</th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 1</th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 2</th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 3</th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 4</th>
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">Thn 5</th>
+                        @for($n = 1; $n <= 5; $n++)
+                        <th class="px-2 py-2 text-center text-xs text-gray-400">{{ $tahunLabels[$n] }}</th>
+                        @endfor
+                        @for($n = 1; $n <= 5; $n++)
+                        <th class="px-2 py-2 text-center text-xs text-gray-400">{{ $tahunLabels[$n] }}</th>
+                        @endfor
                         <th></th>
                     </tr>
                 </thead>

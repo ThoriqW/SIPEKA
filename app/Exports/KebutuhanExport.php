@@ -9,7 +9,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class KebutuhanExport implements FromArray, WithHeadings, WithStyles
 {
-    public function __construct(private array $tree) {}
+    public function __construct(private array $tree, private array $tahunLabels) {}
 
     public function array(): array
     {
@@ -42,11 +42,11 @@ class KebutuhanExport implements FromArray, WithHeadings, WithStyles
             'Selisih',
             'NIP',
             'Nama',
-            'Kebutuhan Thn 1',
-            'Kebutuhan Thn 2',
-            'Kebutuhan Thn 3',
-            'Kebutuhan Thn 4',
-            'Kebutuhan Thn 5',
+            'Keb. ' . $this->tahunLabels[1],
+            $this->tahunLabels[2],
+            $this->tahunLabels[3],
+            $this->tahunLabels[4],
+            $this->tahunLabels[5],
         ];
     }
 
