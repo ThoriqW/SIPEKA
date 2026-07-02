@@ -7,7 +7,7 @@
             <h1 class="text-2xl font-semibold text-gray-900">Edit Jabatan</h1>
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.jabatan.index') }}" class="hover:text-gray-700">Jabatan</a> / Edit</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="jabatanForm('{{ old('jenis_jabatan', $jabatan->jenis_jabatan) }}', '{{ old('jenjang', $jabatan->jenjang) }}')" x-init="onJenisChange(initialJenis, initialJenjang)">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="jabatanForm('{{ old('jenis_jabatan', $jabatan->jenis_jabatan) }}', '{{ old('jenjang', $jabatan->jenjang) }}')" x-init="initInduk(); onJenisChange(initialJenis, initialJenjang)">
             <form action="{{ route('admin.jabatan.update', $jabatan) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -43,15 +43,14 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
-                        <select name="opd_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <select name="opd_id" x-on:change="filterInduk($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id', $jabatan->opd_id) == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Induk Jabatan</label>
-                        <select name="induk_jabatan_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <select name="induk_jabatan_id" x-ref="indukSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Tidak Ada --</option>
-                            @foreach($indukList as $id => $nama)<option value="{{ $id }}" {{ old('induk_jabatan_id', $jabatan->induk_jabatan_id) == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
                     </div>
                 </div>
@@ -69,6 +68,8 @@
 <script>
 function jabatanForm(initialJenis, initialJenjang) {
     var options = {!! $jenjangOptions !!};
+    var indukByOpd = {!! $indukByOpd !!};
+    var selectedInduk = '{{ old('induk_jabatan_id', $jabatan->induk_jabatan_id ?? '') }}';
     return {
         initialJenis: initialJenis,
         initialJenjang: initialJenjang,
@@ -86,6 +87,24 @@ function jabatanForm(initialJenis, initialJenjang) {
                 if (preSelectJenjang && val === preSelectJenjang) opt.selected = true;
                 select.appendChild(opt);
             });
+        },
+        filterInduk(opdId) {
+            var select = this.$refs.indukSelect;
+            select.innerHTML = '<option value="">-- Tidak Ada --</option>';
+            var items = indukByOpd[opdId] || [];
+            items.forEach(function(item) {
+                var opt = document.createElement('option');
+                opt.value = item.id;
+                opt.textContent = item.nama;
+                if (String(item.id) === String(selectedInduk)) opt.selected = true;
+                select.appendChild(opt);
+            });
+        },
+        initInduk() {
+            var opdSelect = this.$el.querySelector('[name="opd_id"]');
+            if (opdSelect && opdSelect.value) {
+                this.filterInduk(opdSelect.value);
+            }
         }
     }
 }

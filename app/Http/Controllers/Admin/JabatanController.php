@@ -33,9 +33,21 @@ class JabatanController extends Controller
         $indukQuery = Jabatan::with('opd')->where('jenis_jabatan', 'Struktural')->orderBy('nama_jabatan');
         if (auth()->user()->role === 'admin_opd') $indukQuery->where('opd_id', auth()->user()->opd_id);
         $indukList = $indukQuery->get()->mapWithKeys(fn($j) => [$j->id => ($j->opd->nama_opd ?? '?') . ' › ' . $j->nama_jabatan]);
+
+        // Data untuk Alpine.js: induk dikelompokkan per OPD
+        $indukGrouped = $indukQuery->get()->groupBy('opd_id');
+        $indukByOpd = [];
+        foreach ($indukGrouped as $opdId => $items) {
+            $indukByOpd[$opdId] = $items->map(fn($j) => [
+                'id' => $j->id,
+                'nama' => ($j->opd->nama_opd ?? '?') . ' › ' . $j->nama_jabatan,
+            ])->values()->toArray();
+        }
+
         return view('admin.jabatan.create', [
             'opdList' => $opdList,
             'indukList' => $indukList,
+            'indukByOpd' => json_encode($indukByOpd),
             'jenisJabatanList' => JenisJabatan::labels(),
             'jenjangOptions' => json_encode([
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),
@@ -78,10 +90,22 @@ class JabatanController extends Controller
         $indukQuery = Jabatan::with('opd')->where('id', '!=', $jabatan->id)->where('jenis_jabatan', 'Struktural')->orderBy('nama_jabatan');
         if (auth()->user()->role === 'admin_opd') $indukQuery->where('opd_id', auth()->user()->opd_id);
         $indukList = $indukQuery->get()->mapWithKeys(fn($j) => [$j->id => ($j->opd->nama_opd ?? '?') . ' › ' . $j->nama_jabatan]);
+
+        // Data untuk Alpine.js: induk dikelompokkan per OPD
+        $indukGrouped = $indukQuery->get()->groupBy('opd_id');
+        $indukByOpd = [];
+        foreach ($indukGrouped as $opdId => $items) {
+            $indukByOpd[$opdId] = $items->map(fn($j) => [
+                'id' => $j->id,
+                'nama' => ($j->opd->nama_opd ?? '?') . ' › ' . $j->nama_jabatan,
+            ])->values()->toArray();
+        }
+
         return view('admin.jabatan.edit', [
             'jabatan' => $jabatan,
             'opdList' => $opdList,
             'indukList' => $indukList,
+            'indukByOpd' => json_encode($indukByOpd),
             'jenisJabatanList' => JenisJabatan::labels(),
             'jenjangOptions' => json_encode([
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),

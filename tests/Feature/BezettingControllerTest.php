@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class BezettingControllerTest extends TestCase
@@ -16,7 +17,7 @@ class BezettingControllerTest extends TestCase
         $this->seed();
     }
 
-    /** @test */
+    #[Test]
     public function bkd_can_access_bezetting_index()
     {
         $user = User::where('role', 'bkd')->first();
@@ -28,7 +29,7 @@ class BezettingControllerTest extends TestCase
         $response->assertSee('Instansi Pemerintah Kota Palu');
     }
 
-    /** @test */
+    #[Test]
     public function admin_opd_can_access_bezetting_index()
     {
         $user = User::where('role', 'admin_opd')->first();
@@ -39,7 +40,7 @@ class BezettingControllerTest extends TestCase
         $response->assertSee('Bezetting');
     }
 
-    /** @test */
+    #[Test]
     public function bkd_sees_all_opd_in_bezetting()
     {
         $user = User::where('role', 'bkd')->first();
@@ -50,7 +51,7 @@ class BezettingControllerTest extends TestCase
         $response->assertSee('Kepala Dinas Kesehatan');
     }
 
-    /** @test */
+    #[Test]
     public function admin_opd_sees_only_own_opd_in_bezetting()
     {
         $user = User::where('email', 'admin@dikbud.palu.go.id')->first();
@@ -62,7 +63,7 @@ class BezettingControllerTest extends TestCase
         $response->assertDontSee('Kepala Dinas Kesehatan');
     }
 
-    /** @test */
+    #[Test]
     public function bkd_can_export_bezetting_excel()
     {
         $user = User::where('role', 'bkd')->first();
@@ -73,7 +74,7 @@ class BezettingControllerTest extends TestCase
         $this->assertStringContainsString('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $response->headers->get('Content-Type'));
     }
 
-    /** @test */
+    #[Test]
     public function admin_opd_can_export_bezetting_excel()
     {
         $user = User::where('role', 'admin_opd')->first();
@@ -84,7 +85,7 @@ class BezettingControllerTest extends TestCase
         $this->assertStringContainsString('spreadsheet', $response->headers->get('Content-Type'));
     }
 
-    /** @test */
+    #[Test]
     public function unauthenticated_user_is_redirected_from_bezetting()
     {
         $response = $this->get(route('admin.bezetting.index'));
@@ -92,7 +93,7 @@ class BezettingControllerTest extends TestCase
         $response->assertRedirect('/login');
     }
 
-    /** @test */
+    #[Test]
     public function bezetting_shows_pensiun_and_kebutuhan_projections()
     {
         $user = User::where('role', 'bkd')->first();
@@ -103,7 +104,7 @@ class BezettingControllerTest extends TestCase
         $response->assertSee('Proyeksi Kebutuhan');
     }
 
-    /** @test */
+    #[Test]
     public function bezetting_has_expand_collapse_functionality()
     {
         $user = User::where('role', 'bkd')->first();

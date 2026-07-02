@@ -7,6 +7,7 @@ use App\Models\Opd;
 use App\Models\Pegawai;
 use App\Services\FlattenedTreeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class FlattenedTreeServiceTest extends TestCase
@@ -87,7 +88,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->service = app(FlattenedTreeService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_builds_flat_tree_with_correct_number_of_rows()
     {
         $tree = $this->service->buildFlatTree(opdId: 1);
@@ -95,7 +96,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertCount(4, $tree, 'Should have 4 jabatan rows');
     }
 
-    /** @test */
+    #[Test]
     public function it_assigns_correct_levels()
     {
         $tree = $this->service->buildFlatTree(opdId: 1);
@@ -104,7 +105,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertEquals([1, 2, 3, 4], $levels, 'Levels should be 1,2,3,4 in depth-first order');
     }
 
-    /** @test */
+    #[Test]
     public function it_orders_depth_first()
     {
         $tree = $this->service->buildFlatTree(opdId: 1);
@@ -116,7 +117,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertEquals('Pengelola Keuangan', $names[3]);
     }
 
-    /** @test */
+    #[Test]
     public function it_includes_root_when_requested()
     {
         $tree = $this->service->buildFlatTree(opdId: 1, includeRoot: true);
@@ -127,7 +128,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertEquals(0, $tree[0]['id']);
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_has_children_correctly()
     {
         $tree = $this->service->buildFlatTree(opdId: 1);
@@ -139,7 +140,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertFalse($pelaksana['has_children'], 'Pelaksana should not have children');
     }
 
-    /** @test */
+    #[Test]
     public function it_sets_parent_id_correctly()
     {
         $tree = $this->service->buildFlatTree(opdId: 1);
@@ -150,7 +151,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertEquals(1, $tree[1]['parent_id']);
     }
 
-    /** @test */
+    #[Test]
     public function it_computes_bezetting()
     {
         $tree = $this->service->buildFlatTree(opdId: 1);
@@ -161,7 +162,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertEquals(-2, $pelaksana['selisih']);
     }
 
-    /** @test */
+    #[Test]
     public function it_computes_projections_when_requested()
     {
         $tree = $this->service->buildFlatTree(opdId: 1, withProjections: true);
@@ -176,7 +177,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertGreaterThanOrEqual(2, $pelaksana['kebutuhan_proyeksi'][1]);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_empty_opd()
     {
         $tree = $this->service->buildFlatTree(opdId: 9999);
@@ -185,7 +186,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertCount(0, $tree);
     }
 
-    /** @test */
+    #[Test]
     public function struktural_has_null_kebutuhan_and_selisih()
     {
         $tree = $this->service->buildFlatTree(opdId: 1);
@@ -195,7 +196,7 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertNull($kepala['selisih']);
     }
 
-    /** @test */
+    #[Test]
     public function it_computes_projections_per_jabatan_not_per_opd()
     {
         // Create another jabatan in same OPD with an OLD employee (near retirement)
