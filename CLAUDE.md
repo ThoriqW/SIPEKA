@@ -54,7 +54,7 @@ Tanggal Pensiun = tanggal_lahir + BUP tahun
 
 Bezetting(jabatan) = COUNT(pegawai pada jabatan tsb)   // head count murni
 Selisih(jabatan)   = Bezetting - kebutuhan
-Level(jabatan)     = kedalaman rantai induk_jabatan (0..4); Level 0 = root "Instansi Pemerintah Kota Palu", Level 4 = maksimal (hard constraint)
+Level(jabatan)     = kedalaman rantai induk_jabatan (0..4); Level 0 = root "Pemerintah Kota Palu", Level 4 = maksimal (hard constraint)
 
 Proyeksi pensiun per tahun (berbasis TAHUN BERJALAN / tahun kalender):
   T = YEAR(today())   // tahun berjalan saat ini, mis. 2026
@@ -70,7 +70,7 @@ Proyeksi kebutuhan per tahun:
 
 Level ditentukan oleh `induk_jabatan`. **Maksimal 4 level (hard constraint).** Struktur level di bawah akar root:
 
-- **Root (Level 0)** — **"Instansi Pemerintah Kota Palu"** (baris akar untuk layar Bezetting seluruh OPD)
+- **Root (Level 0)** — **"Pemerintah Kota Palu"** (baris akar untuk layar Bezetting seluruh OPD)
 - **Level 1** — **Kepala OPD** (baris Level 1 dalam tabel pohon = jabatan Kepala OPD per OPD; bukan baris OPD terpisah)
 - **Level 2** — Sekretariat, Bidang & Jabatan Fungsional & Pelaksana
 - **Level 3** — Sub Bagian / Jabatan Fungsional & Pelaksana
@@ -85,7 +85,7 @@ Layar **Kebutuhan** dan **Bezetting** harus tampil sebagai **tabel pohon yang bi
 - **Jabatan:** daftar + CRUD. `kebutuhan` bernilai **1 (tetap)** untuk jabatan **Struktural**; untuk **Fungsional** dan **Pelaksana** diinput manual.
 - **OPD:** daftar + CRUD. Layar OPD menampilkan `nama_opd` dan `kode_opd`, serta **daftar turunan jabatan struktural** (nama jabatan struktural & kode jabatan struktural milik OPD tsb). Daftar ini diturunkan otomatis dari tabel `jabatan` yang `jenis_jabatan = Struktural` dan `opd_id` = OPD ini.
 - **Kebutuhan:** tabel pohon — kolom: No, Jabatan, Kelas, Kebutuhan, Bezetting, Selisih, NIP, Nama, serta Kebutuhan Thn 1–5.
-- **Bezetting:** tabel pohon **seluruh OPD** dalam satu tampilan — akar tree adalah **"Instansi Pemerintah Kota Palu"**, di bawahnya bercabang per OPD (level 1 = Kepala OPD). Kolom: No, Jabatan, Kelas Jabatan, Kebutuhan, Bezetting, Proyeksi (pensiun & kebutuhan Thn 1–5), NIP, Nama.
+- **Bezetting:** tabel pohon **seluruh OPD** dalam satu tampilan — akar tree adalah **"Pemerintah Kota Palu"**, di bawahnya bercabang per OPD (level 1 = Kepala OPD). Kolom: No, Jabatan, Kelas Jabatan, Kebutuhan, Bezetting, Proyeksi (pensiun & kebutuhan Thn 1–5), NIP, Nama.
 
 ## Validasi & Kualitas Data
 

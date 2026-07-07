@@ -124,7 +124,7 @@ class FlattenedTreeServiceTest extends TestCase
 
         $this->assertCount(5, $tree);
         $this->assertEquals(0, $tree[0]['level']);
-        $this->assertEquals('Instansi Pemerintah Kota Palu', $tree[0]['nama_jabatan']);
+        $this->assertEquals('Pemerintah Kota Palu', $tree[0]['nama_jabatan']);
         $this->assertEquals(0, $tree[0]['id']);
     }
 

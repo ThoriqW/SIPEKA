@@ -16,7 +16,7 @@ class FlattenedTreeService
      * Build flat depth-first tree array from jabatan hierarchy.
      *
      * @param int|null $opdId         Filter by OPD (null = all OPDs)
-     * @param bool     $includeRoot   Prepend virtual level-0 root row "Instansi Pemerintah Kota Palu"
+     * @param bool     $includeRoot   Prepend virtual level-0 root row "Pemerintah Kota Palu"
      * @param bool     $withProjections Compute pensiun & kebutuhan proyeksi Thn 1-5 per row
      * @return array   Flat ordered rows with keys: id, parent_id, level, nama_jabatan,
      *                 jenis_jabatan, kelas_jabatan, kebutuhan, bezetting, selisih,
@@ -144,7 +144,7 @@ class FlattenedTreeService
     }
 
     /**
-     * Build the virtual root row (Level 0: "Instansi Pemerintah Kota Palu").
+     * Build the virtual root row (Level 0: "Pemerintah Kota Palu").
      */
     private function makeRootRow(Collection $allJabatan, array $proyeksiPensiunPerJabatan, bool $withProjections): array
     {
@@ -184,7 +184,7 @@ class FlattenedTreeService
             'id'                  => 0,
             'parent_id'           => null,
             'level'               => 0,
-            'nama_jabatan'        => 'Instansi Pemerintah Kota Palu',
+            'nama_jabatan'        => 'Pemerintah Kota Palu',
             'jenis_jabatan'       => null,
             'jenjang'             => null,
             'kelas_jabatan'       => null,

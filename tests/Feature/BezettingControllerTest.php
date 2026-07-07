@@ -26,7 +26,7 @@ class BezettingControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Bezetting');
-        $response->assertSee('Instansi Pemerintah Kota Palu');
+        $response->assertSee('Pemerintah Kota Palu');
     }
 
     #[Test]

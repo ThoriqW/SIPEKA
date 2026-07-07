@@ -36,7 +36,7 @@ class BezettingService
 
     /**
      * Hitung level (kedalaman) jabatan berdasarkan rantai induk_jabatan_id.
-     * Level 0 = root "Instansi Pemerintah Kota Palu" (virtual)
+     * Level 0 = root "Pemerintah Kota Palu" (virtual)
      * Level 1 = Kepala OPD (induk_jabatan_id = null)
      * Level 2-4 = turunan
      */
@@ -68,7 +68,7 @@ class BezettingService
 
     /**
      * Bangun data tree untuk seluruh OPD (untuk layar Bezetting).
-     * Root: "Instansi Pemerintah Kota Palu"
+     * Root: "Pemerintah Kota Palu"
      */
     public function getBezettingSemuaOpd(): array
     {
@@ -82,7 +82,7 @@ class BezettingService
             'id' => 0,
             'parent_id' => null,
             'level' => 0,
-            'nama_jabatan' => 'Instansi Pemerintah Kota Palu',
+            'nama_jabatan' => 'Pemerintah Kota Palu',
             'jenis_jabatan' => null,
             'kelas_jabatan' => null,
             'kebutuhan' => null,

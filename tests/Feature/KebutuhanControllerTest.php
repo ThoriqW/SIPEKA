@@ -27,7 +27,7 @@ class KebutuhanControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Kebutuhan');
-        $response->assertSee('Instansi Pemerintah Kota Palu');
+        $response->assertSee('Pemerintah Kota Palu');
     }
 
     #[Test]
