@@ -79,7 +79,7 @@ class JabatanController extends Controller
         }
 
         if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
-        if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = null;
+        if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
         Jabatan::create($validated);
         return redirect()->route('admin.jabatan.index')->with('success', 'Jabatan berhasil ditambahkan.');
     }
@@ -136,7 +136,7 @@ class JabatanController extends Controller
         }
 
         if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
-        if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = null;
+        if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
         $jabatan->update($validated);
         return redirect()->route('admin.jabatan.index')->with('success', 'Jabatan berhasil diperbarui.');
     }

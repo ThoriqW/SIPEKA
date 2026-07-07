@@ -34,7 +34,7 @@ class FlattenedTreeServiceTest extends TestCase
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'kebutuhan' => null,
+            'kebutuhan' => 1,
             'opd_id' => $opd->id,
             'induk_jabatan_id' => null,
         ]);
@@ -45,7 +45,7 @@ class FlattenedTreeServiceTest extends TestCase
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 13,
             'jenjang' => 'Ahli Madya',
-            'kebutuhan' => null,
+            'kebutuhan' => 1,
             'opd_id' => $opd->id,
             'induk_jabatan_id' => $kepala->id,
         ]);
@@ -56,7 +56,7 @@ class FlattenedTreeServiceTest extends TestCase
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 10,
             'jenjang' => 'Ahli Pertama',
-            'kebutuhan' => null,
+            'kebutuhan' => 1,
             'opd_id' => $opd->id,
             'induk_jabatan_id' => $sekretariat->id,
         ]);
@@ -187,13 +187,13 @@ class FlattenedTreeServiceTest extends TestCase
     }
 
     #[Test]
-    public function struktural_has_null_kebutuhan_and_selisih()
+    public function struktural_has_kebutuhan_one_and_selisih_computed()
     {
         $tree = $this->service->buildFlatTree(opdId: 1);
 
         $kepala = $tree[0]; // Level 1 Kepala = Struktural
-        $this->assertNull($kepala['kebutuhan']);
-        $this->assertNull($kepala['selisih']);
+        $this->assertEquals(1, $kepala['kebutuhan']);
+        $this->assertNotNull($kepala['selisih']);
     }
 
     #[Test]

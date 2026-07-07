@@ -29,7 +29,7 @@ Tabel inti (gunakan migrations untuk semua skema):
 
 - **opd**: `id`, `nama_opd`, `kode_opd`.
 - **pegawai**: `id`, `nama`, `nip` (unik, divalidasi), `jenis_kepegawaian` (PNS | PPPK), `tanggal_lahir`, `golongan_pangkat` (enum I/a … IV/e), `pendidikan` (SD … S3), `jenjang` (Pelaksana, Ahli Pertama, Ahli Muda, Ahli Madya, Ahli Utama, Keterampilan, Guru, Pimpinan Tinggi Pratama), `opd_id` (FK), `jabatan_id` (FK, nullable).
-- **jabatan**: `id`, `nama_jabatan`, `kode_jabatan`, `jenis_jabatan` (Struktural | Fungsional | Pelaksana), `kelas_jabatan` (int), `kebutuhan` (int, **hanya diisi untuk Fungsional & Pelaksana**; NULL untuk Struktural), `opd_id` (FK), `induk_jabatan_id` (self-FK, nullable).
+- **jabatan**: `id`, `nama_jabatan`, `kode_jabatan`, `jenis_jabatan` (Struktural | Fungsional | Pelaksana), `kelas_jabatan` (int), `kebutuhan` (int, diinput manual untuk Fungsional & Pelaksana; **selalu 1** untuk Struktural), `opd_id` (FK), `induk_jabatan_id` (self-FK, nullable).
 - **Tabel pendukung:** users & roles dan tabel audit trail.
 
 **Relasi:**
@@ -82,7 +82,7 @@ Layar **Kebutuhan** dan **Bezetting** harus tampil sebagai **tabel pohon yang bi
 
 - **Dashboard:** total PNS dan total PPPK + grafik komposisi PNS vs PPPK.
 - **Pegawai:** daftar + CRUD identitas pegawai.
-- **Jabatan:** daftar + CRUD. `kebutuhan` hanya berlaku untuk jabatan **Fungsional** dan **Pelaksana** (diinput manual). Jabatan **Struktural** tidak memiliki `kebutuhan` (NULL); kolom Bezetting dan Selisih untuk jabatan struktural tetap ditampilkan berdasarkan data pegawai yang menempati.
+- **Jabatan:** daftar + CRUD. `kebutuhan` bernilai **1 (tetap)** untuk jabatan **Struktural**; untuk **Fungsional** dan **Pelaksana** diinput manual.
 - **OPD:** daftar + CRUD. Layar OPD menampilkan `nama_opd` dan `kode_opd`, serta **daftar turunan jabatan struktural** (nama jabatan struktural & kode jabatan struktural milik OPD tsb). Daftar ini diturunkan otomatis dari tabel `jabatan` yang `jenis_jabatan = Struktural` dan `opd_id` = OPD ini.
 - **Kebutuhan:** tabel pohon — kolom: No, Jabatan, Kelas, Kebutuhan, Bezetting, Selisih, NIP, Nama, serta Kebutuhan Thn 1–5.
 - **Bezetting:** tabel pohon **seluruh OPD** dalam satu tampilan — akar tree adalah **"Instansi Pemerintah Kota Palu"**, di bawahnya bercabang per OPD (level 1 = Kepala OPD). Kolom: No, Jabatan, Kelas Jabatan, Kebutuhan, Bezetting, Proyeksi (pensiun & kebutuhan Thn 1–5), NIP, Nama.

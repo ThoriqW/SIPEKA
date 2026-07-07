@@ -20,7 +20,7 @@ class JabatanSeeder extends Seeder
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'kebutuhan' => null,
+            'kebutuhan' => 1,
             'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => null,
         ]);
@@ -31,7 +31,7 @@ class JabatanSeeder extends Seeder
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 13,
             'jenjang' => 'Administrator',
-            'kebutuhan' => null,
+            'kebutuhan' => 1,
             'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => $kepala_opd1->id,
         ]);
@@ -42,7 +42,7 @@ class JabatanSeeder extends Seeder
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 12,
             'jenjang' => 'Administrator',
-            'kebutuhan' => null,
+            'kebutuhan' => 1,
             'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => $kepala_opd1->id,
         ]);
@@ -53,7 +53,7 @@ class JabatanSeeder extends Seeder
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 10,
             'jenjang' => 'Pengawas',
-            'kebutuhan' => null,
+            'kebutuhan' => 1,
             'opd_id' => $opdDikbud->id,
             'induk_jabatan_id' => $sekretariat->id,
         ]);
@@ -98,7 +98,7 @@ class JabatanSeeder extends Seeder
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'kebutuhan' => null,
+            'kebutuhan' => 1,
             'opd_id' => $opdDinkes->id,
             'induk_jabatan_id' => null,
         ]);
@@ -109,7 +109,7 @@ class JabatanSeeder extends Seeder
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 12,
             'jenjang' => 'Administrator',
-            'kebutuhan' => null,
+            'kebutuhan' => 1,
             'opd_id' => $opdDinkes->id,
             'induk_jabatan_id' => $kepala_opd2->id,
         ]);
