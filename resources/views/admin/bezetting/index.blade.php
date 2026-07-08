@@ -22,8 +22,8 @@
                         <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-14">Kelas</th>
                         <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Keb.</th>
                         <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Bezetting</th>
-                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" colspan="5">Proyeksi Pensiun</th>
-                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" colspan="5">Proyeksi Kebutuhan</th>
+                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-red-50" colspan="5">Proyeksi Pensiun</th>
+                        <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-amber-50" colspan="5">Proyeksi Kebutuhan</th>
                         <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">NIP / Nama</th>
                     </tr>
                     <tr>
@@ -33,10 +33,10 @@
                         <th></th>
                         <th></th>
                         @for($n = 1; $n <= 5; $n++)
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">{{ $tahunLabels[$n] }}</th>
+                        <th class="px-2 py-2 text-center text-xs text-gray-400 bg-red-50">{{ $tahunLabels[$n] }}</th>
                         @endfor
                         @for($n = 1; $n <= 5; $n++)
-                        <th class="px-2 py-2 text-center text-xs text-gray-400">{{ $tahunLabels[$n] }}</th>
+                        <th class="px-2 py-2 text-center text-xs text-gray-400 bg-amber-50">{{ $tahunLabels[$n] }}</th>
                         @endfor
                         <th></th>
                     </tr>
@@ -76,14 +76,14 @@
 
                         {{-- Pensiun Proyeksi Thn 1-5 --}}
                         @for($n = 1; $n <= 5; $n++)
-                        <td class="px-2 py-2 text-sm text-center {{ ($row['pensiun_proyeksi'][$n] ?? 0) > 0 ? 'text-red-600 font-medium' : 'text-gray-400' }}">
+                        <td class="px-2 py-2 text-sm text-center bg-red-50 {{ ($row['pensiun_proyeksi'][$n] ?? 0) > 0 ? 'text-red-600 font-medium' : 'text-gray-400' }}">
                             {{ $row['pensiun_proyeksi'][$n] ?? 0 }}
                         </td>
                         @endfor
 
                         {{-- Kebutuhan Proyeksi Thn 1-5 --}}
                         @for($n = 1; $n <= 5; $n++)
-                        <td class="px-2 py-2 text-sm text-center {{ ($row['kebutuhan_proyeksi'][$n] ?? 0) > 0 ? 'text-orange-600 font-medium' : 'text-gray-400' }}">
+                        <td class="px-2 py-2 text-sm text-center bg-amber-50 {{ ($row['kebutuhan_proyeksi'][$n] ?? 0) > 0 ? 'text-orange-600 font-medium' : 'text-gray-400' }}">
                             {{ $row['kebutuhan_proyeksi'][$n] ?? 0 }}
                         </td>
                         @endfor
