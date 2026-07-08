@@ -29,14 +29,14 @@
                 <a href="{{ route('admin.jabatan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.jabatan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     Jabatan
                 </a>
-                <a href="{{ route('admin.kebutuhan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.kebutuhan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
-                    Kebutuhan
+                <a href="{{ route('admin.pegawai.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.pegawai.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
+                    Pegawai
                 </a>
                 <a href="{{ route('admin.bezetting.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.bezetting.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     Bezetting
                 </a>
-                <a href="{{ route('admin.pegawai.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.pegawai.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
-                    Pegawai
+                <a href="{{ route('admin.kebutuhan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.kebutuhan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
+                    Kebutuhan
                 </a>
             </nav>
             <div class="border-t border-blue-800 p-3">
