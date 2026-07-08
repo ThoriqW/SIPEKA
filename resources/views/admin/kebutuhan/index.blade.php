@@ -5,10 +5,10 @@
     <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div class="sm:flex sm:items-center sm:justify-between mb-6">
             <div>
-                <h1 class="text-2xl font-semibold text-gray-900">Kebutuhan</h1>
-                <p class="text-sm text-gray-500 mt-1">Tabel pohon kebutuhan pegawai per jabatan</p>
+                <h1 class="text-2xl font-semibold text-gray-900">Bezetting</h1>
+                <p class="text-sm text-gray-500 mt-1">Tabel pohon bezetting pegawai per jabatan</p>
             </div>
-            <a href="{{ route('admin.kebutuhan.export', request()->query()) }}" class="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none transition">
+            <a href="{{ route('admin.bezetting.export', request()->query()) }}" class="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none transition">
                 Export Excel
             </a>
         </div>
@@ -39,11 +39,6 @@
                         <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Bezetting</th>
                         <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Selisih</th>
                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">NIP / Nama</th>
-                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $tahunLabels[1] }}</th>
-                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $tahunLabels[2] }}</th>
-                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $tahunLabels[3] }}</th>
-                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $tahunLabels[4] }}</th>
-                        <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ $tahunLabels[5] }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200" x-data="treeData()">
@@ -88,16 +83,11 @@
                             <span class="text-xs text-gray-300">-</span>
                             @endforelse
                         </td>
-                        @for($n = 1; $n <= 5; $n++)
-                        <td class="px-3 py-2 text-sm text-center {{ ($row['kebutuhan_proyeksi'][$n] ?? 0) > 0 ? 'text-orange-600 font-medium' : 'text-gray-500' }}">
-                            {{ $row['kebutuhan_proyeksi'][$n] ?? 0 }}
-                        </td>
-                        @endfor
                     </tr>
                     @endforeach
                     @if(empty($tree))
                     <tr>
-                        <td colspan="12" class="px-6 py-10 text-center text-gray-500">Tidak ada data.</td>
+                        <td colspan="7" class="px-6 py-10 text-center text-gray-500">Tidak ada data.</td>
                     </tr>
                     @endif
                 </tbody>

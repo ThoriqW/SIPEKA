@@ -55,19 +55,6 @@ class KebutuhanControllerTest extends TestCase
     }
 
     #[Test]
-    public function bkd_can_filter_by_opd()
-    {
-        $user = User::where('role', 'bkd')->first();
-
-        // Filter to OPD 2 (Dinkes)
-        $response = $this->actingAs($user)->get(route('admin.kebutuhan.index', ['opd_id' => 2]));
-
-        $response->assertStatus(200);
-        $response->assertSee('Kepala Dinas Kesehatan');
-        $response->assertDontSee('Kepala Dinas Pendidikan');
-    }
-
-    #[Test]
     public function bkd_can_export_kebutuhan_excel()
     {
         $user = User::where('role', 'bkd')->first();
@@ -110,23 +97,25 @@ class KebutuhanControllerTest extends TestCase
     }
 
     #[Test]
-    public function kebutuhan_shows_opd_filter_for_bkd()
+    public function kebutuhan_shows_pensiun_and_kebutuhan_projections()
     {
         $user = User::where('role', 'bkd')->first();
 
         $response = $this->actingAs($user)->get(route('admin.kebutuhan.index'));
 
-        $response->assertSee('Filter OPD');
-        $response->assertSee('Semua OPD');
+        // Kebutuhan menampilkan proyeksi pensiun dan kebutuhan
+        $response->assertSee('Proyeksi Pensiun');
+        $response->assertSee('Proyeksi Kebutuhan');
     }
 
     #[Test]
-    public function kebutuhan_does_not_show_opd_filter_for_admin_opd()
+    public function kebutuhan_does_not_show_opd_filter()
     {
-        $user = User::where('role', 'admin_opd')->first();
+        $user = User::where('role', 'bkd')->first();
 
         $response = $this->actingAs($user)->get(route('admin.kebutuhan.index'));
 
+        // Kebutuhan tidak menampilkan filter OPD (menampilkan seluruh OPD)
         $response->assertDontSee('Filter OPD');
     }
 }

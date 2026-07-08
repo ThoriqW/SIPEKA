@@ -94,14 +94,39 @@ class BezettingControllerTest extends TestCase
     }
 
     #[Test]
-    public function bezetting_shows_pensiun_and_kebutuhan_projections()
+    public function bezetting_does_not_show_projections()
     {
         $user = User::where('role', 'bkd')->first();
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
 
-        $response->assertSee('Proyeksi Pensiun');
-        $response->assertSee('Proyeksi Kebutuhan');
+        // Bezetting tidak lagi menampilkan kolom proyeksi (pindah ke Kebutuhan)
+        $response->assertDontSee('Proyeksi Pensiun');
+        $response->assertDontSee('Proyeksi Kebutuhan');
+    }
+
+    #[Test]
+    public function bezetting_shows_opd_filter_for_bkd()
+    {
+        $user = User::where('role', 'bkd')->first();
+
+        $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
+
+        $response->assertSee('Filter OPD');
+        $response->assertSee('Semua OPD');
+    }
+
+    #[Test]
+    public function bkd_can_filter_bezetting_by_opd()
+    {
+        $user = User::where('role', 'bkd')->first();
+
+        // Filter to OPD 2 (Dinkes)
+        $response = $this->actingAs($user)->get(route('admin.bezetting.index', ['opd_id' => 2]));
+
+        $response->assertStatus(200);
+        $response->assertSee('Kepala Dinas Kesehatan');
+        $response->assertDontSee('Kepala Dinas Pendidikan');
     }
 
     #[Test]

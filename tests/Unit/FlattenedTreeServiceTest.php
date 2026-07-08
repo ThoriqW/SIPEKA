@@ -172,9 +172,9 @@ class FlattenedTreeServiceTest extends TestCase
         $this->assertArrayHasKey('pensiun_proyeksi', $pelaksana);
         $this->assertCount(5, $pelaksana['kebutuhan_proyeksi']);
 
-        // Kebutuhan=3, Bezetting=1 → shortfall=2
-        // Kebutuhan Thn 1 = max(3-1, 0) + Pensiun Thn 1 = 2 + Pensiun Thn 1
-        $this->assertGreaterThanOrEqual(2, $pelaksana['kebutuhan_proyeksi'][1]);
+        // Kebutuhan=3, Bezetting=1 → pegawai lahir 1990 pensiun 2048 → di luar 5 tahun proyeksi
+        // Kebutuhan Thn 1 = Pensiun Thn 1 (hanya dari pegawai pensiun, tanpa selisih) = 0
+        $this->assertEquals(0, $pelaksana['kebutuhan_proyeksi'][1], 'No shortfall added; only retiring employees count');
     }
 
     #[Test]

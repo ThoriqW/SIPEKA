@@ -16,7 +16,8 @@ class BezettingController extends Controller
     ) {}
 
     /**
-     * Tampilkan tabel pohon Bezetting seluruh OPD.
+     * Tampilkan tabel pohon Kebutuhan (sebelumnya Bezetting).
+     * Dengan proyeksi pensiun & kebutuhan 5 tahun, hanya pegawai pensiun.
      */
     public function index()
     {
@@ -42,7 +43,7 @@ class BezettingController extends Controller
     }
 
     /**
-     * Export Bezetting ke Excel.
+     * Export Kebutuhan ke Excel.
      */
     public function export()
     {
@@ -66,7 +67,7 @@ class BezettingController extends Controller
 
         return Excel::download(
             new BezettingExport($tree, $tahunLabels),
-            'bezetting-' . date('Y-m-d') . '.xlsx'
+            'kebutuhan-' . date('Y-m-d') . '.xlsx'
         );
     }
 }

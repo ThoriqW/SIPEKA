@@ -23,11 +23,6 @@ class KebutuhanExport implements FromArray, WithHeadings, WithStyles
                 $row['selisih'] ?? '',
                 $row['pegawai'] ? implode(', ', array_column($row['pegawai'], 'nip')) : '',
                 $row['pegawai'] ? implode(', ', array_column($row['pegawai'], 'nama')) : '',
-                $row['kebutuhan_proyeksi'][1] ?? 0,
-                $row['kebutuhan_proyeksi'][2] ?? 0,
-                $row['kebutuhan_proyeksi'][3] ?? 0,
-                $row['kebutuhan_proyeksi'][4] ?? 0,
-                $row['kebutuhan_proyeksi'][5] ?? 0,
             ];
         }, $this->tree);
     }
@@ -42,11 +37,6 @@ class KebutuhanExport implements FromArray, WithHeadings, WithStyles
             'Selisih',
             'NIP',
             'Nama',
-            $this->tahunLabels[1],
-            $this->tahunLabels[2],
-            $this->tahunLabels[3],
-            $this->tahunLabels[4],
-            $this->tahunLabels[5],
         ];
     }
 

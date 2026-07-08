@@ -10,6 +10,7 @@ class FlattenedTreeService
 {
     public function __construct(
         private ProjectionService $projectionService,
+        private BupCalculator $bupCalculator,
     ) {}
 
     /**
@@ -92,6 +93,27 @@ class FlattenedTreeService
         $selisih = $kebutuhan !== null ? $bezetting - $kebutuhan : null;
         $jabatanPensiun = $proyeksiPensiunPerJabatan[$jabatan->id] ?? [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
 
+        // Hitung pegawai yang pensiun dalam 5 tahun ke depan
+        $t = (int) date('Y');
+        $pegawaiPensiun = [];
+        if ($withProjections) {
+            foreach ($jabatan->pegawai as $p) {
+                $tglPensiun = $this->bupCalculator->hitungTanggalPensiun(
+                    $p->tanggal_lahir,
+                    $p->jenjang,
+                    $p->jenis_kepegawaian
+                );
+                $tahunPensiun = (int) $tglPensiun->format('Y');
+                if ($tahunPensiun >= $t && $tahunPensiun <= $t + 4) {
+                    $pegawaiPensiun[] = [
+                        'nip' => $p->nip,
+                        'nama' => $p->nama,
+                        'tahun_pensiun' => $tahunPensiun,
+                    ];
+                }
+            }
+        }
+
         $row = [
             'id'              => $jabatan->id,
             'parent_id'       => $parentId,
@@ -111,13 +133,13 @@ class FlattenedTreeService
             'opd_id'          => $jabatan->opd_id,
             'kebutuhan_proyeksi' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
             'pensiun_proyeksi'   => $jabatanPensiun,
+            'pegawai_pensiun'    => $pegawaiPensiun,
         ];
 
         if ($withProjections && $kebutuhan !== null) {
-            // Kebutuhan Thn 1 = max(kebutuhan - bezetting, 0) + Pensiun Thn 1
-            // Kebutuhan Thn 2-5 = Pensiun Thn N (per jabatan)
+            // Kebutuhan Thn 1..5 = Pensiun Thn N (hanya dari pegawai pensiun, tanpa selisih)
             $row['kebutuhan_proyeksi'] = [
-                1 => max($kebutuhan - $bezetting, 0) + ($jabatanPensiun[1] ?? 0),
+                1 => $jabatanPensiun[1] ?? 0,
                 2 => $jabatanPensiun[2] ?? 0,
                 3 => $jabatanPensiun[3] ?? 0,
                 4 => $jabatanPensiun[4] ?? 0,
@@ -158,16 +180,8 @@ class FlattenedTreeService
                     $totalPensiun[$n] += $years[$n] ?? 0;
                 }
             }
-            // Kebutuhan Thn 1 = SUM(max(kebutuhan - bezetting, 0)) + total Pensiun Thn 1
-            $totalShortfall = 0;
-            foreach ($allJabatan as $j) {
-                if ($j->kebutuhan !== null) {
-                    $bez = $j->pegawai->count();
-                    $totalShortfall += max($j->kebutuhan - $bez, 0);
-                }
-            }
-            $totalKebutuhan[1] = $totalShortfall + $totalPensiun[1];
-            for ($n = 2; $n <= 5; $n++) {
+            // Kebutuhan Thn 1..5 = Pensiun Thn N (hanya dari pegawai pensiun, tanpa selisih)
+            for ($n = 1; $n <= 5; $n++) {
                 $totalKebutuhan[$n] = $totalPensiun[$n];
             }
         }
@@ -192,6 +206,7 @@ class FlattenedTreeService
             'bezetting'           => $totalBezetting,
             'selisih'             => $totalBezetting - $totalKebutuhanCount,
             'pegawai'             => [],
+            'pegawai_pensiun'     => [],
             'has_children'        => true,
             'opd_id'              => null,
             'kebutuhan_proyeksi'  => $totalKebutuhan,

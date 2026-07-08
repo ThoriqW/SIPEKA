@@ -35,13 +35,15 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('jabatan', \App\Http\Controllers\Admin\JabatanController::class);
 
     // Kebutuhan & Bezetting (tree table views)
-    Route::get('kebutuhan', [\App\Http\Controllers\Admin\KebutuhanController::class, 'index'])
+    // Route 'kebutuhan' → BezettingController menangani halaman Kebutuhan (dengan proyeksi)
+    Route::get('kebutuhan', [\App\Http\Controllers\Admin\BezettingController::class, 'index'])
         ->name('kebutuhan.index');
-    Route::get('kebutuhan/export', [\App\Http\Controllers\Admin\KebutuhanController::class, 'export'])
+    Route::get('kebutuhan/export', [\App\Http\Controllers\Admin\BezettingController::class, 'export'])
         ->name('kebutuhan.export');
-    Route::get('bezetting', [\App\Http\Controllers\Admin\BezettingController::class, 'index'])
+    // Route 'bezetting' → KebutuhanController menangani halaman Bezetting (tanpa proyeksi)
+    Route::get('bezetting', [\App\Http\Controllers\Admin\KebutuhanController::class, 'index'])
         ->name('bezetting.index');
-    Route::get('bezetting/export', [\App\Http\Controllers\Admin\BezettingController::class, 'export'])
+    Route::get('bezetting/export', [\App\Http\Controllers\Admin\KebutuhanController::class, 'export'])
         ->name('bezetting.export');
 });
 

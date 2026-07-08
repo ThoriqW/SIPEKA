@@ -30,8 +30,8 @@ class BezettingExport implements FromArray, WithHeadings, WithStyles
                 $row['kebutuhan_proyeksi'][3] ?? 0,
                 $row['kebutuhan_proyeksi'][4] ?? 0,
                 $row['kebutuhan_proyeksi'][5] ?? 0,
-                $row['pegawai'] ? implode(', ', array_column($row['pegawai'], 'nip')) : '',
-                $row['pegawai'] ? implode(', ', array_column($row['pegawai'], 'nama')) : '',
+                $row['pegawai_pensiun'] ? implode(', ', array_column($row['pegawai_pensiun'], 'nip')) : '',
+                $row['pegawai_pensiun'] ? implode(', ', array_column($row['pegawai_pensiun'], 'nama')) : '',
             ];
         }, $this->tree);
     }

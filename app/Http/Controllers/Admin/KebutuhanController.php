@@ -6,7 +6,6 @@ use App\Exports\KebutuhanExport;
 use App\Http\Controllers\Controller;
 use App\Models\Opd;
 use App\Services\FlattenedTreeService;
-use App\Services\ProjectionService;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -14,11 +13,11 @@ class KebutuhanController extends Controller
 {
     public function __construct(
         private FlattenedTreeService $flattenedTreeService,
-        private ProjectionService $projectionService,
     ) {}
 
     /**
-     * Tampilkan tabel pohon Kebutuhan.
+     * Tampilkan tabel pohon Bezetting (sebelumnya Kebutuhan).
+     * Tanpa proyeksi tahun — hanya data saat ini.
      */
     public function index(Request $request)
     {
@@ -29,7 +28,7 @@ class KebutuhanController extends Controller
             $tree = $this->flattenedTreeService->buildFlatTree(
                 opdId: $opdId,
                 includeRoot: true,
-                withProjections: true,
+                withProjections: false,
             );
             $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
         } else {
@@ -37,18 +36,16 @@ class KebutuhanController extends Controller
             $tree = $this->flattenedTreeService->buildFlatTree(
                 opdId: $opdId,
                 includeRoot: false,
-                withProjections: true,
+                withProjections: false,
             );
             $opdList = collect();
         }
 
-        $tahunLabels = $this->projectionService->getTahunLabels();
-
-        return view('admin.kebutuhan.index', compact('tree', 'opdList', 'tahunLabels'));
+        return view('admin.kebutuhan.index', compact('tree', 'opdList'));
     }
 
     /**
-     * Export Kebutuhan ke Excel.
+     * Export Bezetting ke Excel.
      */
     public function export(Request $request)
     {
@@ -59,21 +56,19 @@ class KebutuhanController extends Controller
             $tree = $this->flattenedTreeService->buildFlatTree(
                 opdId: $opdId,
                 includeRoot: true,
-                withProjections: true,
+                withProjections: false,
             );
         } else {
             $tree = $this->flattenedTreeService->buildFlatTree(
                 opdId: $user->opd_id,
                 includeRoot: false,
-                withProjections: true,
+                withProjections: false,
             );
         }
 
-        $tahunLabels = $this->projectionService->getTahunLabels();
-
         return Excel::download(
-            new KebutuhanExport($tree, $tahunLabels),
-            'kebutuhan-' . date('Y-m-d') . '.xlsx'
+            new KebutuhanExport($tree, []),
+            'bezetting-' . date('Y-m-d') . '.xlsx'
         );
     }
 }
