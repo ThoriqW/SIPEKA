@@ -51,12 +51,6 @@
                         </select>
                         @error('pendidikan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
-                    <div x-show="opdSelected">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
-                        <input type="hidden" name="jenjang" x-ref="jenjangInput">
-                        <p x-ref="jenjangDisplay" class="w-full rounded-md bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-700">-- Pilih jabatan --</p>
-                        @error('jenjang')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                    </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
                         <select name="opd_id" x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
@@ -120,12 +114,7 @@ function pegawaiForm() {
                 .catch(function() {
                     select.innerHTML = '<option value="">-- Gagal memuat --</option>';
                 });
-            select.onchange = function() {
-                var selected = select.options[select.selectedIndex];
-                var jenjang = selected ? selected.getAttribute('data-jenjang') : '';
-                this.$refs.jenjangInput.value = jenjang;
-                this.$refs.jenjangDisplay.textContent = jenjang || '-- Pilih jabatan --';
-            }.bind(this);
+            select.onchange = null;
         }
     }
 }

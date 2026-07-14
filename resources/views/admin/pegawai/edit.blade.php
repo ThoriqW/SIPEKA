@@ -46,11 +46,6 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
-                        <input type="hidden" name="jenjang" x-ref="jenjangInput" value="{{ $pegawai->jenjang }}">
-                        <p x-ref="jenjangDisplay" class="w-full rounded-md bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-700">{{ $pegawai->jenjang ?: '-- Pilih jabatan --' }}</p>
-                    </div>
-                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
                         <select name="opd_id" x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id', $pegawai->opd_id) == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
@@ -109,24 +104,12 @@ function pegawaiForm() {
                             if (j.id == currentJabatanId) opt.selected = true;
                             select.appendChild(opt);
                         });
-                        // Set initial jenjang display from selected option
-                        var sel = select.options[select.selectedIndex];
-                        if (sel) {
-                            var jj = sel.getAttribute('data-jenjang') || '';
-                            this.$refs.jenjangInput.value = jj;
-                            this.$refs.jenjangDisplay.textContent = jj || '-- Pilih jabatan --';
-                        }
                     }
                 }.bind(this))
                 .catch(function() {
                     select.innerHTML = '<option value="">-- Gagal memuat --</option>';
                 });
-            select.onchange = function() {
-                var selected = select.options[select.selectedIndex];
-                var jenjang = selected ? selected.getAttribute('data-jenjang') : '';
-                this.$refs.jenjangInput.value = jenjang;
-                this.$refs.jenjangDisplay.textContent = jenjang || '-- Pilih jabatan --';
-            }.bind(this);
+            select.onchange = null;
         }
     }
 }
