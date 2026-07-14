@@ -18,8 +18,10 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kode Jabatan</label>
-                        <input type="text" name="kode_jabatan" value="{{ old('kode_jabatan') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kode_jabatan') border-red-500 @enderror">
-                        @error('kode_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        <div class="w-full rounded-md bg-gray-50 border border-gray-200 px-3 py-2 text-sm text-gray-500" x-ref="kodePreview">
+                            <span x-text="kodePreviewText || '[ akan digenerate otomatis ]'"></span>
+                        </div>
+                        <p class="mt-1 text-xs text-gray-400">Kode jabatan akan dibuat otomatis berdasarkan OPD dan jenis jabatan.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Jabatan</label>
@@ -77,8 +79,10 @@ function jabatanForm() {
     var options = {!! $jenjangOptions !!};
     var indukByOpd = {!! $indukByOpd !!};
     var selectedInduk = '{{ old('induk_jabatan_id', '') }}';
+    var opdKodeMap = {!! $opdKodeMap !!};
     return {
         selectedJenis: '',
+        kodePreviewText: '',
         onJenisChange(jenis) {
             this.selectedJenis = jenis;
             var select = this.$refs.jenjangSelect;
@@ -91,6 +95,7 @@ function jabatanForm() {
                 opt.textContent = label;
                 select.appendChild(opt);
             });
+            this.updateKodePreview();
         },
         filterInduk(opdId) {
             var select = this.$refs.indukSelect;
@@ -103,11 +108,24 @@ function jabatanForm() {
                 if (String(item.id) === String(selectedInduk)) opt.selected = true;
                 select.appendChild(opt);
             });
+            this.updateKodePreview();
         },
         initInduk() {
             var opdSelect = this.$el.querySelector('[name="opd_id"]');
             if (opdSelect && opdSelect.value) {
                 this.filterInduk(opdSelect.value);
+            }
+        },
+        updateKodePreview() {
+            var opdSelect = this.$el.querySelector('[name="opd_id"]');
+            var opdId = opdSelect ? opdSelect.value : '';
+            var jenis = this.selectedJenis;
+            if (opdId && jenis) {
+                var kodeOpd = opdKodeMap[opdId] || '';
+                var singkatan = {'Struktural': 'STR', 'Fungsional': 'FNG', 'Pelaksana': 'PLK'}[jenis] || 'XXX';
+                this.kodePreviewText = kodeOpd + '-' + singkatan + '-[auto]';
+            } else {
+                this.kodePreviewText = '';
             }
         }
     }

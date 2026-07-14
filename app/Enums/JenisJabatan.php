@@ -15,4 +15,16 @@ enum JenisJabatan: string
             array_column(self::cases(), 'value')
         );
     }
+
+    /**
+     * Singkatan untuk digunakan dalam kode jabatan auto-generated.
+     */
+    public function singkatan(): string
+    {
+        return match($this) {
+            self::Struktural => 'STR',
+            self::Fungsional => 'FNG',
+            self::Pelaksana  => 'PLK',
+        };
+    }
 }

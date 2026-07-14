@@ -7,6 +7,7 @@ use App\Models\Jabatan;
 use App\Models\Opd;
 use App\Enums\Jenjang;
 use App\Enums\JenisJabatan;
+use App\Services\KodeJabatanGenerator;
 use Illuminate\Http\Request;
 
 class JabatanController extends Controller
@@ -48,6 +49,7 @@ class JabatanController extends Controller
             'opdList' => $opdList,
             'indukList' => $indukList,
             'indukByOpd' => json_encode($indukByOpd),
+            'opdKodeMap' => json_encode(Opd::pluck('kode_opd', 'id')->toArray()),
             'jenisJabatanList' => JenisJabatan::labels(),
             'jenjangOptions' => json_encode([
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),
@@ -61,7 +63,6 @@ class JabatanController extends Controller
     {
         $validated = $request->validate([
             'nama_jabatan' => 'required|string|max:255',
-            'kode_jabatan' => 'required|string|max:50|unique:jabatan,kode_jabatan',
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'required|string|max:255',
@@ -80,6 +81,14 @@ class JabatanController extends Controller
 
         if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
+
+        // Auto-generate kode_jabatan
+        $opd = Opd::findOrFail($validated['opd_id']);
+        $validated['kode_jabatan'] = app(KodeJabatanGenerator::class)->generate(
+            $opd->kode_opd,
+            $validated['jenis_jabatan']
+        );
+
         Jabatan::create($validated);
         return redirect()->route('admin.jabatan.index')->with('success', 'Jabatan berhasil ditambahkan.');
     }
@@ -119,7 +128,6 @@ class JabatanController extends Controller
     {
         $validated = $request->validate([
             'nama_jabatan' => 'required|string|max:255',
-            'kode_jabatan' => 'required|string|max:50|unique:jabatan,kode_jabatan,' . $jabatan->id,
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'required|string|max:255',
@@ -137,6 +145,10 @@ class JabatanController extends Controller
 
         if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
+
+        // Pastikan kode_jabatan tidak dapat diubah
+        unset($validated['kode_jabatan']);
+
         $jabatan->update($validated);
         return redirect()->route('admin.jabatan.index')->with('success', 'Jabatan berhasil diperbarui.');
     }

@@ -18,7 +18,8 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kode Jabatan</label>
-                        <input type="text" name="kode_jabatan" value="{{ old('kode_jabatan', $jabatan->kode_jabatan) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kode_jabatan') border-red-500 @enderror">
+                        <input type="text" value="{{ $jabatan->kode_jabatan }}" readonly class="w-full rounded-md bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed">
+                        <p class="mt-1 text-xs text-gray-400">Kode jabatan tidak dapat diubah setelah dibuat.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Jabatan</label>
