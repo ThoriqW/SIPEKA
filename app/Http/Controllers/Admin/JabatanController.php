@@ -49,7 +49,6 @@ class JabatanController extends Controller
             'opdList' => $opdList,
             'indukList' => $indukList,
             'indukByOpd' => json_encode($indukByOpd),
-            'opdKodeMap' => json_encode(Opd::pluck('kode_opd', 'id')->toArray()),
             'jenisJabatanList' => JenisJabatan::labels(),
             'jenjangOptions' => json_encode([
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),
