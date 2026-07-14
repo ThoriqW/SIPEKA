@@ -29,7 +29,7 @@
                         <input type="number" name="kelas_jabatan" value="{{ old('kelas_jabatan') }}" min="1" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kelas_jabatan') border-red-500 @enderror">
                         @error('kelas_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
-                    <div>
+                    <div x-show="selectedJenis !== 'Pelaksana'">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
                         <select name="jenjang" x-ref="jenjangSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenjang') border-red-500 @enderror">
                             <option value="">-- Pilih Jenis Jabatan dulu --</option>

@@ -64,7 +64,7 @@ class JabatanController extends Controller
             'nama_jabatan' => 'required|string|max:255',
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
-            'jenjang' => 'required|string|max:255',
+            'jenjang' => 'nullable|string|max:255',
             'kebutuhan' => 'required_if:jenis_jabatan,Fungsional,Pelaksana|integer|min:0|nullable',
             'opd_id' => 'required|exists:opd,id',
             'induk_jabatan_id' => 'nullable|exists:jabatan,id',
@@ -80,6 +80,7 @@ class JabatanController extends Controller
 
         if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
+        if ($validated['jenis_jabatan'] === 'Pelaksana') $validated['jenjang'] = 'Pelaksana';
 
         // Auto-generate kode_jabatan
         $opd = Opd::findOrFail($validated['opd_id']);
@@ -129,7 +130,7 @@ class JabatanController extends Controller
             'nama_jabatan' => 'required|string|max:255',
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
-            'jenjang' => 'required|string|max:255',
+            'jenjang' => 'nullable|string|max:255',
             'kebutuhan' => 'required_if:jenis_jabatan,Fungsional,Pelaksana|integer|min:0|nullable',
             'opd_id' => 'required|exists:opd,id',
             'induk_jabatan_id' => 'nullable|exists:jabatan,id',
@@ -144,6 +145,7 @@ class JabatanController extends Controller
 
         if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
+        if ($validated['jenis_jabatan'] === 'Pelaksana') $validated['jenjang'] = 'Pelaksana';
 
         // Pastikan kode_jabatan tidak dapat diubah
         unset($validated['kode_jabatan']);
