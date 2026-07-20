@@ -40,8 +40,8 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium text-gray-500">{{ auth()->user()->isBkd() ? 'Total OPD' : 'Jabatan' }}</p>
-                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ number_format(auth()->user()->isBkd() ? ($totalOpd ?? 0) : ($jabatanCount ?? 0)) }}</p>
+                        <p class="text-sm font-medium text-gray-500">Total OPD</p>
+                        <p class="text-3xl font-bold text-gray-900 mt-1">{{ number_format($totalOpd ?? 0) }}</p>
                     </div>
                     <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">O</div>
                 </div>

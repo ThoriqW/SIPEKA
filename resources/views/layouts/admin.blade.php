@@ -60,7 +60,7 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="bg-white shadow-sm border-b border-gray-200">
                 <div class="flex items-center justify-between h-16 px-6">
-                    <h2 class="text-lg font-semibold text-gray-800">SIPEKA - Sistem Perencanaan Kebutuhan Kota Palu</h2>
+                    <h2 class="text-lg font-semibold text-gray-800">SIPEKA - Sistem Perencanaan Kebutuhan ASN Kota Palu</h2>
                 </div>
             </header>
             <main class="flex-1 overflow-y-auto bg-gray-100">
