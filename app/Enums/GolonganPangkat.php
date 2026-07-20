@@ -29,4 +29,16 @@ enum GolonganPangkat: string
             array_column(self::cases(), 'value')
         );
     }
+
+    public static function pppkLabels(): array
+    {
+        return [
+            'I' => 'I',
+            'III' => 'III',
+            'V' => 'V',
+            'VII' => 'VII',
+            'IX' => 'IX',
+            'X' => 'X',
+        ];
+    }
 }

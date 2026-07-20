@@ -7,7 +7,7 @@
             <h1 class="text-2xl font-semibold text-gray-900">Tambah Pegawai</h1>
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.pegawai.index') }}" class="hover:text-gray-700">Pegawai</a> / Tambah</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()" x-init="initGolongan('{{ old('jenis_kepegawaian', '') }}')">
             <form action="{{ route('admin.pegawai.store') }}" method="POST">
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -24,7 +24,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kepegawaian</label>
-                        <select name="jenis_kepegawaian" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <select name="jenis_kepegawaian" x-on:change="onJenisKepegawaianChange($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Pilih --</option>
                             @foreach($jenisKepegawaianList as $val => $label)<option value="{{ $val }}" {{ old('jenis_kepegawaian') == $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach
                         </select>
@@ -39,7 +39,6 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Golongan/Pangkat</label>
                         <select name="golongan_pangkat" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Pilih --</option>
-                            @foreach($golonganPangkatList as $val => $label)<option value="{{ $val }}" {{ old('golongan_pangkat') == $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach
                         </select>
                         @error('golongan_pangkat')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
@@ -80,8 +79,26 @@
 @section('scripts')
 <script>
 function pegawaiForm() {
+    var golonganPNS = {!! json_encode($golonganPangkatList) !!};
+    var golonganPPPK = {!! json_encode($pppkGolonganList) !!};
     return {
         opdSelected: false,
+        initGolongan(jenis) {
+            this.onJenisKepegawaianChange(jenis || 'PNS', '{{ old('golongan_pangkat', '') }}');
+        },
+        onJenisKepegawaianChange(jenis, preSelect) {
+            var list = jenis === 'PPPK' ? golonganPPPK : golonganPNS;
+            var select = document.querySelector('[name="golongan_pangkat"]');
+            select.innerHTML = '<option value="">-- Pilih --</option>';
+            Object.entries(list).forEach(function(_a) {
+                var val = _a[0], label = _a[1];
+                var opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = label;
+                if (preSelect && val === preSelect) opt.selected = true;
+                select.appendChild(opt);
+            });
+        },
         loadJabatan(opdId) {
             this.opdSelected = !!opdId;
             var select = this.$refs.jabatanSelect;

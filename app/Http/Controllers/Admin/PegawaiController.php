@@ -35,6 +35,7 @@ class PegawaiController extends Controller
         return view('admin.pegawai.create', [
             'opdList' => $opdList,
             'golonganPangkatList' => GolonganPangkat::labels(),
+            'pppkGolonganList' => GolonganPangkat::pppkLabels(),
             'jenisKepegawaianList' => JenisKepegawaian::labels(),
             'pendidikanList' => Pendidikan::labels(),
         ]);
@@ -76,6 +77,7 @@ class PegawaiController extends Controller
             'pegawai' => $pegawai,
             'opdList' => $opdList,
             'golonganPangkatList' => GolonganPangkat::labels(),
+            'pppkGolonganList' => GolonganPangkat::pppkLabels(),
             'jenisKepegawaianList' => JenisKepegawaian::labels(),
             'pendidikanList' => Pendidikan::labels(),
         ]);
