@@ -35,7 +35,7 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Jabatan</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi Induk</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPD</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kelas</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenjang</th>
@@ -55,7 +55,13 @@
                             <td class="px-4 py-4 text-sm text-gray-500 text-center">{{ $j->kelas_jabatan }}</td>
                             <td class="px-4 py-4 text-sm text-gray-500">{{ $j->jenjang ?? '-' }}</td>
                             <td class="px-4 py-4 text-sm text-gray-500 text-center">{{ $j->kebutuhan ?? '-' }}</td>
-                            <td class="px-4 py-4 text-sm text-gray-500">{{ $j->induk->nama_jabatan ?? '-' }}</td>
+                            <td class="px-4 py-4 text-sm text-gray-500">
+                                @if($j->jenis_jabatan === 'Struktural' && $j->jenjang === 'Pimpinan Tinggi Pratama')
+                                    {{ $j->opd->nama_opd ?? '-' }}
+                                @else
+                                    {{ $j->induk->nama_jabatan ?? '-' }}
+                                @endif
+                            </td>
                             <td class="px-4 py-4 text-sm text-center">
                                 <a href="{{ route('admin.jabatan.edit', $j) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">Edit</a>
                                 <form action="{{ route('admin.jabatan.destroy', $j) }}" method="POST" class="inline" onsubmit="return confirm('Hapus jabatan ini?')">

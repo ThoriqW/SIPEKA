@@ -31,7 +31,7 @@
                     </div>
                     <div x-show="selectedJenis !== 'Pelaksana'">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
-                        <select name="jenjang" x-ref="jenjangSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenjang') border-red-500 @enderror">
+                        <select name="jenjang" x-ref="jenjangSelect" x-on:change="selectedJenjang = $el.value" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenjang') border-red-500 @enderror">
                             <option value="">-- Pilih Jenis Jabatan dulu --</option>
                         </select>
                         @error('jenjang')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -42,14 +42,14 @@
                         @error('kebutuhan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
                         <select name="opd_id" x-on:change="filterInduk($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
                             <option value="">-- Pilih --</option>
                             @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
                         @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
-                    <div>
+                    <div x-show="!(selectedJenis === 'Struktural' && selectedJenjang === 'Pimpinan Tinggi Pratama')">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
                         <select name="induk_jabatan_id" x-ref="indukSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Tidak Ada --</option>
@@ -74,7 +74,9 @@ function jabatanForm() {
     var selectedInduk = '{{ old('induk_jabatan_id', '') }}';
     return {
         selectedJenis: '',
+        selectedJenjang: '',
         onJenisChange(jenis) {
+            this.selectedJenjang = '';
             this.selectedJenis = jenis;
             var select = this.$refs.jenjangSelect;
             select.innerHTML = '<option value="">-- Pilih Jenjang --</option>';
