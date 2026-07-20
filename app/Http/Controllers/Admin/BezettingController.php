@@ -21,21 +21,11 @@ class BezettingController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
-
-        if ($user->isBkd()) {
-            $tree = $this->flattenedTreeService->buildFlatTree(
-                opdId: null,
-                includeRoot: true,
-                withProjections: true,
-            );
-        } else {
-            $tree = $this->flattenedTreeService->buildFlatTree(
-                opdId: $user->opd_id,
-                includeRoot: false,
-                withProjections: true,
-            );
-        }
+        $tree = $this->flattenedTreeService->buildFlatTree(
+            opdId: null,
+            includeRoot: true,
+            withProjections: true,
+        );
 
         $tahunLabels = $this->projectionService->getTahunLabels();
 
@@ -47,21 +37,11 @@ class BezettingController extends Controller
      */
     public function export()
     {
-        $user = auth()->user();
-
-        if ($user->isBkd()) {
-            $tree = $this->flattenedTreeService->buildFlatTree(
-                opdId: null,
-                includeRoot: true,
-                withProjections: true,
-            );
-        } else {
-            $tree = $this->flattenedTreeService->buildFlatTree(
-                opdId: $user->opd_id,
-                includeRoot: false,
-                withProjections: true,
-            );
-        }
+        $tree = $this->flattenedTreeService->buildFlatTree(
+            opdId: null,
+            includeRoot: true,
+            withProjections: true,
+        );
 
         $tahunLabels = $this->projectionService->getTahunLabels();
 

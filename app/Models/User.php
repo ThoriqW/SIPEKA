@@ -20,10 +20,11 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'nip',
         'email',
         'password',
         'role',
-        'opd_id',
+        'is_active',
     ];
 
     /**
@@ -44,18 +45,32 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
-    public function opd(): BelongsTo
+    /**
+     * Relasi ke Pegawai melalui NIP.
+     */
+    public function pegawai(): BelongsTo
     {
-        return $this->belongsTo(Opd::class);
+        return $this->belongsTo(Pegawai::class, 'nip', 'nip');
     }
 
+    /**
+     * Cek apakah user adalah super admin (BKD).
+     */
     public function isBkd(): bool
     {
         return $this->role === 'bkd';
+    }
+
+    /**
+     * Cek apakah user masih aktif.
+     */
+    public function isActive(): bool
+    {
+        return $this->is_active;
     }
 }

@@ -21,9 +21,12 @@
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('dashboard') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     Dashboard
                 </a>
-                @if(auth()->user()->isBkd())
                 <a href="{{ route('admin.opd.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.opd.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     OPD
+                </a>
+                @if(auth()->user()->isBkd())
+                <a href="{{ route('admin.user.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.user.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
+                    User
                 </a>
                 @endif
                 <a href="{{ route('admin.jabatan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.jabatan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
@@ -43,7 +46,7 @@
                 <span class="block px-3 py-1 text-xs text-blue-300 mb-2">
                     {{ auth()->user()->name }}
                     <span class="ml-1 px-1.5 py-0.5 rounded text-xs {{ auth()->user()->isBkd() ? 'bg-green-700 text-green-100' : 'bg-blue-700 text-blue-100' }}">
-                        {{ auth()->user()->isBkd() ? 'BKD' : 'Admin OPD' }}
+                        {{ auth()->user()->isBkd() ? 'Super Admin' : 'User' }}
                     </span>
                 </span>
                 <form method="POST" action="{{ route('logout') }}">

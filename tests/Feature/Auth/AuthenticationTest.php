@@ -19,10 +19,13 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'nip' => '123456789012345678',
+            'is_active' => true,
+        ]);
 
         $response = $this->post('/login', [
-            'email' => $user->email,
+            'username' => '123456789012345678',
             'password' => 'password',
         ]);
 
@@ -32,10 +35,13 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'nip' => '123456789012345678',
+            'is_active' => true,
+        ]);
 
         $this->post('/login', [
-            'email' => $user->email,
+            'username' => '123456789012345678',
             'password' => 'wrong-password',
         ]);
 
@@ -44,7 +50,7 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_logout(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['is_active' => true]);
 
         $response = $this->actingAs($user)->post('/logout');
 

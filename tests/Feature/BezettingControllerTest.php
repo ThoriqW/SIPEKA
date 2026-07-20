@@ -18,7 +18,7 @@ class BezettingControllerTest extends TestCase
     }
 
     #[Test]
-    public function bkd_can_access_bezetting_index()
+    public function authenticated_user_can_access_bezetting_index()
     {
         $user = User::where('role', 'bkd')->first();
 
@@ -27,17 +27,6 @@ class BezettingControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Bezetting');
         $response->assertSee('Pemerintah Kota Palu');
-    }
-
-    #[Test]
-    public function admin_opd_can_access_bezetting_index()
-    {
-        $user = User::where('role', 'admin_opd')->first();
-
-        $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
-
-        $response->assertStatus(200);
-        $response->assertSee('Bezetting');
     }
 
     #[Test]
@@ -52,18 +41,6 @@ class BezettingControllerTest extends TestCase
     }
 
     #[Test]
-    public function admin_opd_sees_only_own_opd_in_bezetting()
-    {
-        $user = User::where('email', 'admin@dikbud.palu.go.id')->first();
-
-        $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
-
-        $response->assertStatus(200);
-        $response->assertSee('Kepala Dinas Pendidikan');
-        $response->assertDontSee('Kepala Dinas Kesehatan');
-    }
-
-    #[Test]
     public function bkd_can_export_bezetting_excel()
     {
         $user = User::where('role', 'bkd')->first();
@@ -72,17 +49,6 @@ class BezettingControllerTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertStringContainsString('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', $response->headers->get('Content-Type'));
-    }
-
-    #[Test]
-    public function admin_opd_can_export_bezetting_excel()
-    {
-        $user = User::where('role', 'admin_opd')->first();
-
-        $response = $this->actingAs($user)->get(route('admin.bezetting.export'));
-
-        $response->assertStatus(200);
-        $this->assertStringContainsString('spreadsheet', $response->headers->get('Content-Type'));
     }
 
     #[Test]

@@ -24,9 +24,8 @@ class PegawaiController extends Controller
             });
         }
         if ($request->filled('opd_id')) $query->where('opd_id', $request->opd_id);
-        if (auth()->user()->role === 'admin_opd') $query->where('opd_id', auth()->user()->opd_id);
         $pegawaiList = $query->orderBy('nama')->paginate(15)->withQueryString();
-        $opdList = auth()->user()->isBkd() ? Opd::orderBy('nama_opd')->pluck('nama_opd', 'id') : collect();
+        $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
         return view('admin.pegawai.index', compact('pegawaiList', 'opdList'));
     }
 
@@ -66,7 +65,6 @@ class PegawaiController extends Controller
             }
         }
 
-        if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         Pegawai::create($validated);
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
     }
@@ -110,7 +108,6 @@ class PegawaiController extends Controller
             }
         }
 
-        if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         $pegawai->update($validated);
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil diperbarui.');
     }

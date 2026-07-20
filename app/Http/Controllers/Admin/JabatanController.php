@@ -22,9 +22,8 @@ class JabatanController extends Controller
             });
         }
         if ($request->filled('opd_id')) $query->where('opd_id', $request->opd_id);
-        if (auth()->user()->role === 'admin_opd') $query->where('opd_id', auth()->user()->opd_id);
         $jabatanList = $query->withCount('pegawai')->orderBy('nama_jabatan')->paginate(15)->withQueryString();
-        $opdList = auth()->user()->isBkd() ? Opd::orderBy('nama_opd')->pluck('nama_opd', 'id') : collect();
+        $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
         return view('admin.jabatan.index', compact('jabatanList', 'opdList'));
     }
 
@@ -32,7 +31,6 @@ class JabatanController extends Controller
     {
         $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
         $indukQuery = Jabatan::with('opd')->where('jenis_jabatan', 'Struktural')->orderBy('nama_jabatan');
-        if (auth()->user()->role === 'admin_opd') $indukQuery->where('opd_id', auth()->user()->opd_id);
         $indukList = $indukQuery->get()->mapWithKeys(fn($j) => [$j->id => ($j->opd->nama_opd ?? '?') . ' › ' . $j->nama_jabatan]);
 
         // Data untuk Alpine.js: induk dikelompokkan per OPD
@@ -78,7 +76,6 @@ class JabatanController extends Controller
             }
         }
 
-        if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
         if ($validated['jenis_jabatan'] === 'Pelaksana') $validated['jenjang'] = 'Pelaksana';
 
@@ -97,7 +94,6 @@ class JabatanController extends Controller
     {
         $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
         $indukQuery = Jabatan::with('opd')->where('id', '!=', $jabatan->id)->where('jenis_jabatan', 'Struktural')->orderBy('nama_jabatan');
-        if (auth()->user()->role === 'admin_opd') $indukQuery->where('opd_id', auth()->user()->opd_id);
         $indukList = $indukQuery->get()->mapWithKeys(fn($j) => [$j->id => ($j->opd->nama_opd ?? '?') . ' › ' . $j->nama_jabatan]);
 
         // Data untuk Alpine.js: induk dikelompokkan per OPD
@@ -143,7 +139,6 @@ class JabatanController extends Controller
             }
         }
 
-        if (auth()->user()->role === 'admin_opd') $validated['opd_id'] = auth()->user()->opd_id;
         if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
         if ($validated['jenis_jabatan'] === 'Pelaksana') $validated['jenjang'] = 'Pelaksana';
 
