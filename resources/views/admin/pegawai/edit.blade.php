@@ -46,6 +46,10 @@
                         </select>
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kualifikasi Pendidikan</label>
+                        <input type="text" name="kualifikasi_pendidikan" value="{{ old('kualifikasi_pendidikan', $pegawai->kualifikasi_pendidikan) }}" placeholder="Contoh: S1 Teknik Informatika" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
                         <select name="opd_id" x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id', $pegawai->opd_id) == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach

@@ -50,6 +50,7 @@ class PegawaiController extends Controller
             'tanggal_lahir' => 'required|date',
             'golongan_pangkat' => 'required',
             'pendidikan' => 'required',
+            'kualifikasi_pendidikan' => 'nullable|string|max:255',
             'opd_id' => 'required|exists:opd,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
@@ -92,6 +93,7 @@ class PegawaiController extends Controller
             'tanggal_lahir' => 'required|date',
             'golongan_pangkat' => 'required',
             'pendidikan' => 'required',
+            'kualifikasi_pendidikan' => 'nullable|string|max:255',
             'opd_id' => 'required|exists:opd,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);

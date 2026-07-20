@@ -16,6 +16,7 @@ class Pegawai extends Model
         'tanggal_lahir',
         'golongan_pangkat',
         'pendidikan',
+        'kualifikasi_pendidikan',
         'jenjang',
         'opd_id',
         'jabatan_id',
