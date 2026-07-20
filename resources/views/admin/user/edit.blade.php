@@ -36,8 +36,8 @@
                 <div class="mb-4">
                     <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
                     <select id="role" name="role" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>User (Biasa)</option>
-                        <option value="bkd" {{ old('role', $user->role) == 'bkd' ? 'selected' : '' }}>Super Admin (BKD)</option>
+                        <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>User</option>
+                        <option value="bkd" {{ old('role', $user->role) == 'bkd' ? 'selected' : '' }}>Super Admin</option>
                     </select>
                     @error('role')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
                 </div>

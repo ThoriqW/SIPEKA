@@ -16,13 +16,13 @@
                 <div class="mb-4">
                     <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
                     <select id="role" name="role" x-model="role" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="user">User (Biasa)</option>
-                        <option value="bkd">Super Admin (BKD)</option>
+                        <option value="user">User</option>
+                        <option value="bkd">Super Admin</option>
                     </select>
                     @error('role')<p class="text-red-500 text-sm mt-1">{{ $message }}</p>@enderror
                 </div>
 
-                <!-- Untuk User Biasa: Pilih Pegawai (NIP) -->
+                <!-- Untuk User: Pilih Pegawai (NIP) -->
                 <div x-show="role === 'user'" class="mb-4">
                     <label for="nip" class="block text-sm font-medium text-gray-700">Pegawai (NIP - Nama)</label>
                     <select id="nip" name="nip" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
