@@ -35,12 +35,12 @@
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Jabatan</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPD</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi Induk</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kelas</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenjang</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kebutuhan</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Induk</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                     </thead>

@@ -42,7 +42,7 @@
                         @error('kebutuhan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk</label>
                         <select name="opd_id" x-on:change="filterInduk($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
                             <option value="">-- Pilih --</option>
                             @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
@@ -50,7 +50,7 @@
                         @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Induk Jabatan</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
                         <select name="induk_jabatan_id" x-ref="indukSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Tidak Ada --</option>
                         </select>
