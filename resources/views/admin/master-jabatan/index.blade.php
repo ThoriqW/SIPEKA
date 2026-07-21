@@ -17,19 +17,17 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200" x-data="{ open: {} }">
             <div class="p-4 border-b">
                 <form method="GET" class="flex flex-wrap gap-4">
+                    <input type="text" name="search" placeholder="Cari nama jabatan..." value="{{ request('search') }}" class="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <select name="jenis_jabatan" class="w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">Semua Jenis</option>
                         @foreach($jenisJabatanList as $val => $label)
                             <option value="{{ $val }}" {{ request('jenis_jabatan') == $val ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Filter</button>
-                    @if(request('jenis_jabatan'))
+                    <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Cari</button>
+                    @if(request('jenis_jabatan') || request('search'))
                         <a href="{{ route('admin.master-jabatan.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">Reset</a>
                     @endif
-                    <button type="button" x-on:click="Object.keys(open).forEach(k => open[k] = !open[k])" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 text-sm">
-                        <span x-text="Object.values(open).some(v => v) ? 'Collapse All' : 'Expand All'"></span>
-                    </button>
                 </form>
             </div>
             <div class="overflow-x-auto">

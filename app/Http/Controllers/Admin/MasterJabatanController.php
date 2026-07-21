@@ -16,6 +16,10 @@ class MasterJabatanController extends Controller
             ->orderBy('parent_id')
             ->orderBy('nama_jabatan');
 
+        if ($request->filled('search')) {
+            $query->where('nama_jabatan', 'like', '%' . $request->search . '%');
+        }
+
         if ($request->filled('jenis_jabatan')) {
             $query->where('jenis_jabatan', $request->jenis_jabatan);
         }
