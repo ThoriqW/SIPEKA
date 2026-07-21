@@ -70,7 +70,7 @@ class JabatanSeeder extends Seeder
         ]);
 
         $guru_sd = Jabatan::create([
-            'nama_jabatan' => 'Guru Sekolah Dasar',
+            'nama_jabatan' => 'Guru - Guru Kelas',
             'kode_jabatan' => 'DIKBUD-006',
             'jenis_jabatan' => 'Fungsional',
             'kelas_jabatan' => 8,
@@ -115,7 +115,7 @@ class JabatanSeeder extends Seeder
         ]);
 
         $dokter = Jabatan::create([
-            'nama_jabatan' => 'Dokter Umum',
+            'nama_jabatan' => 'Dokter - Dokter Umum',
             'kode_jabatan' => 'DINKES-003',
             'jenis_jabatan' => 'Fungsional',
             'kelas_jabatan' => 9,
