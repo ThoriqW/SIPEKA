@@ -18,7 +18,7 @@
                 <form method="GET" class="flex flex-wrap gap-4">
                     <input type="text" name="search" placeholder="Cari Nama atau NIP..." value="{{ request('search') }}" class="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @if($opdList->isNotEmpty())
-                    <select name="opd_id" class="w-64 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <select name="opd_id" class="w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">Semua OPD</option>
                         @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ request('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                     </select>

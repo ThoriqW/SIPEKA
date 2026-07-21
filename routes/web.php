@@ -18,6 +18,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // User — BKD-only
     Route::middleware('role:bkd')->group(function () {
         Route::resource('user', \App\Http\Controllers\Admin\UserController::class);
+        Route::resource('master-jabatan', \App\Http\Controllers\Admin\MasterJabatanController::class);
     });
 
     // AJAX endpoints — MUST be before resource routes
