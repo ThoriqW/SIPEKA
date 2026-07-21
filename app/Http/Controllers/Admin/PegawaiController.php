@@ -16,7 +16,7 @@ class PegawaiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pegawai::query()->with(['opd', 'jabatan']);
+        $query = Pegawai::query()->with(['opd', 'jabatan.induk']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
