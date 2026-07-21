@@ -97,6 +97,12 @@ class JabatanController extends Controller
             }
         }
 
+        // Validasi: induk WAJIB kecuali untuk Pimpinan Tinggi Pratama (Kepala OPD)
+        $isPratama = $validated['jenis_jabatan'] === 'Struktural' && ($validated['jenjang'] ?? '') === 'Pimpinan Tinggi Pratama';
+        if (!$isPratama && empty($validated['induk_jabatan_id'])) {
+            return back()->withInput()->with('error', 'Unit Organisasi (induk) wajib dipilih. Hanya jabatan Pimpinan Tinggi Pratama (Kepala OPD) yang boleh tanpa induk.');
+        }
+
         // Validasi: hanya jabatan Struktural yang boleh menjadi induk
         if (!empty($validated['induk_jabatan_id'])) {
             $induk = Jabatan::find($validated['induk_jabatan_id']);
@@ -170,6 +176,12 @@ class JabatanController extends Controller
 
         if (!$existsInMaster) {
             return back()->withInput()->with('error', 'Nama jabatan "' . $namaUntukCek . '" tidak ditemukan di Master Jabatan. Silakan pilih dari daftar yang tersedia.');
+        }
+
+        // Validasi: induk WAJIB kecuali untuk Pimpinan Tinggi Pratama (Kepala OPD)
+        $isPratama = $validated['jenis_jabatan'] === 'Struktural' && ($validated['jenjang'] ?? '') === 'Pimpinan Tinggi Pratama';
+        if (!$isPratama && empty($validated['induk_jabatan_id'])) {
+            return back()->withInput()->with('error', 'Unit Organisasi (induk) wajib dipilih. Hanya jabatan Pimpinan Tinggi Pratama (Kepala OPD) yang boleh tanpa induk.');
         }
 
         // Validasi: hanya jabatan Struktural yang boleh menjadi induk

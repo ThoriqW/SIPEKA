@@ -32,7 +32,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Nama Jabatan <span class="text-red-500">*</span>
                         </label>
-                        <select x-ref="namaJabatanSelect" x-on:change="onParentChange($el)" required
+                        <select x-ref="namaJabatanSelect" x-on:change="onParentChange($el)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nama_jabatan') border-red-500 @enderror">
                             <option value="">-- Pilih Jenis Jabatan dulu --</option>
                         </select>
@@ -44,7 +44,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Sub Jabatan <span class="text-red-500">*</span>
                         </label>
-                        <select x-ref="subJabatanSelect" x-on:change="onSubChange($el)" required
+                        <select x-ref="subJabatanSelect" x-on:change="onSubChange($el)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Pilih Sub Jabatan --</option>
                         </select>
@@ -88,11 +88,16 @@
 
                     {{-- Unit Organisasi --}}
                     <div x-show="!(selectedJenis === 'Struktural' && selectedJenjang === 'Pimpinan Tinggi Pratama')">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Unit Organisasi <span class="text-red-500">*</span>
+                        </label>
                         <select name="induk_jabatan_id" x-ref="indukSelect"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Tidak Ada --</option>
+                            <option value="">-- Pilih OPD dulu --</option>
                         </select>
+                        <p x-show="indukEmpty" x-cloak class="mt-1 text-sm text-red-600">
+                            Unit Organisasi tidak tersedia untuk OPD ini. Tambahkan jabatan Struktural terlebih dahulu di OPD tersebut.
+                        </p>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
@@ -127,6 +132,7 @@ function jabatanForm(initialJenis, initialJenjang, initialNama) {
         selectedJenis: '',
         selectedJenjang: initialJenjang || '',
         hasChildren: false,
+        indukEmpty: false,
 
         onJenisChange(jenis, preSelectJenjang, preNama) {
             this.selectedJenis = jenis;
@@ -238,8 +244,9 @@ function jabatanForm(initialJenis, initialJenjang, initialNama) {
 
         filterInduk(opdId) {
             var select = this.$refs.indukSelect;
-            select.innerHTML = '<option value="">-- Tidak Ada --</option>';
             var items = indukByOpd[opdId] || [];
+            this.indukEmpty = items.length === 0;
+            select.innerHTML = '<option value="">-- ' + (this.indukEmpty ? 'Tidak Tersedia' : 'Pilih Unit Organisasi') + ' --</option>';
             items.forEach(function(item) {
                 var o = document.createElement('option');
                 o.value = item.id; o.textContent = item.nama;
