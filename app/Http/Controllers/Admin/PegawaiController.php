@@ -65,6 +65,8 @@ class PegawaiController extends Controller
                 }
                 $validated['jenjang'] = $jabatan->jenjang;
             }
+        } else {
+            $validated['jenjang'] = null;
         }
 
         Pegawai::create($validated);
@@ -110,6 +112,8 @@ class PegawaiController extends Controller
                 }
                 $validated['jenjang'] = $jabatan->jenjang;
             }
+        } else {
+            $validated['jenjang'] = null;
         }
 
         $pegawai->update($validated);
