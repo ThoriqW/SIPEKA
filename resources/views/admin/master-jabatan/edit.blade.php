@@ -19,7 +19,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Jabatan</label>
-                        <select name="jenis_jabatan" required
+                        <select name="jenis_jabatan" required onchange="document.getElementById('indukField').style.display = this.value === 'Fungsional' ? '' : 'none'"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_jabatan') border-red-500 @enderror">
                             <option value="">-- Pilih --</option>
                             @foreach($jenisJabatanList as $val => $label)
@@ -28,7 +28,7 @@
                         </select>
                         @error('jenis_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
-                    <div>
+                    <div id="indukField" style="display: {{ $masterJabatan->jenis_jabatan === 'Fungsional' ? '' : 'none' }};">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Induk (untuk Sub Jabatan)</label>
                         <select name="parent_id"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('parent_id') border-red-500 @enderror">
@@ -38,6 +38,7 @@
                             @endforeach
                         </select>
                         <p class="mt-1 text-xs text-gray-500">Pilih induk hanya jika ini adalah sub-jabatan dari jabatan lain</p>
+                        @error('parent_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
