@@ -33,7 +33,6 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Jabatan</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPD</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis</th>
@@ -48,7 +47,6 @@
                         @forelse($jabatanList as $key => $j)
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-4 text-sm text-gray-500">{{ $jabatanList->firstItem() + $key }}</td>
-                            <td class="px-4 py-4 text-sm text-gray-500">{{ $j->kode_jabatan }}</td>
                             <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ $j->nama_jabatan }}</td>
                             <td class="px-4 py-4 text-sm text-gray-500">{{ $j->opd->nama_opd ?? '-' }}</td>
                             <td class="px-4 py-4 text-sm text-center"><span class="px-2 py-1 text-xs rounded-full {{ $j->jenis_jabatan === 'Struktural' ? 'bg-purple-100 text-purple-800' : ($j->jenis_jabatan === 'Fungsional' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">{{ $j->jenis_jabatan }}</span></td>
@@ -71,7 +69,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="10" class="px-6 py-10 text-center text-gray-500">Tidak ada data jabatan.</td></tr>
+                        <tr><td colspan="9" class="px-6 py-10 text-center text-gray-500">Tidak ada data jabatan.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
