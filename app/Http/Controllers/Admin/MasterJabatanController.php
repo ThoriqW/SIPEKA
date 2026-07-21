@@ -39,7 +39,9 @@ class MasterJabatanController extends Controller
 
     public function create()
     {
-        $parentList = MasterJabatan::orderBy('jenis_jabatan')
+        // Hanya root-level (parent_id = null) yang bisa jadi induk
+        $parentList = MasterJabatan::whereNull('parent_id')
+            ->where('jenis_jabatan', 'Fungsional')
             ->orderBy('nama_jabatan')
             ->get()
             ->mapWithKeys(fn($m) => [$m->id => $m->nama_jabatan . ' (' . $m->jenis_jabatan . ')']);
@@ -72,6 +74,14 @@ class MasterJabatanController extends Controller
             return back()->withInput()->with('error', 'Master jabatan "' . $validated['nama_jabatan'] . '" sudah ada untuk jenis dan induk yang sama.');
         }
 
+        // Validasi: induk harus root-level (parent_id = null)
+        if (!empty($validated['parent_id'])) {
+            $induk = MasterJabatan::find($validated['parent_id']);
+            if ($induk && $induk->parent_id !== null) {
+                return back()->withInput()->with('error', 'Induk yang dipilih adalah sub-jabatan. Sub-jabatan tidak bisa menjadi induk. Pilih jabatan utama.');
+            }
+        }
+
         MasterJabatan::create($validated);
 
         return redirect()->route('admin.master-jabatan.index')
@@ -80,7 +90,8 @@ class MasterJabatanController extends Controller
 
     public function edit(MasterJabatan $masterJabatan)
     {
-        $parentList = MasterJabatan::where('id', '!=', $masterJabatan->id)
+        $parentList = MasterJabatan::whereNull('parent_id')
+            ->where('id', '!=', $masterJabatan->id)
             ->orderBy('jenis_jabatan')
             ->orderBy('nama_jabatan')
             ->get()
@@ -108,6 +119,14 @@ class MasterJabatanController extends Controller
         // Prevent self-reference
         if (!empty($validated['parent_id']) && $validated['parent_id'] == $masterJabatan->id) {
             return back()->withInput()->with('error', 'Sub jabatan tidak bisa menjadi induk dari dirinya sendiri.');
+        }
+
+        // Validasi: induk harus root-level (parent_id = null)
+        if (!empty($validated['parent_id'])) {
+            $induk = MasterJabatan::find($validated['parent_id']);
+            if ($induk && $induk->parent_id !== null) {
+                return back()->withInput()->with('error', 'Induk yang dipilih adalah sub-jabatan. Sub-jabatan tidak bisa menjadi induk. Pilih jabatan utama.');
+            }
         }
 
         // Cek duplikat (kecuali record sendiri)
