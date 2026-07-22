@@ -76,8 +76,8 @@
 <script>
 function pegawaiForm() {
     var currentJabatanId = {{ $pegawai->jabatan_id ?? 'null' }};
-    var golonganPNS = {!! json_encode($golonganPangkatList) !!};
-    var golonganPPPK = {!! json_encode($pppkGolonganList) !!};
+    var golonganPNS = @json($golonganPangkatList);
+    var golonganPPPK = @json($pppkGolonganList);
     var currentGolongan = '{{ $pegawai->golongan_pangkat }}';
     return {
         opdSelected: true,

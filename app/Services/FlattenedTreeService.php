@@ -101,7 +101,8 @@ class FlattenedTreeService
                 $tglPensiun = $this->bupCalculator->hitungTanggalPensiun(
                     $p->tanggal_lahir,
                     $p->jenjang,
-                    $p->jenis_kepegawaian
+                    $p->jenis_kepegawaian,
+                    $jabatan->nama_jabatan
                 );
                 $tahunPensiun = (int) $tglPensiun->format('Y');
                 if ($tahunPensiun >= $t && $tahunPensiun <= $t + 4) {

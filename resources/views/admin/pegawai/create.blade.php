@@ -84,8 +84,8 @@
 @section('scripts')
 <script>
 function pegawaiForm() {
-    var golonganPNS = {!! json_encode($golonganPangkatList) !!};
-    var golonganPPPK = {!! json_encode($pppkGolonganList) !!};
+    var golonganPNS = @json($golonganPangkatList);
+    var golonganPPPK = @json($pppkGolonganList);
     return {
         opdSelected: false,
         initGolongan(jenis) {

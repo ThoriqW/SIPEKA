@@ -119,9 +119,9 @@
 @section('scripts')
 <script>
 function jabatanForm() {
-    var options = {!! $jenjangOptions !!};
-    var indukByOpd = {!! $indukByOpd !!};
-    var masterData = {!! $masterJabatanData !!};
+    var options = @json($jenjangOptions);
+    var indukByOpd = @json($indukByOpd);
+    var masterData = @json($masterJabatanData);
     var selectedInduk = '{{ old('induk_jabatan_id', '') }}';
     var currentChildren = []; // children of selected parent
 

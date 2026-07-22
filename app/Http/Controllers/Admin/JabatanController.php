@@ -48,14 +48,14 @@ class JabatanController extends Controller
         return view('admin.jabatan.create', [
             'opdList' => $opdList,
             'indukList' => $indukList,
-            'indukByOpd' => json_encode($indukByOpd),
+            'indukByOpd' => $indukByOpd,
             'jenisJabatanList' => JenisJabatan::labels(),
-            'jenjangOptions' => json_encode([
+            'jenjangOptions' => [
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),
                 'Fungsional' => Jenjang::forJenisJabatan('Fungsional'),
                 'Pelaksana' => Jenjang::forJenisJabatan('Pelaksana'),
-            ]),
-            'masterJabatanData' => json_encode($this->buildMasterJabatanData()),
+            ],
+            'masterJabatanData' => $this->buildMasterJabatanData(),
         ]);
     }
 
@@ -120,6 +120,10 @@ class JabatanController extends Controller
             if ($induk && $induk->jenis_jabatan !== 'Struktural') {
                 return back()->withInput()->with('error', 'Induk jabatan harus berjenis Struktural. Fungsional dan Pelaksana tidak dapat menjadi induk.');
             }
+            // Validasi: induk harus satu OPD dengan jabatan (cross-OPD prevention)
+            if ($induk && (int) $induk->opd_id !== (int) $validated['opd_id']) {
+                return back()->withInput()->with('error', 'Induk jabatan harus berada di OPD yang sama dengan jabatan ini.');
+            }
         }
 
         if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
@@ -139,7 +143,15 @@ class JabatanController extends Controller
     public function edit(Jabatan $jabatan)
     {
         $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
-        $indukQuery = Jabatan::with('opd')->where('id', '!=', $jabatan->id)->where('jenis_jabatan', 'Struktural')->orderBy('nama_jabatan');
+
+        // Exclude diri sendiri dan semua turunan dari daftar induk
+        $excludeIds = $this->getDescendantIds($jabatan);
+        $excludeIds[] = $jabatan->id;
+
+        $indukQuery = Jabatan::with('opd')
+            ->whereNotIn('id', $excludeIds)
+            ->where('jenis_jabatan', 'Struktural')
+            ->orderBy('nama_jabatan');
         $indukList = $indukQuery->get()->mapWithKeys(fn($j) => [$j->id => ($j->opd->nama_opd ?? '?') . ' › ' . $j->nama_jabatan]);
 
         // Data untuk Alpine.js: induk dikelompokkan per OPD
@@ -156,14 +168,14 @@ class JabatanController extends Controller
             'jabatan' => $jabatan,
             'opdList' => $opdList,
             'indukList' => $indukList,
-            'indukByOpd' => json_encode($indukByOpd),
+            'indukByOpd' => $indukByOpd,
             'jenisJabatanList' => JenisJabatan::labels(),
-            'jenjangOptions' => json_encode([
+            'jenjangOptions' => [
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),
                 'Fungsional' => Jenjang::forJenisJabatan('Fungsional'),
                 'Pelaksana' => Jenjang::forJenisJabatan('Pelaksana'),
-            ]),
-            'masterJabatanData' => json_encode($this->buildMasterJabatanData()),
+            ],
+            'masterJabatanData' => $this->buildMasterJabatanData(),
         ]);
     }
 
@@ -224,6 +236,14 @@ class JabatanController extends Controller
             if ($induk && $induk->jenis_jabatan !== 'Struktural') {
                 return back()->withInput()->with('error', 'Induk jabatan harus berjenis Struktural. Fungsional dan Pelaksana tidak dapat menjadi induk.');
             }
+            // Validasi: induk harus satu OPD dengan jabatan (cross-OPD prevention)
+            if ($induk && (int) $induk->opd_id !== (int) $validated['opd_id']) {
+                return back()->withInput()->with('error', 'Induk jabatan harus berada di OPD yang sama dengan jabatan ini.');
+            }
+            // Validasi: induk tidak boleh turunan dari jabatan ini (circular reference)
+            if ($induk && in_array((int) $validated['induk_jabatan_id'], $this->getDescendantIds($jabatan), true)) {
+                return back()->withInput()->with('error', 'Induk jabatan tidak valid karena merupakan turunan dari jabatan ini.');
+            }
         }
 
         if ($validated['jenis_jabatan'] === 'Struktural') $validated['kebutuhan'] = 1;
@@ -242,6 +262,25 @@ class JabatanController extends Controller
         if ($jabatan->pegawai()->exists()) return back()->with('error', 'Jabatan tidak dapat dihapus karena masih memiliki pegawai.');
         $jabatan->delete();
         return redirect()->route('admin.jabatan.index')->with('success', 'Jabatan berhasil dihapus.');
+    }
+
+    /**
+     * Dapatkan semua ID turunan (anak, cucu, dst) dari suatu jabatan.
+     * Menggunakan BFS untuk menghindari rekursi. Aman karena max level = 4.
+     *
+     * @return int[]
+     */
+    private function getDescendantIds(Jabatan $jabatan): array
+    {
+        $ids = [];
+        $queue = $jabatan->anak()->pluck('id')->toArray();
+
+        while (!empty($queue)) {
+            $ids = array_merge($ids, $queue);
+            $queue = Jabatan::whereIn('induk_jabatan_id', $queue)->pluck('id')->toArray();
+        }
+
+        return $ids;
     }
 
     /**

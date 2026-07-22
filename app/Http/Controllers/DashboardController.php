@@ -72,19 +72,20 @@ class DashboardController extends Controller
 
         // Pegawai Fungsional per kategori group (tanpa rinci jenjang)
         // Ekstrak parent name untuk matching (ambil sebelum " - " jika format Parent-Sub)
-        $guruList = implode("','", array_map(fn($n) => addslashes($n), $namaGuru));
-        $nakesList = implode("','", array_map(fn($n) => addslashes($n), $nakesNames));
+        $guruPlaceholders = implode(',', array_fill(0, count($namaGuru), '?'));
+        $nakesPlaceholders = implode(',', array_fill(0, count($nakesNames), '?'));
+        $allBindings = array_merge($namaGuru, $nakesNames);
 
         $pegawaiFungsionalPerGroup = Pegawai::join('jabatan', 'pegawai.jabatan_id', '=', 'jabatan.id')
             ->where('jabatan.jenis_jabatan', 'Fungsional')
             ->selectRaw("
                 CASE
-                    WHEN SUBSTRING_INDEX(jabatan.nama_jabatan, ' - ', 1) IN ('{$guruList}') THEN 'Guru'
-                    WHEN SUBSTRING_INDEX(jabatan.nama_jabatan, ' - ', 1) IN ('{$nakesList}') THEN 'Kesehatan'
+                    WHEN SUBSTRING_INDEX(jabatan.nama_jabatan, ' - ', 1) IN ({$guruPlaceholders}) THEN 'Guru'
+                    WHEN SUBSTRING_INDEX(jabatan.nama_jabatan, ' - ', 1) IN ({$nakesPlaceholders}) THEN 'Kesehatan'
                     ELSE 'Non Guru & Non Kesehatan'
                 END as kategori,
                 COUNT(*) as total
-            ")
+            ", $allBindings)
             ->groupBy('kategori')
             ->orderBy('kategori')
             ->pluck('total', 'kategori');
