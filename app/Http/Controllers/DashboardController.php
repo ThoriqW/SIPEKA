@@ -18,13 +18,6 @@ class DashboardController extends Controller
         $totalOpd = Opd::count();
         $totalPegawai = Pegawai::count();
 
-        $komposisi = [
-            'PNS' => $totalPns,
-            'PPPK' => $totalPppk,
-        ];
-
-        $opdList = Opd::withCount('pegawai')->orderBy('nama_opd')->get();
-
         // Total kebutuhan seluruh jabatan
         $totalKebutuhan = Jabatan::sum('kebutuhan');
 
@@ -44,17 +37,10 @@ class DashboardController extends Controller
             ->where('jenis_jabatan', 'Fungsional')->whereNull('parent_id')->first();
 
         $namaGuru = ['Guru'];
-        $namaNakes = [];  // all NAKES names
-        $namaTeknis = [];
 
         if ($guru) {
             $namaGuru = array_merge($namaGuru, MasterJabatan::where('parent_id', $guru->id)->pluck('nama_jabatan')->toArray());
         }
-
-        // NAKES: all root-level Fungsional entries EXCEPT Guru and Tenaga Teknis entries
-        // The seeder has 26 NAKES names as root (parent_id=null). Plus children of Dokter.
-        $allFungsionalRoot = MasterJabatan::where('jenis_jabatan', 'Fungsional')
-            ->whereNull('parent_id')->pluck('nama_jabatan', 'id')->toArray();
 
         // Hardcode known NAKES names from the seeder + children of Dokter
         $nakesNames = [
@@ -92,7 +78,7 @@ class DashboardController extends Controller
 
         return view('dashboard', compact(
             'totalPns', 'totalPppk', 'totalOpd', 'totalPegawai',
-            'komposisi', 'opdList', 'totalKebutuhan', 'pegawaiPerJenisJenjang',
+            'totalKebutuhan', 'pegawaiPerJenisJenjang',
             'pegawaiFungsionalPerGroup'
         ));
     }
