@@ -35,9 +35,10 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Golongan/Pangkat</label>
-                        <select name="golongan_pangkat" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <select name="golongan_pangkat" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('golongan_pangkat') border-red-500 @enderror">
                             <option value="">-- Pilih --</option>
                         </select>
+                        @error('golongan_pangkat')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
@@ -78,13 +79,14 @@ function pegawaiForm() {
     var currentJabatanId = {{ $pegawai->jabatan_id ?? 'null' }};
     var golonganPNS = @json($golonganPangkatList);
     var golonganPPPK = @json($pppkGolonganList);
-    var currentGolongan = '{{ $pegawai->golongan_pangkat }}';
+    var currentGolongan = '{{ old('golongan_pangkat', $pegawai->golongan_pangkat) }}';
+    var currentJenis = '{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}';
     return {
         opdSelected: true,
         initGolongan(jenis) {
-            this.onJenisKepegawaianChange(jenis || 'PNS');
+            this.onJenisKepegawaianChange(jenis || 'PNS', currentGolongan);
         },
-        onJenisKepegawaianChange(jenis) {
+        onJenisKepegawaianChange(jenis, preSelect) {
             var list = jenis === 'PPPK' ? golonganPPPK : golonganPNS;
             var select = document.querySelector('[name="golongan_pangkat"]');
             select.innerHTML = '<option value="">-- Pilih --</option>';
@@ -93,7 +95,7 @@ function pegawaiForm() {
                 var opt = document.createElement('option');
                 opt.value = val;
                 opt.textContent = label;
-                if (val === currentGolongan) opt.selected = true;
+                if (preSelect && val === preSelect) opt.selected = true;
                 select.appendChild(opt);
             });
         },
