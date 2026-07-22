@@ -103,6 +103,17 @@ class JabatanController extends Controller
             return back()->withInput()->with('error', 'Unit Organisasi (induk) wajib dipilih. Hanya jabatan Pimpinan Tinggi Pratama (Kepala OPD) yang boleh tanpa induk.');
         }
 
+        // Validasi: satu OPD hanya boleh memiliki satu JPTP (Kepala OPD)
+        if ($isPratama) {
+            $existingPratama = Jabatan::where('opd_id', $validated['opd_id'])
+                ->where('jenis_jabatan', 'Struktural')
+                ->where('jenjang', 'Pimpinan Tinggi Pratama')
+                ->exists();
+            if ($existingPratama) {
+                return back()->withInput()->with('error', 'OPD ini sudah memiliki Jabatan Pimpinan Tinggi Pratama (Kepala OPD). Setiap OPD hanya boleh memiliki satu Kepala OPD.');
+            }
+        }
+
         // Validasi: hanya jabatan Struktural yang boleh menjadi induk
         if (!empty($validated['induk_jabatan_id'])) {
             $induk = Jabatan::find($validated['induk_jabatan_id']);
@@ -182,6 +193,29 @@ class JabatanController extends Controller
         $isPratama = $validated['jenis_jabatan'] === 'Struktural' && ($validated['jenjang'] ?? '') === 'Pimpinan Tinggi Pratama';
         if (!$isPratama && empty($validated['induk_jabatan_id'])) {
             return back()->withInput()->with('error', 'Unit Organisasi (induk) wajib dipilih. Hanya jabatan Pimpinan Tinggi Pratama (Kepala OPD) yang boleh tanpa induk.');
+        }
+
+        // Validasi: satu OPD hanya boleh memiliki satu JPTP (Kepala OPD)
+        if ($isPratama) {
+            $existingPratama = Jabatan::where('opd_id', $validated['opd_id'])
+                ->where('jenis_jabatan', 'Struktural')
+                ->where('jenjang', 'Pimpinan Tinggi Pratama')
+                ->where('id', '!=', $jabatan->id)
+                ->exists();
+            if ($existingPratama) {
+                return back()->withInput()->with('error', 'OPD ini sudah memiliki Jabatan Pimpinan Tinggi Pratama (Kepala OPD). Setiap OPD hanya boleh memiliki satu Kepala OPD.');
+            }
+        }
+
+        // Validasi: Struktural yang memiliki turunan tidak boleh diubah ke non-Struktural
+        if ($jabatan->jenis_jabatan === 'Struktural'
+            && $validated['jenis_jabatan'] !== 'Struktural'
+            && $jabatan->anak()->exists()) {
+            return back()->withInput()->with('error',
+                'Jabatan ini tidak dapat diubah menjadi ' . $validated['jenis_jabatan']
+                . ' karena masih memiliki ' . $jabatan->anak()->count()
+                . ' jabatan turunan. Hanya jabatan Struktural yang boleh menjadi induk. '
+                . 'Pindahkan atau hapus turunannya terlebih dahulu.');
         }
 
         // Validasi: hanya jabatan Struktural yang boleh menjadi induk

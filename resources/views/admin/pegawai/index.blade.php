@@ -11,8 +11,6 @@
             <a href="{{ route('admin.pegawai.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">+ Tambah Pegawai</a>
         </div>
 
-        @if(session('success'))<div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">{{ session('success') }}</div>@endif
-
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="p-4 border-b">
                 <form method="GET" class="flex flex-wrap gap-4">
