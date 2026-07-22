@@ -10,7 +10,7 @@ class BupCalculator
      * Aturan:
      *   65  jika jenjang = "Ahli Utama"
      *   60  jika jenjang ∈ {"Ahli Madya", "Pimpinan Tinggi Pratama"}
-     *        ATAU (jenis_kepegawaian = "PPPK" DAN (jenjang = "Guru" ATAU nama jabatan mengandung "Guru"))
+     *        ATAU pegawai adalah Guru
      *   58  selain itu
      *
      * @param string      $jenjang           Jenjang pegawai (dari tabel pegawai / jabatan)
@@ -27,7 +27,7 @@ class BupCalculator
             return 60;
         }
 
-        if ($jenisKepegawaian === 'PPPK' && $this->isGuru($jenjang, $namaJabatan)) {
+        if ($this->isGuru($jenjang, $namaJabatan)) {
             return 60;
         }
 
