@@ -1,0 +1,222 @@
+Saya ingin melakukan redesign terhadap arsitektur modul SOTK pada aplikasi Sistem Perencanaan Pegawai.
+
+Sebelum memberikan solusi, pahami terlebih dahulu filosofi sistem berikut.
+
+Tujuan Sistem
+
+Aplikasi ini digunakan untuk:
+
+Penyusunan Struktur Organisasi Pemerintah Daerah
+Analisis Beban Kerja (ABK)
+Analisis Kebutuhan Pegawai
+Bezzeting
+Proyeksi Pensiun
+Penempatan Pegawai
+
+Oleh karena itu struktur organisasi harus fleksibel dan tidak boleh bergantung pada jenis jabatan ASN.
+
+Permasalahan Lama
+
+Struktur organisasi sebelumnya dibangun berdasarkan hirarki jabatan struktural.
+
+Misalnya:
+
+Kepala Dinas
+↓
+Sekretaris
+↓
+Kepala Bidang
+↓
+Kepala Sub Bidang
+
+Pendekatan tersebut gagal karena tidak dapat memodelkan organisasi seperti:
+
+Puskesmas
+Sekolah
+
+dimana:
+
+Kepala Puskesmas merupakan Tugas Tambahan dari Jabatan Fungsional.
+
+Kepala Sekolah merupakan Tugas Tambahan dari Guru.
+
+Konsep Baru
+
+Pisahkan tiga konsep berikut.
+
+1. Jabatan ASN
+
+Merupakan jabatan kepegawaian.
+
+Contoh:
+
+Guru Ahli Pertama
+Guru Ahli Muda
+Dokter Ahli Madya
+Pranata Komputer Ahli Pertama
+Analis SDM Aparatur
+
+Jabatan ASN melekat pada pegawai.
+
+2. Unit Organisasi
+
+Merupakan wadah organisasi.
+
+Contoh:
+
+Pemerintah Kota
+BKPSDMD
+Dinas Pendidikan
+Dinas Kesehatan
+Sekretariat
+Bidang Pengadaan
+Puskesmas Talise
+SMP Negeri 1
+
+Unit Organisasi hanya berfungsi sebagai container.
+
+3. Posisi Organisasi
+
+Merupakan posisi yang ada di dalam Unit Organisasi.
+
+Contoh:
+
+Kepala BKPSDMD
+Kepala Bidang
+Sekretaris
+Kepala Puskesmas
+Kepala Sekolah
+Guru
+Dokter
+Perawat
+Pranata Komputer
+
+Posisi Organisasi dapat diisi oleh pegawai.
+
+Posisi Organisasi bukan Jabatan ASN.
+
+Model Pohon Organisasi
+
+Gunakan satu pohon organisasi.
+
+Node memiliki atribut:
+
+jenis = UNIT
+jenis = POSISI
+
+Contoh:
+
+Pemerintah Kota (UNIT)
+
+↓
+
+BKPSDMD (UNIT)
+
+↓
+
+Kepala BKPSDMD (POSISI)
+
+↓
+
+Sekretariat (UNIT)
+
+↓
+
+Sekretaris (POSISI)
+
+↓
+
+Bidang Pengadaan (UNIT)
+
+↓
+
+Kepala Bidang (POSISI)
+
+↓
+
+Pranata Komputer (POSISI)
+
+↓
+
+Pranata Komputer (POSISI)
+
+↓
+
+Analis SDM Aparatur (POSISI)
+
+Contoh lain:
+
+Dinas Kesehatan (UNIT)
+
+↓
+
+Puskesmas Talise (UNIT)
+
+↓
+
+Kepala Puskesmas (POSISI)
+
+↓
+
+Dokter (POSISI)
+
+↓
+
+Dokter (POSISI)
+
+↓
+
+Perawat (POSISI)
+
+↓
+
+Bidan (POSISI)
+
+Pegawai
+
+Setiap pegawai memiliki:
+
+Jabatan ASN
+Posisi Organisasi
+
+Contoh:
+
+Nama:
+Moh Thoriq
+
+Jabatan ASN:
+Pranata Komputer Ahli Pertama
+
+Posisi Organisasi:
+Pranata Komputer
+
+Unit Organisasi:
+Bidang Pengadaan, Informasi, dan Mutasi Kepegawaian
+
+Contoh lain:
+
+Nama:
+dr. Andi
+
+Jabatan ASN:
+Dokter Ahli Madya
+
+Posisi Organisasi:
+Kepala Puskesmas
+
+Unit Organisasi:
+Puskesmas Talise
+
+Aturan Sistem
+Struktur organisasi dibangun berdasarkan Node Organisasi, bukan berdasarkan Level Jabatan.
+Node terdiri dari UNIT dan POSISI.
+Satu Posisi hanya boleh ditempati satu pegawai.
+Jika kebutuhan lima Dokter maka terdapat lima node Posisi Dokter.
+Kepala Puskesmas adalah Posisi Organisasi.
+Kepala Sekolah adalah Posisi Organisasi.
+Tugas Tambahan tidak mengubah Jabatan ASN pegawai.
+Jabatan ASN tetap melekat pada pegawai.
+Posisi Organisasi menunjukkan lokasi pegawai pada struktur organisasi.
+Seluruh modul ABK, Bezzeting, Analisis Kebutuhan, Mutasi, dan Proyeksi Pensiun harus menggunakan model organisasi baru ini.
+
+Lakukan analisis menyeluruh terhadap arsitektur aplikasi, identifikasi bagian yang perlu diubah, usulkan desain database yang baru bila diperlukan, jelaskan dampak terhadap model, relasi, layanan, validasi, API, dan antarmuka pengguna, serta buat rencana migrasi dari desain lama ke desain baru. Jangan menghasilkan kode sebelum desain dan rencana migrasi disetujui.

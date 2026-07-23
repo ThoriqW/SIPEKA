@@ -19,11 +19,22 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::middleware('role:bkd')->group(function () {
         Route::resource('user', \App\Http\Controllers\Admin\UserController::class);
         Route::resource('master-jabatan', \App\Http\Controllers\Admin\MasterJabatanController::class);
+        // Jabatan ASN — BKD-only (katalog referensi jabatan kepegawaian)
+        Route::resource('jabatan-asn', \App\Http\Controllers\Admin\JabatanAsnController::class);
     });
 
-    // AJAX endpoints — MUST be before resource routes
+    // --- Node Organisasi (Struktur Organisasi baru) ---
+    Route::resource('node-organisasi', \App\Http\Controllers\Admin\NodeOrganisasiController::class);
+    Route::get('node-organisasi/{nodeOrganisasi}/children', [\App\Http\Controllers\Admin\NodeOrganisasiController::class, 'children'])
+        ->name('node-organisasi.children');
+    Route::get('node-organisasi/ajax/by-parent', [\App\Http\Controllers\Admin\NodeOrganisasiController::class, 'getPosisiByParent'])
+        ->name('node-organisasi.by-parent');
+
+    // --- AJAX endpoints ---
     Route::get('pegawai/extract-tanggal-lahir', [\App\Http\Controllers\Admin\PegawaiController::class, 'extractTanggalLahir'])
         ->name('pegawai.extract-tanggal-lahir');
+    Route::get('pegawai/posisi-by-unit', [\App\Http\Controllers\Admin\PegawaiController::class, 'getPosisiByUnit'])
+        ->name('pegawai.posisi-by-unit');
     Route::get('jabatan/by-opd', [\App\Http\Controllers\Admin\JabatanController::class, 'getByOpd'])
         ->name('jabatan.by-opd');
 

@@ -12,7 +12,9 @@ class DatabaseSeeder extends Seeder
             OpdSeeder::class,
             UserSeeder::class,
             MasterJabatanSeeder::class,
-            JabatanSeeder::class,
+            JabatanAsnSeeder::class,        // BARU: jabatan kepegawaian
+            NodeOrganisasiSeeder::class,    // BARU: struktur organisasi (UNIT + POSISI)
+            JabatanSeeder::class,           // DEPRECATED: backward compat
             PegawaiSeeder::class,
         ]);
     }

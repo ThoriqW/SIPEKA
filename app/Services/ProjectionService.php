@@ -30,6 +30,7 @@ class ProjectionService
      * Hitung proyeksi pensiun per jabatan untuk 5 tahun ke depan.
      * Returns [jabatan_id => [1 => count, ..., 5 => count]]
      *
+     * @deprecated — gunakan hitungProyeksiPensiunPerPosisi() untuk model SOTK baru
      * @param int|null $opdId Filter by OPD (null = all OPDs)
      */
     public function hitungProyeksiPensiunPerJabatan(?int $opdId = null): array
@@ -71,6 +72,58 @@ class ProjectionService
                 $result[$jabatanId][$n] = $result[$jabatanId][$n] ?? 0;
             }
             ksort($result[$jabatanId]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Hitung proyeksi pensiun per POSISI organisasi untuk 5 tahun ke depan.
+     * Menggunakan model SOTK baru (node_organisasi).
+     *
+     * Returns [posisi_id => [1 => count, ..., 5 => count]]
+     *
+     * @param int|null $unitId Filter by unit ancestor (null = all)
+     */
+    public function hitungProyeksiPensiunPerPosisi(?int $unitId = null): array
+    {
+        $t = (int) date('Y');
+        $result = [];
+
+        $query = Pegawai::query()
+            ->with('jabatanAsn')
+            ->select(['id', 'tanggal_lahir', 'jenjang', 'jenis_kepegawaian', 'posisi_organisasi_id'])
+            ->whereNotNull('posisi_organisasi_id');
+
+        if ($unitId !== null) {
+            $query->where('opd_id', $unitId);
+        }
+
+        $pegawaiList = $query->get();
+
+        foreach ($pegawaiList as $pegawai) {
+            $tanggalPensiun = $this->bupCalculator->hitungTanggalPensiun(
+                $pegawai->tanggal_lahir,
+                $pegawai->jenjang,
+                $pegawai->jenis_kepegawaian,
+                $pegawai->jabatanAsn->nama_jabatan_asn ?? null
+            );
+            $tahunPensiun = (int) $tanggalPensiun->format('Y');
+            $posisiId = $pegawai->posisi_organisasi_id;
+
+            for ($n = 1; $n <= 5; $n++) {
+                if ($tahunPensiun === $t + ($n - 1)) {
+                    $result[$posisiId][$n] = ($result[$posisiId][$n] ?? 0) + 1;
+                }
+            }
+        }
+
+        // Pastikan semua posisi memiliki array lengkap 1..5
+        foreach ($result as $posisiId => $years) {
+            for ($n = 1; $n <= 5; $n++) {
+                $result[$posisiId][$n] = $result[$posisiId][$n] ?? 0;
+            }
+            ksort($result[$posisiId]);
         }
 
         return $result;
