@@ -14,11 +14,11 @@ class NodeOrganisasiController extends Controller
     ) {}
 
     /**
-     * Tampilkan daftar node organisasi dalam bentuk pohon.
+     * Halaman UNOR (Unit Organisasi) — struktur organisasi (hanya node UNIT).
      */
-    public function index(Request $request)
+    public function unorIndex(Request $request)
     {
-        $query = NodeOrganisasi::query()->with(['parent', 'pegawai']);
+        $query = NodeOrganisasi::unit()->with(['parent', 'children', 'pegawai']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -26,27 +26,65 @@ class NodeOrganisasiController extends Controller
                   ->orWhere('kode', 'like', "%{$search}%");
         }
 
-        if ($request->filled('jenis')) {
-            $query->where('jenis', $request->jenis);
-        }
-
         $allNodes = $query->orderBy('parent_id')
-            ->orderBy('jenis')
             ->orderBy('sort_order')
             ->orderBy('nama')
             ->get();
 
-        // Build tree untuk tampilan
+        // Build tree
         $childrenMap = [];
         foreach ($allNodes as $node) {
             $childrenMap[$node->parent_id ?? 0][] = $node;
         }
 
-        // Roots: anak langsung dari "Pemerintah Kota Palu"
-        $rootNode = NodeOrganisasi::whereNull('parent_id')->first();
+        $rootNode = $allNodes->firstWhere('parent_id', null);
         $roots = $childrenMap[$rootNode?->id ?? 0] ?? [];
 
-        return view('admin.node-organisasi.index', compact('allNodes', 'childrenMap', 'roots', 'rootNode'));
+        return view('admin.node-organisasi.unit', compact('allNodes', 'childrenMap', 'roots', 'rootNode'));
+    }
+
+    /**
+     * Halaman KEBUTUHAN JABATAN — POSISI dikelompokkan per UNIT induk.
+     * Menampilkan jumlah posisi, kelas, dan status terisi/kosong.
+     */
+    public function kebutuhanIndex(Request $request)
+    {
+        // Ambil semua UNIT untuk filter
+        $unitList = NodeOrganisasi::unit()->orderBy('nama')->get();
+
+        // Ambil semua POSISI dengan parent UNIT
+        $posisiQuery = NodeOrganisasi::posisi()
+            ->with(['parent', 'pegawai', 'pegawai.jabatanAsn']);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $posisiQuery->where('nama', 'like', "%{$search}%");
+        }
+
+        if ($request->filled('unit_id')) {
+            // Filter POSISI yang berada di bawah unit tertentu (subtree)
+            $unit = NodeOrganisasi::find($request->unit_id);
+            if ($unit) {
+                $descendantIds = $unit->getDescendantIds();
+                $descendantIds[] = $unit->id;
+                $posisiQuery->whereIn('parent_id', $descendantIds);
+            }
+        }
+
+        $posisiList = $posisiQuery->orderBy('parent_id')
+            ->orderBy('nama')
+            ->get()
+            ->groupBy('parent_id');
+
+        // Hitung kebutuhan: jumlah POSISI per parent unit
+        $kebutuhanPerUnit = [];
+        foreach ($posisiList as $parentId => $items) {
+            $kebutuhanPerUnit[$parentId] = $items->count();
+        }
+
+        return view('admin.node-organisasi.kebutuhan', compact(
+            'posisiList', 'unitList', 'kebutuhanPerUnit'
+        ));
     }
 
     /**
@@ -54,18 +92,27 @@ class NodeOrganisasiController extends Controller
      */
     public function create()
     {
-        // Parent options: semua node (UNIT dan POSISI) kecuali yang tidak relevan
-        $parentOptions = NodeOrganisasi::orderBy('jenis')
-            ->orderBy('nama')
-            ->get()
-            ->map(fn($n) => [
-                'id' => $n->id,
-                'nama' => $n->nama . ' (' . $n->jenis . ')',
-            ]);
+        // OPD list (Unor level-1) untuk dropdown pertama
+        $rootNode = NodeOrganisasi::whereNull('parent_id')->first();
+        $opdList = collect();
+        if ($rootNode) {
+            $opdList = NodeOrganisasi::unit()
+                ->where('parent_id', $rootNode->id)
+                ->orderBy('nama')
+                ->get()
+                ->map(fn($n) => [
+                    'id' => $n->id,
+                    'nama' => $n->nama,
+                ]);
+        }
+
+        // Tentukan route untuk store berdasarkan halaman asal
+        $storeRoute = request()->routeIs('admin.unor.*') ? 'admin.unor.store' : 'admin.kebutuhan-jabatan.store';
 
         return view('admin.node-organisasi.create', [
-            'parentOptions' => $parentOptions,
-            'jenisOptions' => ['UNIT' => 'Unit Organisasi', 'POSISI' => 'Posisi Organisasi'],
+            'opdList' => $opdList,
+            'isUnor' => request()->routeIs('admin.unor.*'),
+            'storeRoute' => $storeRoute,
         ]);
     }
 
@@ -75,20 +122,24 @@ class NodeOrganisasiController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama' => 'required|string|max:255',
+            'nama' => [
+                'required', 'string', 'max:255',
+                \Illuminate\Validation\Rule::unique('node_organisasi', 'nama')
+                    ->where('parent_id', $request->parent_id),
+            ],
             'jenis' => 'required|in:UNIT,POSISI',
-            'parent_id' => 'nullable|exists:node_organisasi,id',
+            'parent_id' => [
+                'required', 'exists:node_organisasi,id',
+                function (string $attr, mixed $value, \Closure $fail) {
+                    $parent = NodeOrganisasi::find($value);
+                    if ($parent && !$parent->isUnit() && $parent->parent_id !== null) {
+                        $fail('Induk harus berupa Unit Organisasi (Unor).');
+                    }
+                },
+            ],
             'kelas_jabatan' => 'nullable|integer|min:1',
             'sort_order' => 'nullable|integer|min:0',
         ]);
-
-        // Validasi: cegah circular reference
-        if (!empty($validated['parent_id'])) {
-            $parent = NodeOrganisasi::find($validated['parent_id']);
-            if ($parent && $parent->parent_id !== null) {
-                // Parent valid (bukan root)
-            }
-        }
 
         // Generate kode otomatis
         if ($validated['jenis'] === 'POSISI') {
@@ -112,9 +163,9 @@ class NodeOrganisasiController extends Controller
 
         NodeOrganisasi::create($validated);
 
-        return redirect()
-            ->route('admin.node-organisasi.index')
-            ->with('success', 'Node organisasi berhasil ditambahkan.');
+        $redirectRoute = request()->routeIs('admin.unor.*') ? 'admin.unor.index' : 'admin.kebutuhan-jabatan.index';
+        return redirect()->route($redirectRoute)
+            ->with('success', 'Unit organisasi berhasil ditambahkan.');
     }
 
     /**
@@ -126,19 +177,24 @@ class NodeOrganisasiController extends Controller
         $excludeIds = $nodeOrganisasi->getDescendantIds();
         $excludeIds[] = $nodeOrganisasi->id;
 
-        $parentOptions = NodeOrganisasi::whereNotIn('id', $excludeIds)
-            ->orderBy('jenis')
+        $parentOptions = NodeOrganisasi::unit()
+            ->whereNotIn('id', $excludeIds)
             ->orderBy('nama')
             ->get()
             ->map(fn($n) => [
                 'id' => $n->id,
-                'nama' => $n->nama . ' (' . $n->jenis . ')',
+                'nama' => $n->nama,
             ]);
+
+        $updateRoute = request()->routeIs('admin.unor.*') ? 'admin.unor.update' : 'admin.kebutuhan-jabatan.update';
+        $destroyRoute = request()->routeIs('admin.unor.*') ? 'admin.unor.destroy' : 'admin.kebutuhan-jabatan.destroy';
 
         return view('admin.node-organisasi.edit', [
             'node' => $nodeOrganisasi,
             'parentOptions' => $parentOptions,
             'jenisOptions' => ['UNIT' => 'Unit Organisasi', 'POSISI' => 'Posisi Organisasi'],
+            'updateRoute' => $updateRoute,
+            'destroyRoute' => $destroyRoute,
         ]);
     }
 
@@ -150,7 +206,7 @@ class NodeOrganisasiController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'jenis' => 'required|in:UNIT,POSISI',
-            'parent_id' => 'nullable|exists:node_organisasi,id',
+            'parent_id' => 'required|exists:node_organisasi,id',
             'kelas_jabatan' => 'nullable|integer|min:1',
             'sort_order' => 'nullable|integer|min:0',
         ]);
@@ -187,9 +243,9 @@ class NodeOrganisasiController extends Controller
 
         $nodeOrganisasi->update($validated);
 
-        return redirect()
-            ->route('admin.node-organisasi.index')
-            ->with('success', 'Node organisasi berhasil diperbarui.');
+        $redirectRoute = request()->routeIs('admin.unor.*') ? 'admin.unor.index' : 'admin.kebutuhan-jabatan.index';
+        return redirect()->route($redirectRoute)
+            ->with('success', 'Unit organisasi berhasil diperbarui.');
     }
 
     /**
@@ -206,9 +262,9 @@ class NodeOrganisasiController extends Controller
 
         $nodeOrganisasi->delete();
 
-        return redirect()
-            ->route('admin.node-organisasi.index')
-            ->with('success', 'Node organisasi berhasil dihapus.');
+        $redirectRoute = request()->routeIs('admin.unor.*') ? 'admin.unor.index' : 'admin.kebutuhan-jabatan.index';
+        return redirect()->route($redirectRoute)
+            ->with('success', 'Unit organisasi berhasil dihapus.');
     }
 
     /**
@@ -238,6 +294,40 @@ class NodeOrganisasiController extends Controller
             ]);
 
         return response()->json(['success' => true, 'data' => $posisiList]);
+    }
+
+    /**
+     * AJAX: Get semua Unor (UNIT) dalam subtree OPD — untuk cascading dropdown.
+     */
+    public function getUnorByOpd(Request $request)
+    {
+        $request->validate([
+            'opd_id' => [
+                'required', 'exists:node_organisasi,id',
+                function (string $attr, mixed $value, \Closure $fail) {
+                    $node = NodeOrganisasi::find($value);
+                    if (!$node || !$node->isUnit()) {
+                        $fail('Node yang dipilih bukan Unit Organisasi.');
+                    }
+                },
+            ],
+        ]);
+
+        $opd = NodeOrganisasi::find($request->opd_id);
+        $ids = $opd->getDescendantIds();
+        $ids[] = (int) $request->opd_id;
+
+        $unorList = NodeOrganisasi::unit()
+            ->whereIn('id', $ids)
+            ->orderBy('nama')
+            ->get()
+            ->map(fn($n) => [
+                'id' => $n->id,
+                'nama' => $n->nama,
+                'kode' => $n->kode,
+            ]);
+
+        return response()->json(['success' => true, 'data' => $unorList]);
     }
 
     /**

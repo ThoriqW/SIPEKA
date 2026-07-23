@@ -7,7 +7,7 @@ use App\Models\NodeOrganisasi;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Generate kode untuk node organisasi dan jabatan ASN.
+ * Generate kode untuk unit organisasi dan jabatan ASN.
  *
  * Format kode POSISI: {KODE_UNIT_INDUK}-{SINGKATAN_POSISI}-{NOMOR}
  *   Contoh: BKPSDMD-PRANKOM-001, DINKES-DOKTER-002

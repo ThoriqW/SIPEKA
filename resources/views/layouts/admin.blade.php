@@ -28,19 +28,36 @@
                 <a href="{{ route('admin.user.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.user.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     User
                 </a>
-                <a href="{{ route('admin.master-jabatan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.master-jabatan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
-                    Master Jabatan
-                </a>
-                <a href="{{ route('admin.jabatan-asn.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.jabatan-asn.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
-                    Jabatan ASN
-                </a>
                 @endif
-                <a href="{{ route('admin.jabatan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.jabatan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
-                    Jabatan
-                </a>
-                <a href="{{ route('admin.node-organisasi.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.node-organisasi.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
-                    Struktur Org
-                </a>
+
+                {{-- Dropdown: Organisasi & Jabatan --}}
+                @php
+                    $orgRoutes = ['admin.unor.*', 'admin.kebutuhan-jabatan.*', 'admin.jabatan-asn.*'];
+                    $isOrgActive = collect($orgRoutes)->contains(fn($r) => request()->routeIs($r));
+                @endphp
+                <div x-data="{ open: {{ $isOrgActive ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-3 py-2 rounded-md text-sm font-medium {{ $isOrgActive ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
+                        <span>Organisasi &amp; Jabatan</span>
+                        <span x-text="open ? '▾' : '▸'" class="text-xs"></span>
+                    </button>
+                    <div x-show="open" class="ml-3 mt-1 space-y-1 border-l border-blue-700/50 pl-3">
+                        <a href="{{ route('admin.unor.index') }}"
+                           class="flex items-center gap-3 px-3 py-1.5 rounded-md text-sm font-medium {{ request()->routeIs('admin.unor.*') ? 'bg-blue-800/70 text-white' : 'text-blue-300 hover:bg-blue-800/50 hover:text-white' }} transition">
+                            Unor
+                        </a>
+                        <a href="{{ route('admin.kebutuhan-jabatan.index') }}"
+                           class="flex items-center gap-3 px-3 py-1.5 rounded-md text-sm font-medium {{ request()->routeIs('admin.kebutuhan-jabatan.*') ? 'bg-blue-800/70 text-white' : 'text-blue-300 hover:bg-blue-800/50 hover:text-white' }} transition">
+                            Kebutuhan
+                        </a>
+                        @if(auth()->user()->isBkd())
+                        <a href="{{ route('admin.jabatan-asn.index') }}"
+                           class="flex items-center gap-3 px-3 py-1.5 rounded-md text-sm font-medium {{ request()->routeIs('admin.jabatan-asn.*') ? 'bg-blue-800/70 text-white' : 'text-blue-300 hover:bg-blue-800/50 hover:text-white' }} transition">
+                            Jabatan ASN
+                        </a>
+                        @endif
+                    </div>
+                </div>
                 <a href="{{ route('admin.pegawai.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.pegawai.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     Pegawai
                 </a>
@@ -48,7 +65,7 @@
                     Bezetting
                 </a>
                 <a href="{{ route('admin.kebutuhan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.kebutuhan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
-                    Kebutuhan
+                    Proyeksi 5 Tahun
                 </a>
             </nav>
             <div class="border-t border-blue-800 p-3">

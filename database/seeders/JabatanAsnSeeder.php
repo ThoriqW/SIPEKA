@@ -3,108 +3,91 @@
 namespace Database\Seeders;
 
 use App\Models\JabatanAsn;
-use App\Models\MasterJabatan;
 use App\Services\KodeNodeGenerator;
 use Illuminate\Database\Seeder;
 
 /**
- * Seeder mengisi tabel jabatan_asn dari data master_jabatan.
+ * Seeder mengisi tabel jabatan_asn — katalog jabatan kepegawaian ASN.
  *
- * Untuk setiap master_jabatan root-level (parent_id = null),
- * buat beberapa varian jenjang yang relevan.
- *
- * Contoh:
- *   - "Guru" → Guru Ahli Pertama, Guru Ahli Muda, Guru Ahli Madya
- *   - "Dokter" → Dokter Ahli Pertama, Dokter Ahli Madya
- *   - "Perawat" → Perawat - Terampil, Perawat - Mahir, Perawat - Penyelia
+ * Data: nama jabatan + jenis_jabatan + jenjang.
+ * Setiap kombinasi menghasilkan satu record jabatan_asn
+ * yang dapat dipilih saat mengisi data pegawai.
  */
 class JabatanAsnSeeder extends Seeder
 {
     public function run(): void
     {
-        // Cek apakah sudah ada data — jangan duplikasi
         if (JabatanAsn::exists()) {
             return;
         }
 
         $generator = app(KodeNodeGenerator::class);
 
-        // Mapping jenis jabatan → jenjang yang tersedia
-        $jenjangByJenis = [
-            'Struktural' => [
-                'Pengawas',
-                'Administrator',
-                'Pimpinan Tinggi Pratama',
-            ],
-            'Fungsional' => [
-                'Ahli Pertama',
-                'Ahli Muda',
-                'Ahli Madya',
-                'Ahli Utama',
-                'Keterampilan - Pemula',
-                'Keterampilan - Terampil',
-                'Keterampilan - Mahir',
-                'Keterampilan - Penyelia',
-            ],
-            'Pelaksana' => [
-                'Pelaksana',
-            ],
+        // Data: [nama_jabatan, jenis_jabatan, [daftar_jenjang]]
+        $data = [
+            // === STRUKTURAL ===
+            ['Kepala Dinas', 'Struktural', ['Pimpinan Tinggi Pratama']],
+            ['Kepala Badan', 'Struktural', ['Pimpinan Tinggi Pratama']],
+            ['Kepala Bagian', 'Struktural', ['Administrator']],
+            ['Kepala Bidang', 'Struktural', ['Administrator']],
+            ['Kepala Sub Bagian', 'Struktural', ['Pengawas']],
+            ['Kepala Sub Bidang', 'Struktural', ['Pengawas']],
+            ['Kepala Seksi', 'Struktural', ['Pengawas']],
+
+            // === FUNGSIONAL (Ahli) ===
+            ['Guru', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Dokter', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Dokter Gigi', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Perawat', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Bidan', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Apoteker', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Pranata Komputer', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Analis SDM Aparatur', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Analis Kebijakan', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Auditor', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Penyuluh', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Arsiparis', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Pustakawan', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Statistisi', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Perencana', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Pengawas Sekolah', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+            ['Widyaprada', 'Fungsional', ['Ahli Pertama', 'Ahli Muda', 'Ahli Madya', 'Ahli Utama']],
+
+            // === FUNGSIONAL (Keterampilan) ===
+            ['Perawat', 'Fungsional', ['Keterampilan - Pemula', 'Keterampilan - Terampil', 'Keterampilan - Mahir', 'Keterampilan - Penyelia']],
+            ['Bidan', 'Fungsional', ['Keterampilan - Pemula', 'Keterampilan - Terampil', 'Keterampilan - Mahir', 'Keterampilan - Penyelia']],
+            ['Pranata Komputer', 'Fungsional', ['Keterampilan - Pemula', 'Keterampilan - Terampil', 'Keterampilan - Mahir', 'Keterampilan - Penyelia']],
+
+            // === PELAKSANA ===
+            ['Pengelola Keuangan', 'Pelaksana', ['Pelaksana']],
+            ['Pengelola Barang', 'Pelaksana', ['Pelaksana']],
+            ['Pengelola Kepegawaian', 'Pelaksana', ['Pelaksana']],
+            ['Pengelola Data', 'Pelaksana', ['Pelaksana']],
+            ['Pengadministrasi', 'Pelaksana', ['Pelaksana']],
+            ['Operator Sekolah', 'Pelaksana', ['Pelaksana']],
+            ['Petugas Keamanan', 'Pelaksana', ['Pelaksana']],
+            ['Petugas Kebersihan', 'Pelaksana', ['Pelaksana']],
+            ['Pramu Bakti', 'Pelaksana', ['Pelaksana']],
         ];
 
-        // Ambil semua master_jabatan root-level
-        $roots = MasterJabatan::whereNull('parent_id')
-            ->orderBy('jenis_jabatan')
-            ->orderBy('nama_jabatan')
-            ->get();
-
-        foreach ($roots as $root) {
-            $jenjangList = $jenjangByJenis[$root->jenis_jabatan] ?? [$root->jenis_jabatan];
-
-            // Untuk setiap kombinasi nama jabatan + jenjang, buat satu record
+        foreach ($data as [$nama, $jenis, $jenjangList]) {
             foreach ($jenjangList as $jenjang) {
-                // Tentukan nama_jabatan_asn
-                if ($root->jenis_jabatan === 'Pelaksana') {
-                    // Pelaksana: cukup nama jabatan saja
-                    $namaJasn = $root->nama_jabatan;
+                // Format nama_jabatan_asn
+                if ($jenis === 'Pelaksana') {
+                    $namaJasn = $nama;
                 } elseif (str_contains($jenjang, 'Keterampilan')) {
-                    // Keterampilan: "Perawat - Terampil"
-                    $namaJasn = $root->nama_jabatan . ' ' . $jenjang;
+                    $namaJasn = $nama . ' ' . $jenjang;
                 } else {
-                    // Fungsional/Struktural: "Guru Ahli Pertama", "Dokter Ahli Madya"
-                    $namaJasn = $root->nama_jabatan . ' ' . $jenjang;
+                    $namaJasn = $nama . ' ' . $jenjang;
                 }
 
                 JabatanAsn::create([
                     'nama_jabatan_asn' => $namaJasn,
-                    'jenis_jabatan' => $root->jenis_jabatan,
+                    'jenis_jabatan' => $jenis,
                     'jenjang' => $jenjang,
                     'parent_id' => null,
                     'kode_jabatan_asn' => $generator->generateKodeJabatanAsn(),
                 ]);
-
-                // Proses anak-anak master_jabatan (sub-spesialisasi)
-                $children = MasterJabatan::where('parent_id', $root->id)->get();
-                foreach ($children as $child) {
-                    if ($root->jenis_jabatan === 'Pelaksana') {
-                        $childNama = $child->nama_jabatan;
-                    } elseif (str_contains($jenjang, 'Keterampilan')) {
-                        $childNama = $child->nama_jabatan . ' ' . $jenjang;
-                    } else {
-                        $childNama = $child->nama_jabatan . ' ' . $jenjang;
-                    }
-
-                    $parent = JabatanAsn::where('nama_jabatan_asn', $namaJasn)
-                        ->where('jenis_jabatan', $root->jenis_jabatan)
-                        ->first();
-
-                    JabatanAsn::create([
-                        'nama_jabatan_asn' => $childNama,
-                        'jenis_jabatan' => $root->jenis_jabatan,
-                        'jenjang' => $jenjang,
-                        'parent_id' => $parent?->id,
-                        'kode_jabatan_asn' => $generator->generateKodeJabatanAsn(),
-                    ]);
-                }
             }
         }
     }

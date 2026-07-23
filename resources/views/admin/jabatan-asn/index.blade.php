@@ -8,7 +8,7 @@
                 <h1 class="text-2xl font-semibold text-gray-900">Jabatan ASN</h1>
                 <p class="text-sm text-gray-500 mt-1">Katalog jabatan kepegawaian — melekat pada pegawai, bukan posisi organisasi</p>
             </div>
-            <a href="{{ route('admin.jabatan-asn.create') }}" class="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:outline-none transition">
+            <a href="{{ route('admin.jabatan-asn.create') }}" class="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-sm text-white hover:bg-blue-700 focus:outline-none transition">
                 + Tambah Jabatan ASN
             </a>
         </div>

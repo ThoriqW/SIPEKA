@@ -53,8 +53,8 @@
             </div>
 
             <div class="flex items-center gap-3 pt-4">
-                <button type="submit" class="px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">Simpan</button>
-                <a href="{{ route('admin.jabatan-asn.index') }}" class="px-4 py-2 bg-gray-200 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300">Batal</a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-sm text-white hover:bg-blue-700">Simpan</button>
+                <a href="{{ route('admin.jabatan-asn.index') }}" class="px-4 py-2 bg-gray-200 border border-gray-300 rounded-md font-semibold text-sm text-gray-700 hover:bg-gray-300">Batal</a>
             </div>
         </form>
     </div>

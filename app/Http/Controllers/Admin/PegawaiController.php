@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Jabatan;
 use App\Models\JabatanAsn;
 use App\Models\NodeOrganisasi;
 use App\Models\Pegawai;
@@ -75,9 +74,8 @@ class PegawaiController extends Controller
             'pendidikan' => 'required',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
             'opd_id' => 'required|exists:opd,id',
-            'jabatan_id' => 'nullable|exists:jabatan,id',            // @deprecated
-            'jabatan_asn_id' => 'nullable|exists:jabatan_asn,id',    // NEW
-            'posisi_organisasi_id' => 'nullable|exists:node_organisasi,id', // NEW
+            'jabatan_asn_id' => 'nullable|exists:jabatan_asn,id',
+            'posisi_organisasi_id' => 'nullable|exists:node_organisasi,id',
         ]);
 
         // --- Model baru: validasi POSISI ---
@@ -97,22 +95,9 @@ class PegawaiController extends Controller
             }
         }
 
-        // --- Model lama (backward compat): validasi jabatan struktural ---
-        if (!empty($validated['jabatan_id'])) {
-            $jabatan = Jabatan::withCount('pegawai')->find($validated['jabatan_id']);
-            if ($jabatan && $jabatan->jenis_jabatan === 'Struktural' && $jabatan->pegawai_count >= 1) {
-                return back()->withInput()->with('error',
-                    'Jabatan Struktural "' . $jabatan->nama_jabatan . '" sudah terisi. Hanya boleh 1 pegawai per jabatan struktural.');
-            }
-        }
-
-        // Auto-fill jenjang dari Jabatan ASN (prioritas) atau jabatan lama
+        // Auto-fill jenjang dari Jabatan ASN
         if (!empty($validated['jabatan_asn_id'])) {
-            $jabatanAsn = JabatanAsn::find($validated['jabatan_asn_id']);
-            $validated['jenjang'] = $jabatanAsn?->jenjang;
-        } elseif (!empty($validated['jabatan_id'])) {
-            $jabatan = Jabatan::withCount('pegawai')->find($validated['jabatan_id']);
-            $validated['jenjang'] = $jabatan?->jenjang;
+            $validated['jenjang'] = JabatanAsn::find($validated['jabatan_asn_id'])?->jenjang;
         } else {
             $validated['jenjang'] = null;
         }
@@ -163,9 +148,8 @@ class PegawaiController extends Controller
             'pendidikan' => 'required',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
             'opd_id' => 'required|exists:opd,id',
-            'jabatan_id' => 'nullable|exists:jabatan,id',            // @deprecated
-            'jabatan_asn_id' => 'nullable|exists:jabatan_asn,id',    // NEW
-            'posisi_organisasi_id' => 'nullable|exists:node_organisasi,id', // NEW
+            'jabatan_asn_id' => 'nullable|exists:jabatan_asn,id',
+            'posisi_organisasi_id' => 'nullable|exists:node_organisasi,id',
         ]);
 
         // --- Model baru: validasi POSISI ---
@@ -185,22 +169,9 @@ class PegawaiController extends Controller
             }
         }
 
-        // --- Model lama (backward compat) ---
-        if (!empty($validated['jabatan_id']) && $validated['jabatan_id'] != $pegawai->jabatan_id) {
-            $jabatan = Jabatan::withCount('pegawai')->find($validated['jabatan_id']);
-            if ($jabatan && $jabatan->jenis_jabatan === 'Struktural' && $jabatan->pegawai_count >= 1) {
-                return back()->withInput()->with('error',
-                    'Jabatan Struktural "' . $jabatan->nama_jabatan . '" sudah terisi.');
-            }
-        }
-
-        // Auto-fill jenjang
+        // Auto-fill jenjang dari Jabatan ASN
         if (!empty($validated['jabatan_asn_id'])) {
-            $jabatanAsn = JabatanAsn::find($validated['jabatan_asn_id']);
-            $validated['jenjang'] = $jabatanAsn?->jenjang;
-        } elseif (!empty($validated['jabatan_id'])) {
-            $jabatan = Jabatan::find($validated['jabatan_id']);
-            $validated['jenjang'] = $jabatan?->jenjang;
+            $validated['jenjang'] = JabatanAsn::find($validated['jabatan_asn_id'])?->jenjang;
         } else {
             $validated['jenjang'] = null;
         }

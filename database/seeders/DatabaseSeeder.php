@@ -11,10 +11,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             OpdSeeder::class,
             UserSeeder::class,
-            MasterJabatanSeeder::class,
-            JabatanAsnSeeder::class,        // BARU: jabatan kepegawaian
-            NodeOrganisasiSeeder::class,    // BARU: struktur organisasi (UNIT + POSISI)
-            JabatanSeeder::class,           // DEPRECATED: backward compat
+            JabatanAsnSeeder::class,        // Jabatan kepegawaian (katalog + jenjang)
+            NodeOrganisasiSeeder::class,    // Struktur organisasi (UNIT + POSISI)
             PegawaiSeeder::class,
         ]);
     }

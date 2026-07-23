@@ -95,7 +95,7 @@ class NodeOrganisasi extends Model
      */
     public function isTerisi(): bool
     {
-        return $this->pegawai()->exists();
+        return $this->pegawai->isNotEmpty();
     }
 
     /**
