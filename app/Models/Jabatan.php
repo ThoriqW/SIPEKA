@@ -16,36 +16,51 @@ class Jabatan extends Model
         'jenis_jabatan',
         'kelas_jabatan',
         'jenjang',
-        'kebutuhan',
         'opd_id',
-        'induk_jabatan_id',
     ];
 
     protected function casts(): array
     {
         return [
-            'kebutuhan' => 'integer',
             'kelas_jabatan' => 'integer',
         ];
     }
 
+    /**
+     * Backward compatibility: opd_id sekarang references unor.
+     * Akan digantikan oleh SOTK di Phase 2.
+     */
     public function opd(): BelongsTo
     {
-        return $this->belongsTo(Opd::class);
+        return $this->belongsTo(Unor::class, 'opd_id');
     }
 
-    public function induk(): BelongsTo
+    /**
+     * Alias untuk opd() — lebih deskriptif.
+     */
+    public function unor(): BelongsTo
     {
-        return $this->belongsTo(Jabatan::class, 'induk_jabatan_id');
-    }
-
-    public function anak(): HasMany
-    {
-        return $this->hasMany(Jabatan::class, 'induk_jabatan_id');
+        return $this->belongsTo(Unor::class, 'opd_id');
     }
 
     public function pegawai(): HasMany
     {
         return $this->hasMany(Pegawai::class);
+    }
+
+    /**
+     * SOTK entries yang menempatkan jabatan ini di berbagai UNOR.
+     */
+    public function sotkEntries(): HasMany
+    {
+        return $this->hasMany(Sotk::class);
+    }
+
+    /**
+     * Kebutuhan pegawai untuk jabatan ini.
+     */
+    public function kebutuhanPegawai(): HasMany
+    {
+        return $this->hasMany(KebutuhanPegawai::class);
     }
 }

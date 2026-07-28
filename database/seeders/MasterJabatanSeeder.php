@@ -10,39 +10,41 @@ class MasterJabatanSeeder extends Seeder
     public function run(): void
     {
         // ============================================================
-        // STRUKTURAL
+        // STRUKTURAL — dengan jenjang
         // ============================================================
         $struktural = [
-            'Kepala Dinas',
-            'Sekretaris Dinas',
-            'Kepala Bidang',
-            'Kepala Sub Bagian',
-            'Kepala Sub Bidang',
-            'Kepala Badan',
-            'Sekretaris Badan',
-            'Kepala UPTD',
-            'Kepala Bagian',
-            'Kepala Seksi',
-            'Camat',
-            'Sekretaris Camat',
-            'Lurah',
-            'Sekretaris Lurah',
-            'Sekretaris Daerah',
-            'Asisten Pemerintahan',
-            'Asisten Perekonomian',
-            'Asisten Administrasi Umum',
+            'Kepala Dinas' => 'Pimpinan Tinggi Pratama',
+            'Sekretaris Dinas' => 'Administrator',
+            'Kepala Bidang' => 'Administrator',
+            'Kepala Sub Bagian' => 'Pengawas',
+            'Kepala Sub Bidang' => 'Pengawas',
+            'Kepala Badan' => 'Pimpinan Tinggi Pratama',
+            'Sekretaris Badan' => 'Administrator',
+            'Kepala UPTD' => 'Administrator',
+            'Kepala Bagian' => 'Administrator',
+            'Kepala Seksi' => 'Pengawas',
+            'Camat' => 'Administrator',
+            'Sekretaris Camat' => 'Pengawas',
+            'Lurah' => 'Administrator',
+            'Sekretaris Lurah' => 'Pengawas',
+            'Sekretaris Daerah' => 'Pimpinan Tinggi Pratama',
+            'Asisten Pemerintahan' => 'Administrator',
+            'Asisten Perekonomian' => 'Administrator',
+            'Asisten Administrasi Umum' => 'Administrator',
         ];
 
-        foreach ($struktural as $nama) {
+        foreach ($struktural as $nama => $jenjang) {
             MasterJabatan::create([
                 'nama_jabatan' => $nama,
                 'jenis_jabatan' => 'Struktural',
+                'jenjang' => $jenjang,
+                'sub_jabatan' => null,
                 'parent_id' => null,
             ]);
         }
 
         // ============================================================
-        // PELAKSANA
+        // PELAKSANA — jenjang = Pelaksana
         // ============================================================
         $pelaksana = [
             'Pengadministrasi Umum',
@@ -61,13 +63,14 @@ class MasterJabatanSeeder extends Seeder
             MasterJabatan::create([
                 'nama_jabatan' => $nama,
                 'jenis_jabatan' => 'Pelaksana',
+                'jenjang' => 'Pelaksana',
+                'sub_jabatan' => null,
                 'parent_id' => null,
             ]);
         }
 
         // ============================================================
-        // FUNGSIONAL — TENAGA KESEHATAN (26 dari sheet NAKES)
-        // Semua flat (parent_id = null), hanya Dokter punya sub-jabatan
+        // FUNGSIONAL — TENAGA KESEHATAN (NAKES)
         // ============================================================
         $nakes = [
             'Administrator Kesehatan',
@@ -75,7 +78,7 @@ class MasterJabatanSeeder extends Seeder
             'Asisten Apoteker',
             'Asisten Penata Anestesi',
             'Bidan',
-            'Dokter',               // <-- ini yang punya sub-jabatan
+            'Dokter',
             'Dokter Gigi',
             'Entomolog Kesehatan',
             'Epidemiolog Kesehatan',
@@ -103,6 +106,8 @@ class MasterJabatanSeeder extends Seeder
             $entry = MasterJabatan::create([
                 'nama_jabatan' => $nama,
                 'jenis_jabatan' => 'Fungsional',
+                'jenjang' => null,
+                'sub_jabatan' => null,
                 'parent_id' => null,
             ]);
             if ($nama === 'Dokter') {
@@ -110,7 +115,7 @@ class MasterJabatanSeeder extends Seeder
             }
         }
 
-        // SUB-JABATAN DOKTER SPESIALIS (40 dari sheet DOKTER SPESIALIS)
+        // SUB-JABATAN DOKTER SPESIALIS
         $dokterSpesialis = [
             'Dokter Umum',
             'Dokter Gigi Umum',
@@ -156,19 +161,22 @@ class MasterJabatanSeeder extends Seeder
 
         foreach ($dokterSpesialis as $nama) {
             MasterJabatan::create([
-                'nama_jabatan' => $nama,
+                'nama_jabatan' => 'Dokter',
                 'jenis_jabatan' => 'Fungsional',
+                'jenjang' => null,
+                'sub_jabatan' => $nama,
                 'parent_id' => $dokterId,
             ]);
         }
 
         // ============================================================
-        // FUNGSIONAL — TENAGA GURU
-        // Semua Guru memiliki sub-jabatan mapel (17 dari sheet MAPEL_GURU)
+        // FUNGSIONAL — GURU + MAPEL (sub-jabatan)
         // ============================================================
         $guru = MasterJabatan::create([
             'nama_jabatan' => 'Guru',
             'jenis_jabatan' => 'Fungsional',
+            'jenjang' => null,
+            'sub_jabatan' => null,
             'parent_id' => null,
         ]);
 
@@ -194,14 +202,16 @@ class MasterJabatanSeeder extends Seeder
 
         foreach ($mapelGuru as $nama) {
             MasterJabatan::create([
-                'nama_jabatan' => $nama,
+                'nama_jabatan' => 'Guru',
                 'jenis_jabatan' => 'Fungsional',
+                'jenjang' => null,
+                'sub_jabatan' => $nama,
                 'parent_id' => $guru->id,
             ]);
         }
 
         // ============================================================
-        // FUNGSIONAL — TENAGA TEKNIS (flat, tidak ada sub-jabatan)
+        // FUNGSIONAL — TENAGA TEKNIS
         // ============================================================
         $teknis = [
             'Analis Kebijakan',
@@ -230,6 +240,8 @@ class MasterJabatanSeeder extends Seeder
             MasterJabatan::create([
                 'nama_jabatan' => $nama,
                 'jenis_jabatan' => 'Fungsional',
+                'jenjang' => null,
+                'sub_jabatan' => null,
                 'parent_id' => null,
             ]);
         }

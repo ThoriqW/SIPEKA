@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KebutuhanPegawai;
 use App\Models\Jabatan;
 use App\Models\MasterJabatan;
-use App\Models\Opd;
+use App\Models\Unor;
 use App\Models\Pegawai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,11 +16,11 @@ class DashboardController extends Controller
     {
         $totalPns = Pegawai::where('jenis_kepegawaian', 'PNS')->count();
         $totalPppk = Pegawai::where('jenis_kepegawaian', 'PPPK')->count();
-        $totalOpd = Opd::count();
+        $totalOpd = Unor::count();
         $totalPegawai = Pegawai::count();
 
-        // Total kebutuhan seluruh jabatan
-        $totalKebutuhan = Jabatan::sum('kebutuhan');
+        // Total kebutuhan seluruh jabatan dari tabel kebutuhan_pegawai
+        $totalKebutuhan = KebutuhanPegawai::whereNull('tahun')->sum('jumlah');
 
         // Pegawai per jenis_jabatan dirinci per jenjang
         $pegawaiPerJenisJenjang = Pegawai::join('jabatan', 'pegawai.jabatan_id', '=', 'jabatan.id')

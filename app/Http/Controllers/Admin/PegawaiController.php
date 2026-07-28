@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
-use App\Models\Opd;
+use App\Models\PenempatanPegawai;
+use App\Models\Unor;
 use App\Enums\GolonganPangkat;
 use App\Enums\JenisKepegawaian;
 use App\Enums\Pendidikan;
@@ -16,7 +17,7 @@ class PegawaiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pegawai::query()->with(['opd', 'jabatan.induk']);
+        $query = Pegawai::query()->with(['opd', 'jabatan', 'penempatanAktif.unor']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -25,13 +26,13 @@ class PegawaiController extends Controller
         }
         if ($request->filled('opd_id')) $query->where('opd_id', $request->opd_id);
         $pegawaiList = $query->orderBy('nama')->paginate(15)->withQueryString();
-        $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
+        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
         return view('admin.pegawai.index', compact('pegawaiList', 'opdList'));
     }
 
     public function create()
     {
-        $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
+        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
         return view('admin.pegawai.create', [
             'opdList' => $opdList,
             'golonganPangkatList' => GolonganPangkat::labels(),
@@ -51,31 +52,40 @@ class PegawaiController extends Controller
             'golongan_pangkat' => 'required',
             'pendidikan' => 'required',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
-            'opd_id' => 'required|exists:opd,id',
+            'opd_id' => 'required|exists:unor,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
 
         // Jenjang otomatis dari jabatan yang dipilih
         if (!empty($validated['jabatan_id'])) {
-            $jabatan = Jabatan::withCount('pegawai')->find($validated['jabatan_id']);
+            $jabatan = Jabatan::find($validated['jabatan_id']);
             if ($jabatan) {
-                // Jabatan Struktural hanya boleh diisi 1 pegawai
-                if ($jabatan->jenis_jabatan === 'Struktural' && $jabatan->pegawai_count >= 1) {
-                    return back()->withInput()->with('error', 'Jabatan Struktural "' . $jabatan->nama_jabatan . '" sudah terisi. Hanya boleh 1 pegawai per jabatan struktural.');
-                }
                 $validated['jenjang'] = $jabatan->jenjang;
             }
         } else {
             $validated['jenjang'] = null;
         }
 
-        Pegawai::create($validated);
+        $pegawai = Pegawai::create($validated);
+
+        // Buat penempatan otomatis
+        if ($pegawai->opd_id && $pegawai->jabatan_id) {
+            PenempatanPegawai::create([
+                'pegawai_id' => $pegawai->id,
+                'unor_id' => $pegawai->opd_id,
+                'jabatan_id' => $pegawai->jabatan_id,
+                'tanggal_mulai' => now()->toDateString(),
+                'is_active' => true,
+            ]);
+        }
+
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
     }
 
     public function edit(Pegawai $pegawai)
     {
-        $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
+        $pegawai->load('penempatanAktif');
+        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
         return view('admin.pegawai.edit', [
             'pegawai' => $pegawai,
             'opdList' => $opdList,
@@ -96,27 +106,45 @@ class PegawaiController extends Controller
             'golongan_pangkat' => 'required',
             'pendidikan' => 'required',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
-            'opd_id' => 'required|exists:opd,id',
+            'opd_id' => 'required|exists:unor,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
 
         // Jenjang otomatis dari jabatan yang dipilih
         if (!empty($validated['jabatan_id'])) {
-            $jabatan = Jabatan::withCount('pegawai')->find($validated['jabatan_id']);
+            $jabatan = Jabatan::find($validated['jabatan_id']);
             if ($jabatan) {
-                // Jabatan Struktural hanya boleh diisi 1 pegawai (kecuali pegawai ini sendiri)
-                if ($validated['jabatan_id'] != $pegawai->jabatan_id
-                    && $jabatan->jenis_jabatan === 'Struktural'
-                    && $jabatan->pegawai_count >= 1) {
-                    return back()->withInput()->with('error', 'Jabatan Struktural "' . $jabatan->nama_jabatan . '" sudah terisi. Hanya boleh 1 pegawai per jabatan struktural.');
-                }
                 $validated['jenjang'] = $jabatan->jenjang;
             }
         } else {
             $validated['jenjang'] = null;
         }
 
+        // Deteksi perubahan penempatan
+        $opdChanged = (int) $validated['opd_id'] !== (int) $pegawai->opd_id;
+        $jabatanChanged = (int) ($validated['jabatan_id'] ?? 0) !== (int) ($pegawai->jabatan_id ?? 0);
+
         $pegawai->update($validated);
+
+        // Jika OPD atau jabatan berubah, nonaktifkan penempatan lama & buat baru
+        if ($opdChanged || $jabatanChanged) {
+            // Nonaktifkan penempatan aktif sebelumnya
+            PenempatanPegawai::where('pegawai_id', $pegawai->id)
+                ->where('is_active', true)
+                ->update(['is_active' => false, 'tanggal_selesai' => now()->toDateString()]);
+
+            // Buat penempatan baru
+            if ($pegawai->opd_id && $pegawai->jabatan_id) {
+                PenempatanPegawai::create([
+                    'pegawai_id' => $pegawai->id,
+                    'unor_id' => $pegawai->opd_id,
+                    'jabatan_id' => $pegawai->jabatan_id,
+                    'tanggal_mulai' => now()->toDateString(),
+                    'is_active' => true,
+                ]);
+            }
+        }
+
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil diperbarui.');
     }
 

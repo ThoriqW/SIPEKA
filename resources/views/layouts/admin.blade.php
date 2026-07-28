@@ -44,6 +44,11 @@
                 <a href="{{ route('admin.kebutuhan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.kebutuhan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     Kebutuhan
                 </a>
+                @if(auth()->user()->isBkd())
+                <a href="{{ route('admin.tugas-tambahan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.tugas-tambahan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
+                    Tugas Tambahan
+                </a>
+                @endif
             </nav>
             <div class="border-t border-blue-800 p-3">
                 <span class="block px-3 py-1 text-xs text-blue-300 mb-2">

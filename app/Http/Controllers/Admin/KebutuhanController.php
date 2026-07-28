@@ -2,51 +2,51 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\KebutuhanExport;
+use App\Exports\BezettingExport;
 use App\Http\Controllers\Controller;
-use App\Models\Opd;
 use App\Services\FlattenedTreeService;
-use Illuminate\Http\Request;
+use App\Services\ProjectionService;
 use Maatwebsite\Excel\Facades\Excel;
 
 class KebutuhanController extends Controller
 {
     public function __construct(
         private FlattenedTreeService $flattenedTreeService,
+        private ProjectionService $projectionService,
     ) {}
 
     /**
-     * Tampilkan tabel pohon Bezetting (sebelumnya Kebutuhan).
-     * Tanpa proyeksi tahun — hanya data saat ini.
+     * Tampilkan tabel pohon Kebutuhan — dengan proyeksi pensiun & kebutuhan 5 tahun.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $opdId = $request->filled('opd_id') ? (int) $request->opd_id : null;
         $tree = $this->flattenedTreeService->buildFlatTree(
-            opdId: $opdId,
+            unorId: null,
             includeRoot: true,
-            withProjections: false,
+            withProjections: true,
         );
-        $opdList = Opd::orderBy('nama_opd')->pluck('nama_opd', 'id');
 
-        return view('admin.kebutuhan.index', compact('tree', 'opdList'));
+        $tahunLabels = $this->projectionService->getTahunLabels();
+
+        return view('admin.bezetting.index', compact('tree', 'tahunLabels'));
     }
 
     /**
-     * Export Bezetting ke Excel.
+     * Export Kebutuhan ke Excel.
      */
-    public function export(Request $request)
+    public function export()
     {
-        $opdId = $request->filled('opd_id') ? (int) $request->opd_id : null;
         $tree = $this->flattenedTreeService->buildFlatTree(
-            opdId: $opdId,
+            unorId: null,
             includeRoot: true,
-            withProjections: false,
+            withProjections: true,
         );
 
+        $tahunLabels = $this->projectionService->getTahunLabels();
+
         return Excel::download(
-            new KebutuhanExport($tree, []),
-            'bezetting-' . date('Y-m-d') . '.xlsx'
+            new BezettingExport($tree, $tahunLabels),
+            'kebutuhan-' . date('Y-m-d') . '.xlsx'
         );
     }
 }

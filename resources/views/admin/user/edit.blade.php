@@ -27,7 +27,7 @@
                         </tr>
                         <tr>
                             <td class="text-gray-500">OPD</td>
-                            <td class="font-medium">{{ $pegawai->opd->nama_opd ?? '—' }}</td>
+                            <td class="font-medium">{{ $pegawai->opd->nama_unor ?? '—' }}</td>
                         </tr>
                     </table>
                 </div>

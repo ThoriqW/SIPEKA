@@ -8,8 +8,8 @@
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.jabatan.index') }}" class="hover:text-gray-700">Jabatan</a> / Edit</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-             x-data="jabatanForm('{{ old('jenis_jabatan', $jabatan->jenis_jabatan) }}', '{{ old('jenjang', $jabatan->jenjang) }}', '{{ old('nama_jabatan', $jabatan->nama_jabatan) }}')"
-             x-init="initInduk(); onJenisChange(initialJenis, initialJenjang, initialNama)">
+             x-data="jabatanForm('{{ old('jenis_jabatan', $jabatan->jenis_jabatan) }}', '{{ old('nama_jabatan', $jabatan->nama_jabatan) }}')"
+             x-init="onJenisChange(initialJenis, '', initialNama)">
             <form action="{{ route('admin.jabatan.update', $jabatan) }}" method="POST">
                 @csrf @method('PUT')
                 <input type="hidden" name="nama_jabatan" x-ref="namaJabatanHidden"
@@ -20,18 +20,18 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Jabatan</label>
                         <select name="jenis_jabatan" x-on:change="onJenisChange($el.value)"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_jabatan') border-red-500 @enderror">
+                            <option value="">-- Pilih --</option>
                             @foreach($jenisJabatanList as $val => $label)
                                 <option value="{{ $val }}" {{ old('jenis_jabatan', $jabatan->jenis_jabatan) == $val ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
+                        @error('jenis_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
                     {{-- Nama Jabatan (dari Master) --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Nama Jabatan <span class="text-red-500">*</span>
-                        </label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Jabatan <span class="text-red-500">*</span></label>
                         <select x-ref="namaJabatanSelect" x-on:change="onParentChange($el)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nama_jabatan') border-red-500 @enderror">
                             <option value="">-- Pilih Jenis Jabatan dulu --</option>
@@ -41,63 +41,42 @@
 
                     {{-- Sub Jabatan --}}
                     <div x-show="hasChildren" x-cloak>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Sub Jabatan <span class="text-red-500">*</span>
-                        </label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sub Jabatan <span class="text-red-500">*</span></label>
                         <select x-ref="subJabatanSelect" x-on:change="onSubChange($el)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Pilih Sub Jabatan --</option>
                         </select>
-                        @error('nama_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
                     {{-- Kelas Jabatan --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kelas Jabatan</label>
                         <input type="number" name="kelas_jabatan" value="{{ old('kelas_jabatan', $jabatan->kelas_jabatan) }}" min="1"
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kelas_jabatan') border-red-500 @enderror">
+                        @error('kelas_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
                     {{-- Jenjang --}}
                     <div x-show="selectedJenis !== 'Pelaksana'">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
-                        <select name="jenjang" x-ref="jenjangSelect" x-on:change="selectedJenjang = $el.value"
+                        <select name="jenjang" x-ref="jenjangSelect"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenjang') border-red-500 @enderror">
                             <option value="">-- Pilih Jenis Jabatan dulu --</option>
                         </select>
                         @error('jenjang')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Kebutuhan --}}
-                    <div x-show="selectedJenis === 'Fungsional' || selectedJenis === 'Pelaksana'">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kebutuhan</label>
-                        <input type="number" name="kebutuhan" value="{{ old('kebutuhan', $jabatan->kebutuhan) }}" min="0"
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    </div>
-
                     {{-- OPD --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
-                        <select name="opd_id" x-on:change="filterInduk($el.value)"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <select name="opd_id"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
+                            <option value="">-- Pilih --</option>
                             @foreach($opdList as $id => $nama)
                                 <option value="{{ $id }}" {{ old('opd_id', $jabatan->opd_id) == $id ? 'selected' : '' }}>{{ $nama }}</option>
                             @endforeach
                         </select>
-                    </div>
-
-                    {{-- Unit Organisasi --}}
-                    <div x-show="!(selectedJenis === 'Struktural' && selectedJenjang === 'Pimpinan Tinggi Pratama')">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Unit Organisasi <span class="text-red-500">*</span>
-                        </label>
-                        <select name="induk_jabatan_id" x-ref="indukSelect"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Pilih OPD dulu --</option>
-                        </select>
-                        <p x-show="indukEmpty" x-cloak class="mt-1 text-sm text-red-600">
-                            Unit Organisasi tidak tersedia untuk OPD ini. Tambahkan jabatan Struktural terlebih dahulu di OPD tersebut.
-                        </p>
+                        @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
@@ -112,31 +91,19 @@
 
 @section('scripts')
 <script>
-function jabatanForm(initialJenis, initialJenjang, initialNama) {
+function jabatanForm(initialJenis, initialNama) {
     var options = @json($jenjangOptions);
-    var indukByOpd = @json($indukByOpd);
     var masterData = @json($masterJabatanData);
-    var selectedInduk = '{{ old('induk_jabatan_id', $jabatan->induk_jabatan_id ?? '') }}';
     var currentChildren = [];
 
-    // Parse existing nama_jabatan for parent + sub
-    var existingNama = initialNama || '';
-    var parts = existingNama.split(' - ');
-    var existingParent = parts[0] || '';
-    var existingSub = parts.length > 1 ? parts.slice(1).join(' - ') : '';
-
     return {
-        initialJenis: initialJenis,
-        initialJenjang: initialJenjang,
-        initialNama: existingNama,
-        selectedJenis: '',
-        selectedJenjang: initialJenjang || '',
+        selectedJenis: initialJenis || '',
         hasChildren: false,
-        indukEmpty: false,
+        initialJenis: initialJenis,
+        initialNama: initialNama,
 
-        onJenisChange(jenis, preSelectJenjang, preNama) {
+        onJenisChange(jenis, _, preNama) {
             this.selectedJenis = jenis;
-            this.selectedJenjang = preSelectJenjang || '';
             this.hasChildren = false;
             currentChildren = [];
 
@@ -144,19 +111,17 @@ function jabatanForm(initialJenis, initialJenjang, initialNama) {
             var parentName = pn.split(' - ')[0] || '';
             var subName = pn.split(' - ').slice(1).join(' - ') || '';
 
-            // Populate jenjang
             var js = this.$refs.jenjangSelect;
             js.innerHTML = '<option value="">-- Pilih Jenjang --</option>';
             if (jenis && options[jenis]) {
                 Object.entries(options[jenis]).forEach(function(e) {
                     var opt = document.createElement('option');
                     opt.value = e[0]; opt.textContent = e[1];
-                    if (preSelectJenjang && e[0] === preSelectJenjang) opt.selected = true;
+                    if ('{{ old('jenjang', $jabatan->jenjang) }}' === e[0]) opt.selected = true;
                     js.appendChild(opt);
                 });
             }
 
-            // Populate parent select + pre-select
             this.populateParentSelect(jenis, parentName, subName);
             this.updateHidden();
         },
@@ -170,8 +135,7 @@ function jabatanForm(initialJenis, initialJenjang, initialNama) {
             var ps = preSelectParent || '';
             var ss = preSelectSub || '';
 
-            var items = masterData[jenis];
-            items.forEach(function(item) {
+            masterData[jenis].forEach(function(item) {
                 var opt = document.createElement('option');
                 opt.value = item.nama;
                 opt.textContent = item.nama;
@@ -180,7 +144,6 @@ function jabatanForm(initialJenis, initialJenjang, initialNama) {
                 if (ps && item.nama === ps) opt.selected = true;
                 select.appendChild(opt);
 
-                // If pre-selected parent has children, populate sub dropdown
                 if (ps && item.nama === ps && item.children && item.children.length > 0) {
                     currentChildren = item.children;
                     self.hasChildren = true;
@@ -209,9 +172,9 @@ function jabatanForm(initialJenis, initialJenjang, initialNama) {
             if (hasChildren) {
                 currentChildren = JSON.parse(childrenJson);
                 this.hasChildren = true;
+
                 var subSelect = this.$refs.subJabatanSelect;
                 subSelect.innerHTML = '<option value="">-- Pilih Sub Jabatan --</option>';
-                var self = this;
                 currentChildren.forEach(function(child) {
                     var co = document.createElement('option');
                     co.value = child.nama;
@@ -222,42 +185,18 @@ function jabatanForm(initialJenis, initialJenjang, initialNama) {
             this.updateHidden();
         },
 
-        onSubChange(selectEl) {
+        onSubChange() {
             this.updateHidden();
         },
 
         updateHidden() {
-            var parentSelect = this.$refs.namaJabatanSelect;
-            var parentName = parentSelect.value || '';
-
+            var parentName = this.$refs.namaJabatanSelect.value || '';
             if (this.hasChildren && this.$refs.subJabatanSelect) {
                 var subName = this.$refs.subJabatanSelect.value;
-                if (subName) {
-                    this.$refs.namaJabatanHidden.value = parentName + ' - ' + subName;
-                } else {
-                    this.$refs.namaJabatanHidden.value = '';
-                }
+                this.$refs.namaJabatanHidden.value = subName ? parentName + ' - ' + subName : '';
             } else {
                 this.$refs.namaJabatanHidden.value = parentName;
             }
-        },
-
-        filterInduk(opdId) {
-            var select = this.$refs.indukSelect;
-            var items = indukByOpd[opdId] || [];
-            this.indukEmpty = items.length === 0;
-            select.innerHTML = '<option value="">-- ' + (this.indukEmpty ? 'Tidak Tersedia' : 'Pilih Unit Organisasi') + ' --</option>';
-            items.forEach(function(item) {
-                var o = document.createElement('option');
-                o.value = item.id; o.textContent = item.nama;
-                if (String(item.id) === String(selectedInduk)) o.selected = true;
-                select.appendChild(o);
-            });
-        },
-
-        initInduk() {
-            var s = this.$el.querySelector('[name="opd_id"]');
-            if (s && s.value) this.filterInduk(s.value);
         }
     }
 }

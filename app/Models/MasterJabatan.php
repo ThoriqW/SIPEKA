@@ -13,6 +13,8 @@ class MasterJabatan extends Model
     protected $fillable = [
         'nama_jabatan',
         'jenis_jabatan',
+        'jenjang',
+        'sub_jabatan',
         'parent_id',
     ];
 

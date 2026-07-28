@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Jabatan;
-use App\Models\Opd;
+use App\Models\Unor;
 use App\Services\KodeJabatanGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -19,8 +19,8 @@ class KodeJabatanGeneratorTest extends TestCase
     {
         parent::setUp();
 
-        Opd::create(['nama_opd' => 'Dinas Test', 'kode_opd' => 'DIKBUD']);
-        Opd::create(['nama_opd' => 'Dinas Kesehatan', 'kode_opd' => 'DINKES']);
+        Unor::create(['nama_unor' => 'Dinas Test', 'kode_unor' => 'DIKBUD']);
+        Unor::create(['nama_unor' => 'Dinas Kesehatan', 'kode_unor' => 'DINKES']);
 
         $this->generator = app(KodeJabatanGenerator::class);
     }

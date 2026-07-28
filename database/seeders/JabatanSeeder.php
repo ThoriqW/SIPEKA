@@ -3,59 +3,51 @@
 namespace Database\Seeders;
 
 use App\Models\Jabatan;
-use App\Models\Opd;
+use App\Models\Unor;
 use Illuminate\Database\Seeder;
 
 class JabatanSeeder extends Seeder
 {
     public function run(): void
     {
-        $opdDikbud = Opd::where('kode_opd', 'DIKBUD')->first();
-        $opdDinkes = Opd::where('kode_opd', 'DINKES')->first();
+        $opdDikbud = Unor::where('kode_unor', 'DIKBUD')->first();
+        $opdDinkes = Unor::where('kode_unor', 'DINKES')->first();
 
-        // OPD 1: Dinas Pendidikan dan Kebudayaan
-        $kepala_opd1 = Jabatan::create([
+        // ── OPD 1: Dinas Pendidikan dan Kebudayaan ──
+        Jabatan::create([
             'nama_jabatan' => 'Kepala Dinas Pendidikan dan Kebudayaan',
             'kode_jabatan' => 'DIKBUD-001',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'kebutuhan' => 1,
             'opd_id' => $opdDikbud->id,
-            'induk_jabatan_id' => null,
         ]);
 
-        $sekretariat = Jabatan::create([
+        Jabatan::create([
             'nama_jabatan' => 'Sekretariat',
             'kode_jabatan' => 'DIKBUD-002',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 13,
             'jenjang' => 'Administrator',
-            'kebutuhan' => 1,
             'opd_id' => $opdDikbud->id,
-            'induk_jabatan_id' => $kepala_opd1->id,
         ]);
 
-        $bidang_sd = Jabatan::create([
+        Jabatan::create([
             'nama_jabatan' => 'Bidang Sekolah Dasar',
             'kode_jabatan' => 'DIKBUD-003',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 12,
             'jenjang' => 'Administrator',
-            'kebutuhan' => 1,
             'opd_id' => $opdDikbud->id,
-            'induk_jabatan_id' => $kepala_opd1->id,
         ]);
 
-        $sub_keuangan = Jabatan::create([
+        Jabatan::create([
             'nama_jabatan' => 'Sub Bagian Keuangan',
             'kode_jabatan' => 'DIKBUD-004',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 10,
             'jenjang' => 'Pengawas',
-            'kebutuhan' => 1,
             'opd_id' => $opdDikbud->id,
-            'induk_jabatan_id' => $sekretariat->id,
         ]);
 
         Jabatan::create([
@@ -64,20 +56,16 @@ class JabatanSeeder extends Seeder
             'jenis_jabatan' => 'Pelaksana',
             'kelas_jabatan' => 6,
             'jenjang' => 'Pelaksana',
-            'kebutuhan' => 3,
             'opd_id' => $opdDikbud->id,
-            'induk_jabatan_id' => $sub_keuangan->id,
         ]);
 
-        $guru_sd = Jabatan::create([
+        Jabatan::create([
             'nama_jabatan' => 'Guru - Guru Kelas',
             'kode_jabatan' => 'DIKBUD-006',
             'jenis_jabatan' => 'Fungsional',
             'kelas_jabatan' => 8,
             'jenjang' => 'Ahli Pertama',
-            'kebutuhan' => 10,
             'opd_id' => $opdDikbud->id,
-            'induk_jabatan_id' => $bidang_sd->id,
         ]);
 
         Jabatan::create([
@@ -86,43 +74,35 @@ class JabatanSeeder extends Seeder
             'jenis_jabatan' => 'Pelaksana',
             'kelas_jabatan' => 5,
             'jenjang' => 'Pelaksana',
-            'kebutuhan' => 5,
             'opd_id' => $opdDikbud->id,
-            'induk_jabatan_id' => $bidang_sd->id, // Struktural
         ]);
 
-        // OPD 2: Dinas Kesehatan
-        $kepala_opd2 = Jabatan::create([
+        // ── OPD 2: Dinas Kesehatan ──
+        Jabatan::create([
             'nama_jabatan' => 'Kepala Dinas Kesehatan',
             'kode_jabatan' => 'DINKES-001',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'kebutuhan' => 1,
             'opd_id' => $opdDinkes->id,
-            'induk_jabatan_id' => null,
         ]);
 
-        $bidang_pelayanan = Jabatan::create([
+        Jabatan::create([
             'nama_jabatan' => 'Bidang Pelayanan Kesehatan',
             'kode_jabatan' => 'DINKES-002',
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 12,
             'jenjang' => 'Administrator',
-            'kebutuhan' => 1,
             'opd_id' => $opdDinkes->id,
-            'induk_jabatan_id' => $kepala_opd2->id,
         ]);
 
-        $dokter = Jabatan::create([
+        Jabatan::create([
             'nama_jabatan' => 'Dokter - Dokter Umum',
             'kode_jabatan' => 'DINKES-003',
             'jenis_jabatan' => 'Fungsional',
             'kelas_jabatan' => 9,
             'jenjang' => 'Ahli Pertama',
-            'kebutuhan' => 5,
             'opd_id' => $opdDinkes->id,
-            'induk_jabatan_id' => $bidang_pelayanan->id,
         ]);
 
         Jabatan::create([
@@ -131,9 +111,7 @@ class JabatanSeeder extends Seeder
             'jenis_jabatan' => 'Fungsional',
             'kelas_jabatan' => 7,
             'jenjang' => 'Keterampilan - Terampil',
-            'kebutuhan' => 8,
             'opd_id' => $opdDinkes->id,
-            'induk_jabatan_id' => $bidang_pelayanan->id, // Struktural
         ]);
     }
 }

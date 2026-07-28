@@ -9,10 +9,9 @@
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
              x-data="jabatanForm()"
-             x-init="initInduk(); onJenisChange('{{ old('jenis_jabatan', '') }}', '', '{{ old('nama_jabatan', '') }}')">
+             x-init="onJenisChange('{{ old('jenis_jabatan', '') }}', '', '{{ old('nama_jabatan', '') }}')">
             <form action="{{ route('admin.jabatan.store') }}" method="POST">
                 @csrf
-                {{-- Hidden field untuk menyimpan nilai akhir nama_jabatan --}}
                 <input type="hidden" name="nama_jabatan" x-ref="namaJabatanHidden" value="{{ old('nama_jabatan') }}">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -31,9 +30,7 @@
 
                     {{-- Nama Jabatan (dari Master) --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Nama Jabatan <span class="text-red-500">*</span>
-                        </label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Jabatan <span class="text-red-500">*</span></label>
                         <select x-ref="namaJabatanSelect" x-on:change="onParentChange($el)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nama_jabatan') border-red-500 @enderror">
                             <option value="">-- Pilih Jenis Jabatan dulu --</option>
@@ -41,16 +38,13 @@
                         @error('nama_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Sub Jabatan (muncul jika parent memiliki children) --}}
+                    {{-- Sub Jabatan --}}
                     <div x-show="hasChildren" x-cloak>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Sub Jabatan <span class="text-red-500">*</span>
-                        </label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sub Jabatan <span class="text-red-500">*</span></label>
                         <select x-ref="subJabatanSelect" x-on:change="onSubChange($el)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Pilih Sub Jabatan --</option>
                         </select>
-                        @error('nama_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
                     {{-- Kelas Jabatan --}}
@@ -64,25 +58,17 @@
                     {{-- Jenjang --}}
                     <div x-show="selectedJenis !== 'Pelaksana'">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
-                        <select name="jenjang" x-ref="jenjangSelect" x-on:change="selectedJenjang = $el.value"
+                        <select name="jenjang" x-ref="jenjangSelect"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenjang') border-red-500 @enderror">
                             <option value="">-- Pilih Jenis Jabatan dulu --</option>
                         </select>
                         @error('jenjang')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Kebutuhan --}}
-                    <div x-show="selectedJenis === 'Fungsional' || selectedJenis === 'Pelaksana'">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kebutuhan</label>
-                        <input type="number" name="kebutuhan" value="{{ old('kebutuhan') }}" min="0"
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kebutuhan') border-red-500 @enderror">
-                        @error('kebutuhan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                    </div>
-
                     {{-- OPD --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
-                        <select name="opd_id" x-on:change="filterInduk($el.value)"
+                        <select name="opd_id"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
                             <option value="">-- Pilih --</option>
                             @foreach($opdList as $id => $nama)
@@ -90,20 +76,6 @@
                             @endforeach
                         </select>
                         @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                    </div>
-
-                    {{-- Unit Organisasi --}}
-                    <div x-show="!(selectedJenis === 'Struktural' && selectedJenjang === 'Pimpinan Tinggi Pratama')">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            Unit Organisasi <span class="text-red-500">*</span>
-                        </label>
-                        <select name="induk_jabatan_id" x-ref="indukSelect"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Pilih OPD dulu --</option>
-                        </select>
-                        <p x-show="indukEmpty" x-cloak class="mt-1 text-sm text-red-600">
-                            Unit Organisasi tidak tersedia untuk OPD ini. Tambahkan jabatan Struktural terlebih dahulu di OPD tersebut.
-                        </p>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
@@ -120,20 +92,15 @@
 <script>
 function jabatanForm() {
     var options = @json($jenjangOptions);
-    var indukByOpd = @json($indukByOpd);
     var masterData = @json($masterJabatanData);
-    var selectedInduk = '{{ old('induk_jabatan_id', '') }}';
-    var currentChildren = []; // children of selected parent
+    var currentChildren = [];
 
     return {
         selectedJenis: '',
-        selectedJenjang: '',
         hasChildren: false,
-        indukEmpty: false,
 
-        onJenisChange(jenis, preSelectJenjang, preNama) {
+        onJenisChange(jenis, _, preNama) {
             this.selectedJenis = jenis;
-            this.selectedJenjang = preSelectJenjang || '';
             this.hasChildren = false;
             currentChildren = [];
 
@@ -148,12 +115,10 @@ function jabatanForm() {
                 Object.entries(options[jenis]).forEach(function(e) {
                     var opt = document.createElement('option');
                     opt.value = e[0]; opt.textContent = e[1];
-                    if (preSelectJenjang && e[0] === preSelectJenjang) opt.selected = true;
                     js.appendChild(opt);
                 });
             }
 
-            // Populate parent-level master entries with pre-select
             this.populateParentSelect(jenis, parentName, subName);
             this.updateHidden();
         },
@@ -167,8 +132,7 @@ function jabatanForm() {
             var ps = preSelectParent || '';
             var ss = preSelectSub || '';
 
-            var items = masterData[jenis];
-            items.forEach(function(item) {
+            masterData[jenis].forEach(function(item) {
                 var opt = document.createElement('option');
                 opt.value = item.nama;
                 opt.textContent = item.nama;
@@ -177,7 +141,6 @@ function jabatanForm() {
                 if (ps && item.nama === ps) opt.selected = true;
                 select.appendChild(opt);
 
-                // If pre-selected parent has children, populate sub dropdown
                 if (ps && item.nama === ps && item.children && item.children.length > 0) {
                     currentChildren = item.children;
                     self.hasChildren = true;
@@ -207,10 +170,8 @@ function jabatanForm() {
                 currentChildren = JSON.parse(childrenJson);
                 this.hasChildren = true;
 
-                // Populate sub-jabatan dropdown
                 var subSelect = this.$refs.subJabatanSelect;
                 subSelect.innerHTML = '<option value="">-- Pilih Sub Jabatan --</option>';
-                var self = this;
                 currentChildren.forEach(function(child) {
                     var co = document.createElement('option');
                     co.value = child.nama;
@@ -221,42 +182,18 @@ function jabatanForm() {
             this.updateHidden();
         },
 
-        onSubChange(selectEl) {
+        onSubChange() {
             this.updateHidden();
         },
 
         updateHidden() {
-            var parentSelect = this.$refs.namaJabatanSelect;
-            var parentName = parentSelect.value || '';
-
+            var parentName = this.$refs.namaJabatanSelect.value || '';
             if (this.hasChildren && this.$refs.subJabatanSelect) {
                 var subName = this.$refs.subJabatanSelect.value;
-                if (subName) {
-                    this.$refs.namaJabatanHidden.value = parentName + ' - ' + subName;
-                } else {
-                    this.$refs.namaJabatanHidden.value = ''; // sub wajib, hidden kosong = invalid
-                }
+                this.$refs.namaJabatanHidden.value = subName ? parentName + ' - ' + subName : '';
             } else {
                 this.$refs.namaJabatanHidden.value = parentName;
             }
-        },
-
-        filterInduk(opdId) {
-            var select = this.$refs.indukSelect;
-            var items = indukByOpd[opdId] || [];
-            this.indukEmpty = items.length === 0;
-            select.innerHTML = '<option value="">-- ' + (this.indukEmpty ? 'Tidak Tersedia' : 'Pilih Unit Organisasi') + ' --</option>';
-            items.forEach(function(item) {
-                var o = document.createElement('option');
-                o.value = item.id; o.textContent = item.nama;
-                if (String(item.id) === String(selectedInduk)) o.selected = true;
-                select.appendChild(o);
-            });
-        },
-
-        initInduk() {
-            var s = this.$el.querySelector('[name="opd_id"]');
-            if (s && s.value) this.filterInduk(s.value);
         }
     }
 }

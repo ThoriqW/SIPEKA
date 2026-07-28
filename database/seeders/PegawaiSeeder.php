@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Jabatan;
-use App\Models\Opd;
+use App\Models\Unor;
 use App\Models\Pegawai;
 use Illuminate\Database\Seeder;
 
@@ -11,8 +11,8 @@ class PegawaiSeeder extends Seeder
 {
     public function run(): void
     {
-        $opdDikbud = Opd::where('kode_opd', 'DIKBUD')->first();
-        $opdDinkes = Opd::where('kode_opd', 'DINKES')->first();
+        $opdDikbud = Unor::where('kode_unor', 'DIKBUD')->first();
+        $opdDinkes = Unor::where('kode_unor', 'DINKES')->first();
 
         // OPD 1 - Dinas Pendidikan dan Kebudayaan
         // Kepala OPD

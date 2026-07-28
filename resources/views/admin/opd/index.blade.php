@@ -35,8 +35,8 @@
                         @forelse($opdList as $key => $opd)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $opdList->firstItem() + $key }}</td>
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $opd->nama_opd }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $opd->kode_opd }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $opd->nama_unor }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $opd->kode_unor }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500 text-center">{{ $opd->jabatan_count }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500 text-center">{{ $opd->pegawai_count }}</td>
                             <td class="px-6 py-4 text-sm text-center">

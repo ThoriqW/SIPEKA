@@ -35,8 +35,7 @@
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kelas</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenjang</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kebutuhan</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi</th>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPD</th>
                             <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                         </tr>
                     </thead>
@@ -45,18 +44,10 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-4 text-sm text-gray-500">{{ $jabatanList->firstItem() + $key }}</td>
                             <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ $j->nama_jabatan }}</td>
-                            <td class="px-4 py-4 text-sm text-gray-500">{{ $j->opd->nama_opd ?? '-' }}</td>
+                            <td class="px-4 py-4 text-sm text-gray-500">{{ $j->opd->nama_unor ?? '-' }}</td>
                             <td class="px-4 py-4 text-sm text-center"><span class="px-2 py-1 text-xs rounded-full {{ $j->jenis_jabatan === 'Struktural' ? 'bg-purple-100 text-purple-800' : ($j->jenis_jabatan === 'Fungsional' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">{{ $j->jenis_jabatan }}</span></td>
                             <td class="px-4 py-4 text-sm text-gray-500 text-center">{{ $j->kelas_jabatan }}</td>
                             <td class="px-4 py-4 text-sm text-gray-500">{{ $j->jenjang ?? '-' }}</td>
-                            <td class="px-4 py-4 text-sm text-gray-500 text-center">{{ $j->kebutuhan ?? '-' }}</td>
-                            <td class="px-4 py-4 text-sm text-gray-500">
-                                @if($j->jenis_jabatan === 'Struktural' && $j->jenjang === 'Pimpinan Tinggi Pratama')
-                                    {{ $j->opd->nama_opd ?? '-' }}
-                                @else
-                                    {{ $j->induk->nama_jabatan ?? '-' }}
-                                @endif
-                            </td>
                             <td class="px-4 py-4 text-sm text-center">
                                 <a href="{{ route('admin.jabatan.edit', $j) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">Edit</a>
                                 <form action="{{ route('admin.jabatan.destroy', $j) }}" method="POST" class="inline" onsubmit="return confirm('Hapus jabatan ini?')">

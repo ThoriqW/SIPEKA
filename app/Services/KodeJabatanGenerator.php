@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Enums\JenisJabatan;
 use App\Models\Jabatan;
-use App\Models\Opd;
 use Illuminate\Support\Facades\DB;
 
 class KodeJabatanGenerator

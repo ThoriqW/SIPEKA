@@ -29,7 +29,7 @@
                         <option value="">-- Pilih Pegawai --</option>
                         @foreach($pegawaiList as $p)
                             <option value="{{ $p->nip }}" {{ old('nip') == $p->nip ? 'selected' : '' }}>
-                                {{ $p->nip }} — {{ $p->nama }} ({{ $p->opd->nama_opd ?? 'Tanpa OPD' }})
+                                {{ $p->nip }} — {{ $p->nama }} ({{ $p->opd->nama_unor ?? 'Tanpa OPD' }})
                             </option>
                         @endforeach
                     </select>

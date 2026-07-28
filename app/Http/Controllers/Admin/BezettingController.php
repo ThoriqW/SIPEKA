@@ -2,52 +2,50 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\BezettingExport;
+use App\Exports\KebutuhanExport;
 use App\Http\Controllers\Controller;
+use App\Models\Unor;
 use App\Services\FlattenedTreeService;
-use App\Services\ProjectionService;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BezettingController extends Controller
 {
     public function __construct(
         private FlattenedTreeService $flattenedTreeService,
-        private ProjectionService $projectionService,
     ) {}
 
     /**
-     * Tampilkan tabel pohon Kebutuhan (sebelumnya Bezetting).
-     * Dengan proyeksi pensiun & kebutuhan 5 tahun, hanya pegawai pensiun.
+     * Tampilkan tabel pohon Bezetting — tanpa proyeksi, data saat ini.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $opdId = $request->filled('opd_id') ? (int) $request->opd_id : null;
         $tree = $this->flattenedTreeService->buildFlatTree(
-            opdId: null,
+            unorId: $opdId,
             includeRoot: true,
-            withProjections: true,
+            withProjections: false,
         );
+        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
 
-        $tahunLabels = $this->projectionService->getTahunLabels();
-
-        return view('admin.bezetting.index', compact('tree', 'tahunLabels'));
+        return view('admin.kebutuhan.index', compact('tree', 'opdList'));
     }
 
     /**
-     * Export Kebutuhan ke Excel.
+     * Export Bezetting ke Excel.
      */
-    public function export()
+    public function export(Request $request)
     {
+        $opdId = $request->filled('opd_id') ? (int) $request->opd_id : null;
         $tree = $this->flattenedTreeService->buildFlatTree(
-            opdId: null,
+            unorId: $opdId,
             includeRoot: true,
-            withProjections: true,
+            withProjections: false,
         );
 
-        $tahunLabels = $this->projectionService->getTahunLabels();
-
         return Excel::download(
-            new BezettingExport($tree, $tahunLabels),
-            'kebutuhan-' . date('Y-m-d') . '.xlsx'
+            new KebutuhanExport($tree, []),
+            'bezetting-' . date('Y-m-d') . '.xlsx'
         );
     }
 }
