@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Models\Unor;
 use App\Models\User;
 
-class OpdPolicy
+class UnorPolicy
 {
     public function viewAny(User $user): bool { return true; }
     public function view(User $user, Unor $opd): bool { return true; }

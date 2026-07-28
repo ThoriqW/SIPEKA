@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Jabatan;
+use App\Models\KebutuhanPegawai;
 use App\Models\MasterJabatan;
 use App\Models\Unor;
 use App\Enums\Jenjang;
@@ -54,8 +55,11 @@ class JabatanController extends Controller
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'nullable|string|max:255',
+            'kebutuhan' => 'nullable|integer|min:0',
             'opd_id' => 'required|exists:unor,id',
         ]);
+
+        unset($validated['kebutuhan']);
 
         // Validasi: nama_jabatan harus ada di master_jabatan (cek parent-sub format)
         $parts = explode(' - ', $validated['nama_jabatan']);
@@ -104,10 +108,23 @@ class JabatanController extends Controller
             $validated['jenis_jabatan']
         );
 
-        // Unset kebutuhan — sekarang di tabel terpisah (kebutuhan_pegawai)
-        unset($validated['kebutuhan']);
+        $jabatan = Jabatan::create($validated);
 
-        Jabatan::create($validated);
+        // Otomatis daftarkan ke SOTK
+        \App\Models\Sotk::firstOrCreate([
+            'unor_id' => $jabatan->opd_id,
+            'jabatan_id' => $jabatan->id,
+        ]);
+
+        // Simpan kebutuhan ke tabel kebutuhan_pegawai
+        $kebutuhan = $request->input('kebutuhan');
+        if ($kebutuhan !== null && $kebutuhan !== '') {
+            KebutuhanPegawai::updateOrCreate(
+                ['unor_id' => $jabatan->opd_id, 'jabatan_id' => $jabatan->id, 'tahun' => null],
+                ['jumlah' => (int) $kebutuhan]
+            );
+        }
+
         return redirect()->route('admin.jabatan.index')->with('success', 'Jabatan berhasil ditambahkan.');
     }
 
@@ -115,8 +132,15 @@ class JabatanController extends Controller
     {
         $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
 
+        // Load kebutuhan existing
+        $kebutuhan = KebutuhanPegawai::where('unor_id', $jabatan->opd_id)
+            ->where('jabatan_id', $jabatan->id)
+            ->whereNull('tahun')
+            ->value('jumlah');
+
         return view('admin.jabatan.edit', [
             'jabatan' => $jabatan,
+            'kebutuhan' => $kebutuhan,
             'opdList' => $opdList,
             'indukList' => collect(),
             'indukByOpd' => [],
@@ -137,8 +161,11 @@ class JabatanController extends Controller
             'jenis_jabatan' => 'required|in:Struktural,Fungsional,Pelaksana',
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'nullable|string|max:255',
+            'kebutuhan' => 'nullable|integer|min:0',
             'opd_id' => 'required|exists:unor,id',
         ]);
+        unset($validated['kebutuhan']);
+
         // Validasi: nama_jabatan harus ada di master_jabatan
         $namaUntukCek = explode(' - ', $validated['nama_jabatan'])[0];
         $existsInMaster = MasterJabatan::where('nama_jabatan', $namaUntukCek)
@@ -166,17 +193,41 @@ class JabatanController extends Controller
         if ($validated['jenis_jabatan'] === 'Pelaksana') $validated['jenjang'] = 'Pelaksana';
 
         // Pastikan kode_jabatan tidak dapat diubah
-        unset($validated['kode_jabatan'], $validated['kebutuhan']);
+        unset($validated['kode_jabatan']);
 
         $jabatan->update($validated);
+
+        // Sync SOTK jika OPD berubah
+        if ((int) $jabatan->opd_id !== (int) $validated['opd_id']) {
+            $jabatan->sotkEntries()->delete();
+            \App\Models\Sotk::create([
+                'unor_id' => $validated['opd_id'],
+                'jabatan_id' => $jabatan->id,
+            ]);
+        }
+
+        // Update kebutuhan
+        $kebutuhan = $request->input('kebutuhan');
+        if ($kebutuhan !== null && $kebutuhan !== '') {
+            KebutuhanPegawai::updateOrCreate(
+                ['unor_id' => $jabatan->opd_id, 'jabatan_id' => $jabatan->id, 'tahun' => null],
+                ['jumlah' => (int) $kebutuhan]
+            );
+        }
+
         return redirect()->route('admin.jabatan.index')->with('success', 'Jabatan berhasil diperbarui.');
     }
 
     public function destroy(Jabatan $jabatan)
     {
         if ($jabatan->pegawai()->exists()) return back()->with('error', 'Jabatan tidak dapat dihapus karena masih memiliki pegawai.');
-        if ($jabatan->sotkEntries()->exists()) return back()->with('error', 'Jabatan tidak dapat dihapus karena masih terdaftar di SOTK.');
+
+        // Hapus data terkait dulu (FK constraint), baru hapus jabatan
+        \App\Models\PenempatanPegawai::where('jabatan_id', $jabatan->id)->delete();
+        $jabatan->sotkEntries()->delete();
+        $jabatan->kebutuhanPegawai()->delete();
         $jabatan->delete();
+
         return redirect()->route('admin.jabatan.index')->with('success', 'Jabatan berhasil dihapus.');
     }
 

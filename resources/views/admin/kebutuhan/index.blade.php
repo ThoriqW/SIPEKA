@@ -6,7 +6,7 @@
         <div class="sm:flex sm:items-center sm:justify-between mb-6">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-900">Bezetting</h1>
-                <p class="text-sm text-gray-500 mt-1">Tabel pohon bezetting pegawai — UNOR & Jabatan</p>
+                <p class="text-sm text-gray-500 mt-1">Tabel pohon bezetting pegawai — Unit Organisasi & Jabatan</p>
             </div>
             <a href="{{ route('admin.bezetting.export', request()->query()) }}" class="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none transition">
                 Export Excel
@@ -16,10 +16,10 @@
         @if($opdList->isNotEmpty())
         <form method="GET" class="mb-4">
             <div class="flex items-center gap-3">
-                <label for="opd_id" class="text-sm font-medium text-gray-700">Filter UNOR:</label>
+                <label for="opd_id" class="text-sm font-medium text-gray-700">Filter Unit Organisasi:</label>
                 <select id="opd_id" name="opd_id" onchange="this.form.submit()"
                         class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm w-72">
-                    <option value="">-- Semua UNOR --</option>
+                    <option value="">-- Semua Unit Organisasi --</option>
                     @foreach($opdList as $id => $nama)
                     <option value="{{ $id }}" {{ request('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>
                     @endforeach
@@ -70,7 +70,7 @@
                             @endif
                             {{ $row['nama_jabatan'] }}
                             @if($row['type'] == 'unor')
-                            <span class="text-xs text-blue-500 ml-1">[UNOR]</span>
+                            <span class="text-xs text-blue-500 ml-1">[Unit Organisasi]</span>
                             @endif
                             @if($row['jenjang'])
                             <span class="text-xs text-gray-400">({{ $row['jenjang'] }})</span>
