@@ -34,7 +34,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">No</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Jabatan</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase w-24">Aksi</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase w-32">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
