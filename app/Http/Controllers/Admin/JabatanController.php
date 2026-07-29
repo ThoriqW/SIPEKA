@@ -57,7 +57,7 @@ class JabatanController extends Controller
                 'Fungsional' => Jenjang::forJenisJabatan('Fungsional'),
                 'Pelaksana' => Jenjang::forJenisJabatan('Pelaksana'),
             ],
-            'masterJabatanData' => $this->buildMasterJabatanData(),
+            'referensiJabatanData' => $this->buildReferensiJabatanData(),
         ]);
     }
 
@@ -74,7 +74,7 @@ class JabatanController extends Controller
 
         unset($validated['kebutuhan']);
 
-        // Validasi: nama_jabatan harus ada di master_jabatan (cek parent-sub format)
+        // Validasi: nama_jabatan harus ada di referensi jabatan (cek parent-sub format)
         $parts = explode(' - ', $validated['nama_jabatan']);
         $namaParent = $parts[0];
         $namaSub = count($parts) > 1 ? $parts[1] : null;
@@ -182,7 +182,7 @@ class JabatanController extends Controller
                 'Fungsional' => Jenjang::forJenisJabatan('Fungsional'),
                 'Pelaksana' => Jenjang::forJenisJabatan('Pelaksana'),
             ],
-            'masterJabatanData' => $this->buildMasterJabatanData(),
+            'referensiJabatanData' => $this->buildReferensiJabatanData(),
         ]);
     }
 
@@ -198,7 +198,7 @@ class JabatanController extends Controller
         ]);
         unset($validated['kebutuhan']);
 
-        // Validasi: nama_jabatan harus ada di master_jabatan
+        // Validasi: nama_jabatan harus ada di referensi jabatan
         $namaUntukCek = explode(' - ', $validated['nama_jabatan'])[0];
         $existsInMaster = ReferensiJabatan::where('nama_jabatan', $namaUntukCek)
             ->where('jenis_jabatan', $validated['jenis_jabatan'])
@@ -327,7 +327,7 @@ class JabatanController extends Controller
      * Build referensi jabatan data: root entries (parent_id=null) with their children.
      * Returns { Struktural: [{id, nama}], Fungsional: [{id, nama, children}], Pelaksana: [{id, nama}] }
      */
-    private function buildMasterJabatanData(): array
+    private function buildReferensiJabatanData(): array
     {
         $result = [];
         foreach (['Struktural', 'Fungsional', 'Pelaksana'] as $jenis) {

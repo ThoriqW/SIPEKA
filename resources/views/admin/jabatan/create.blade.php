@@ -93,8 +93,7 @@
                     {{-- Jenjang — regular select --}}
                     <div x-show="selectedJenis !== 'Pelaksana' && jenjangList.length > 0">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
-                        <select name="jenjang" x-ref="jenjangSelect"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenjang') border-red-500 @enderror">
+                        <select name="jenjang"                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenjang') border-red-500 @enderror">
                             <option value="">-- Pilih Jenjang --</option>
                             <template x-for="item in jenjangList" :key="item.id">
                                 <option :value="item.nama" x-text="item.nama"></option>
@@ -127,8 +126,7 @@
                     {{-- Unit Organisasi — regular select --}}
                     <div x-show="unitList.length > 0" x-cloak>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
-                        <select name="opd_id" x-ref="unitSelect"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
+                        <select name="opd_id"                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
                             <option value="">-- Pilih Unit Organisasi --</option>
                             <template x-for="u in unitList" :key="u.id">
                                 <option :value="u.id" x-text="u.nama"></option>
@@ -151,7 +149,7 @@
 <script>
 function jabatanForm() {
     var options = @json($jenjangOptions);
-    var masterData = @json($masterJabatanData);
+    var referensiData = @json($masterJabatanData);
     var unorData = @json($unorByInduk);
 
     return {
@@ -195,8 +193,8 @@ function jabatanForm() {
             }
 
             this.namaJabatanList = [];
-            if (jenis && masterData[jenis]) {
-                this.namaJabatanList = masterData[jenis].map(function(item) {
+            if (jenis && referensiData[jenis]) {
+                this.namaJabatanList = referensiData[jenis].map(function(item) {
                     return {id: item.id, nama: item.nama, children: item.children || []};
                 });
             }

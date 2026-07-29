@@ -28,7 +28,7 @@ class KebutuhanController extends Controller
 
         $tahunLabels = $this->projectionService->getTahunLabels();
 
-        return view('admin.bezetting.index', compact('tree', 'tahunLabels'));
+        return view('admin.kebutuhan.index', compact('tree', 'tahunLabels'));
     }
 
     /**

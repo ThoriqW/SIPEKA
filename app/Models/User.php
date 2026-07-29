@@ -70,16 +70,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Cek apakah user adalah admin (deprecated — gunakan isAdmin()).
-     *
-     * @deprecated use isAdmin()
-     */
-    public function isBkd(): bool
-    {
-        return $this->isAdmin();
-    }
-
-    /**
      * Cek apakah user masih aktif.
      */
     public function isActive(): bool

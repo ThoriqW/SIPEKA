@@ -28,7 +28,7 @@ class BezettingController extends Controller
         );
         $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
 
-        return view('admin.kebutuhan.index', compact('tree', 'opdList'));
+        return view('admin.bezetting.index', compact('tree', 'opdList'));
     }
 
     /**
