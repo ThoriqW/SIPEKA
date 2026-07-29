@@ -58,12 +58,25 @@ class User extends Authenticatable
         return $this->belongsTo(Pegawai::class, 'nip', 'nip');
     }
 
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_USER = 'user';
+
     /**
-     * Cek apakah user adalah super admin (BKD).
+     * Cek apakah user adalah admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    /**
+     * Cek apakah user adalah admin (deprecated — gunakan isAdmin()).
+     *
+     * @deprecated use isAdmin()
      */
     public function isBkd(): bool
     {
-        return $this->role === 'bkd';
+        return $this->isAdmin();
     }
 
     /**

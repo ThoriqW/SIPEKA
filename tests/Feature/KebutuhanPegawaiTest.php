@@ -23,7 +23,7 @@ class KebutuhanPegawaiTest extends TestCase
     #[Test]
     public function kebutuhan_saved_when_creating_jabatan()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $unor = Unor::where('kode_unor', 'DIKBUD')->first();
 
         $response = $this->actingAs($user)->post(route('admin.jabatan.store'), [
@@ -52,7 +52,7 @@ class KebutuhanPegawaiTest extends TestCase
     #[Test]
     public function kebutuhan_updated_when_updating_jabatan()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $jabatan = Jabatan::where('kode_jabatan', 'DIKBUD-005')->first(); // Pengelola Keuangan
 
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
@@ -76,7 +76,7 @@ class KebutuhanPegawaiTest extends TestCase
     #[Test]
     public function kebutuhan_zero_is_valid()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $jabatan = Jabatan::where('kode_jabatan', 'DIKBUD-005')->first();
 
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
@@ -100,7 +100,7 @@ class KebutuhanPegawaiTest extends TestCase
     #[Test]
     public function kebutuhan_not_duplicated_on_multiple_updates()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $jabatan = Jabatan::where('kode_jabatan', 'DIKBUD-005')->first();
 
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [

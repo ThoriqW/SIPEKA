@@ -17,7 +17,7 @@ class EnsureUserHasRole
 
         $user = Auth::user();
 
-        if ($user->isBkd()) {
+        if ($user->isAdmin()) {
             return $next($request);
         }
 

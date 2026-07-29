@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\KebutuhanPegawai;
 use App\Models\Jabatan;
-use App\Models\MasterJabatan;
+use App\Models\ReferensiJabatan;
 use App\Models\Unor;
 use App\Models\Pegawai;
 use Illuminate\Http\Request;
@@ -32,15 +32,15 @@ class DashboardController extends Controller
             ->groupBy('jenis_jabatan');
 
         // Kategori Fungsional: kumpulkan nama-nama master per group
-        $guru = MasterJabatan::where('nama_jabatan', 'Guru')
+        $guru = ReferensiJabatan::where('nama_jabatan', 'Guru')
             ->where('jenis_jabatan', 'Fungsional')->whereNull('parent_id')->first();
-        $dokter = MasterJabatan::where('nama_jabatan', 'Dokter')
+        $dokter = ReferensiJabatan::where('nama_jabatan', 'Dokter')
             ->where('jenis_jabatan', 'Fungsional')->whereNull('parent_id')->first();
 
         $namaGuru = ['Guru'];
 
         if ($guru) {
-            $namaGuru = array_merge($namaGuru, MasterJabatan::where('parent_id', $guru->id)->pluck('nama_jabatan')->toArray());
+            $namaGuru = array_merge($namaGuru, ReferensiJabatan::where('parent_id', $guru->id)->pluck('nama_jabatan')->toArray());
         }
 
         // Hardcode known NAKES names from the seeder + children of Dokter
@@ -54,7 +54,7 @@ class DashboardController extends Controller
             'Terapis Gigi dan Mulut', 'Okupasi Terapis', 'Terapis Wicara',
         ];
         if ($dokter) {
-            $nakesNames = array_merge($nakesNames, MasterJabatan::where('parent_id', $dokter->id)->pluck('nama_jabatan')->toArray());
+            $nakesNames = array_merge($nakesNames, ReferensiJabatan::where('parent_id', $dokter->id)->pluck('nama_jabatan')->toArray());
         }
 
         // Pegawai Fungsional per kategori group (tanpa rinci jenjang)

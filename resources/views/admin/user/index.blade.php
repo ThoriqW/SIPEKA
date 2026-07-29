@@ -14,7 +14,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="p-4 border-b">
                 <form method="GET" class="flex gap-4">
-                    <input type="text" name="search" placeholder="Cari NIP atau nama..." value="{{ request('search') }}" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input type="text" name="search" placeholder="Cari User" value="{{ request('search') }}" class="flex-1 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Cari</button>
                     @if(request('search'))<a href="{{ route('admin.user.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">Reset</a>@endif
                 </form>
@@ -43,8 +43,8 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm text-center">
-                                <span class="px-2 py-1 rounded text-xs font-medium {{ $user->isBkd() ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
-                                    {{ $user->isBkd() ? 'Super Admin' : 'User' }}
+                                <span class="px-2 py-1 rounded text-xs font-medium {{ $user->isAdmin() ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
+                                    {{ $user->isAdmin() ? 'Admin' : 'User' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-sm text-center">
@@ -53,12 +53,14 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-sm text-center">
-                                <a href="{{ route('admin.user.edit', $user) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">Edit</a>
                                 @if($user->id !== auth()->id())
+                                <a href="{{ route('admin.user.edit', $user) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">Edit</a>
                                 <form action="{{ route('admin.user.destroy', $user) }}" method="POST" class="inline" onsubmit="return confirm('Hapus user ini? Tindakan ini tidak dapat dibatalkan.')">
                                     @csrf @method('DELETE')
                                     <button class="text-red-600 hover:text-red-900">Hapus</button>
                                 </form>
+                                @else
+                                <span class="text-gray-400 text-xs">Akun sendiri</span>
                                 @endif
                             </td>
                         </tr>

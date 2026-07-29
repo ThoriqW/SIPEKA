@@ -24,13 +24,33 @@
                 <a href="{{ route('admin.unor.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.unor.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     Unit Organisasi
                 </a>
-                @if(auth()->user()->isBkd())
+                @if(auth()->user()->isAdmin())
                 <a href="{{ route('admin.user.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.user.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     User
                 </a>
-                <a href="{{ route('admin.master-jabatan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.master-jabatan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
-                    Master Jabatan
-                </a>
+
+                {{-- Referensi — collapsible group --}}
+                @php $inReferensi = request()->routeIs('admin.referensi-jabatan.*', 'admin.tugas-tambahan.*'); @endphp
+                <div x-data="{ open: {{ $inReferensi ? 'true' : 'false' }} }">
+                    <button @click="open = !open"
+                            class="flex items-center justify-between w-full px-3 py-2 rounded-md text-sm font-medium transition
+                                   {{ $inReferensi ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }}">
+                        <span>Referensi</span>
+                        <svg :class="open ? 'rotate-90' : ''"
+                             class="w-4 h-4 transition-transform duration-200 opacity-70"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                    <div x-show="open" x-cloak class="mt-1 space-y-1 border-l border-blue-700 ml-4 pl-3">
+                        <a href="{{ route('admin.referensi-jabatan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.referensi-jabatan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
+                            Referensi Jabatan
+                        </a>
+                        <a href="{{ route('admin.tugas-tambahan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.tugas-tambahan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
+                            Tugas Tambahan
+                        </a>
+                    </div>
+                </div>
                 @endif
                 <a href="{{ route('admin.jabatan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.jabatan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     Jabatan
@@ -44,17 +64,12 @@
                 <a href="{{ route('admin.kebutuhan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.kebutuhan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
                     Kebutuhan
                 </a>
-                @if(auth()->user()->isBkd())
-                <a href="{{ route('admin.tugas-tambahan.index') }}" class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('admin.tugas-tambahan.*') ? 'bg-blue-800 text-white' : 'text-blue-200 hover:bg-blue-800 hover:text-white' }} transition">
-                    Tugas Tambahan
-                </a>
-                @endif
             </nav>
             <div class="border-t border-blue-800 p-3">
                 <span class="block px-3 py-1 text-xs text-blue-300 mb-2">
                     {{ auth()->user()->name }}
-                    <span class="ml-1 px-1.5 py-0.5 rounded text-xs {{ auth()->user()->isBkd() ? 'bg-green-700 text-green-100' : 'bg-blue-700 text-blue-100' }}">
-                        {{ auth()->user()->isBkd() ? 'Super Admin' : 'User' }}
+                    <span class="ml-1 px-1.5 py-0.5 rounded text-xs {{ auth()->user()->isAdmin() ? 'bg-green-700 text-green-100' : 'bg-blue-700 text-blue-100' }}">
+                        {{ auth()->user()->isAdmin() ? 'Admin' : 'User' }}
                     </span>
                 </span>
                 <form method="POST" action="{{ route('logout') }}">

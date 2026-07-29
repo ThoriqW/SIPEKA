@@ -19,9 +19,9 @@ class KebutuhanControllerTest extends TestCase
     }
 
     #[Test]
-    public function bkd_can_access_kebutuhan_index()
+    public function admin_can_access_kebutuhan_index()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.kebutuhan.index'));
 
@@ -31,9 +31,9 @@ class KebutuhanControllerTest extends TestCase
     }
 
     #[Test]
-    public function bkd_can_export_kebutuhan_excel()
+    public function admin_can_export_kebutuhan_excel()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.kebutuhan.export'));
 
@@ -52,7 +52,7 @@ class KebutuhanControllerTest extends TestCase
     #[Test]
     public function kebutuhan_shows_projection_columns()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.kebutuhan.index'));
 
@@ -64,7 +64,7 @@ class KebutuhanControllerTest extends TestCase
     #[Test]
     public function kebutuhan_shows_pensiun_and_kebutuhan_projections()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.kebutuhan.index'));
 
@@ -75,7 +75,7 @@ class KebutuhanControllerTest extends TestCase
     #[Test]
     public function kebutuhan_does_not_show_opd_filter()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.kebutuhan.index'));
 

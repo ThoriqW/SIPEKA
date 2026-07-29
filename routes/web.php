@@ -23,10 +23,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Master Tugas Tambahan
     Route::resource('tugas-tambahan', \App\Http\Controllers\Admin\MasterTugasTambahanController::class);
 
-    // User — BKD-only
-    Route::middleware('role:bkd')->group(function () {
+    // User & Referensi Jabatan — Admin-only
+    Route::middleware('role:admin')->group(function () {
         Route::resource('user', \App\Http\Controllers\Admin\UserController::class);
-        Route::resource('master-jabatan', \App\Http\Controllers\Admin\MasterJabatanController::class);
+        Route::resource('referensi-jabatan', \App\Http\Controllers\Admin\ReferensiJabatanController::class);
     });
 
     // AJAX endpoints

@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\MasterJabatan;
+use App\Models\ReferensiJabatan;
 use Illuminate\Database\Seeder;
 
-class MasterJabatanSeeder extends Seeder
+class ReferensiJabatanSeeder extends Seeder
 {
     public function run(): void
     {
@@ -34,7 +34,7 @@ class MasterJabatanSeeder extends Seeder
         ];
 
         foreach ($struktural as $nama => $jenjang) {
-            MasterJabatan::create([
+            ReferensiJabatan::create([
                 'nama_jabatan' => $nama,
                 'jenis_jabatan' => 'Struktural',
                 'jenjang' => $jenjang,
@@ -60,7 +60,7 @@ class MasterJabatanSeeder extends Seeder
         ];
 
         foreach ($pelaksana as $nama) {
-            MasterJabatan::create([
+            ReferensiJabatan::create([
                 'nama_jabatan' => $nama,
                 'jenis_jabatan' => 'Pelaksana',
                 'jenjang' => 'Pelaksana',
@@ -103,7 +103,7 @@ class MasterJabatanSeeder extends Seeder
 
         $dokterId = null;
         foreach ($nakes as $nama) {
-            $entry = MasterJabatan::create([
+            $entry = ReferensiJabatan::create([
                 'nama_jabatan' => $nama,
                 'jenis_jabatan' => 'Fungsional',
                 'jenjang' => null,
@@ -160,7 +160,7 @@ class MasterJabatanSeeder extends Seeder
         ];
 
         foreach ($dokterSpesialis as $nama) {
-            MasterJabatan::create([
+            ReferensiJabatan::create([
                 'nama_jabatan' => 'Dokter',
                 'jenis_jabatan' => 'Fungsional',
                 'jenjang' => null,
@@ -172,7 +172,7 @@ class MasterJabatanSeeder extends Seeder
         // ============================================================
         // FUNGSIONAL — GURU + MAPEL (sub-jabatan)
         // ============================================================
-        $guru = MasterJabatan::create([
+        $guru = ReferensiJabatan::create([
             'nama_jabatan' => 'Guru',
             'jenis_jabatan' => 'Fungsional',
             'jenjang' => null,
@@ -201,7 +201,7 @@ class MasterJabatanSeeder extends Seeder
         ];
 
         foreach ($mapelGuru as $nama) {
-            MasterJabatan::create([
+            ReferensiJabatan::create([
                 'nama_jabatan' => 'Guru',
                 'jenis_jabatan' => 'Fungsional',
                 'jenjang' => null,
@@ -237,7 +237,7 @@ class MasterJabatanSeeder extends Seeder
         ];
 
         foreach ($teknis as $nama) {
-            MasterJabatan::create([
+            ReferensiJabatan::create([
                 'nama_jabatan' => $nama,
                 'jenis_jabatan' => 'Fungsional',
                 'jenjang' => null,

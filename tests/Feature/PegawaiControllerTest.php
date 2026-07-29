@@ -24,7 +24,7 @@ class PegawaiControllerTest extends TestCase
     #[Test]
     public function authenticated_user_can_access_pegawai_index()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.pegawai.index'));
 
@@ -42,7 +42,7 @@ class PegawaiControllerTest extends TestCase
     #[Test]
     public function can_view_pegawai_create_form()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.pegawai.create'));
 
@@ -53,7 +53,7 @@ class PegawaiControllerTest extends TestCase
     #[Test]
     public function can_create_pegawai_with_penempatan()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $unor = Unor::first();
         $jabatan = Jabatan::first();
 
@@ -83,7 +83,7 @@ class PegawaiControllerTest extends TestCase
     #[Test]
     public function multiple_pegawai_can_share_same_struktural_jabatan()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $unor = Unor::where('kode_unor', 'DIKBUD')->first();
         $jabatan = Jabatan::where('kode_jabatan', 'DIKBUD-001')->first(); // Kepala Dinas (struktural)
 
@@ -115,7 +115,7 @@ class PegawaiControllerTest extends TestCase
     #[Test]
     public function updating_jabatan_creates_new_penempatan_and_deactivates_old()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $pegawai = Pegawai::first();
         $newJabatan = Jabatan::where('id', '!=', $pegawai->jabatan_id)->first();
 

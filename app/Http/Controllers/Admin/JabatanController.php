@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Jabatan;
 use App\Models\KebutuhanPegawai;
-use App\Models\MasterJabatan;
+use App\Models\ReferensiJabatan;
 use App\Models\Unor;
 use App\Enums\Jenjang;
 use App\Enums\JenisJabatan;
@@ -66,18 +66,18 @@ class JabatanController extends Controller
         $namaParent = $parts[0];
         $namaSub = count($parts) > 1 ? $parts[1] : null;
 
-        $parentMaster = MasterJabatan::where('nama_jabatan', $namaParent)
+        $parentMaster = ReferensiJabatan::where('nama_jabatan', $namaParent)
             ->where('jenis_jabatan', $validated['jenis_jabatan'])
             ->whereNull('parent_id')
             ->first();
 
         if (!$parentMaster) {
-            return back()->withInput()->with('error', 'Nama jabatan "' . $namaParent . '" tidak ditemukan di Master Jabatan. Silakan pilih dari daftar yang tersedia.');
+            return back()->withInput()->with('error', 'Nama jabatan "' . $namaParent . '" tidak ditemukan di Referensi Jabatan. Silakan pilih dari daftar yang tersedia.');
         }
 
         // Jika ada sub-jabatan, validasi bahwa sub adalah child valid dari parent
         if ($namaSub) {
-            $subExists = MasterJabatan::where('nama_jabatan', $namaSub)
+            $subExists = ReferensiJabatan::where('nama_jabatan', $namaSub)
                 ->where('jenis_jabatan', $validated['jenis_jabatan'])
                 ->where('parent_id', $parentMaster->id)
                 ->exists();
@@ -168,13 +168,13 @@ class JabatanController extends Controller
 
         // Validasi: nama_jabatan harus ada di master_jabatan
         $namaUntukCek = explode(' - ', $validated['nama_jabatan'])[0];
-        $existsInMaster = MasterJabatan::where('nama_jabatan', $namaUntukCek)
+        $existsInMaster = ReferensiJabatan::where('nama_jabatan', $namaUntukCek)
             ->where('jenis_jabatan', $validated['jenis_jabatan'])
             ->whereNull('parent_id')
             ->exists();
 
         if (!$existsInMaster) {
-            return back()->withInput()->with('error', 'Nama jabatan "' . $namaUntukCek . '" tidak ditemukan di Master Jabatan. Silakan pilih dari daftar yang tersedia.');
+            return back()->withInput()->with('error', 'Nama jabatan "' . $namaUntukCek . '" tidak ditemukan di Referensi Jabatan. Silakan pilih dari daftar yang tersedia.');
         }
 
         // Validasi: satu UNOR hanya boleh memiliki satu JPTP (Kepala OPD)
@@ -232,14 +232,14 @@ class JabatanController extends Controller
     }
 
     /**
-     * Build master jabatan data: root entries (parent_id=null) with their children.
+     * Build referensi jabatan data: root entries (parent_id=null) with their children.
      * Returns { Struktural: [{id, nama}], Fungsional: [{id, nama, children}], Pelaksana: [{id, nama}] }
      */
     private function buildMasterJabatanData(): array
     {
         $result = [];
         foreach (['Struktural', 'Fungsional', 'Pelaksana'] as $jenis) {
-            $all = MasterJabatan::where('jenis_jabatan', $jenis)
+            $all = ReferensiJabatan::where('jenis_jabatan', $jenis)
                 ->orderBy('parent_id')
                 ->orderBy('nama_jabatan')
                 ->get();

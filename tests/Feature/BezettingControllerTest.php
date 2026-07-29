@@ -20,7 +20,7 @@ class BezettingControllerTest extends TestCase
     #[Test]
     public function authenticated_user_can_access_bezetting_index()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
 
@@ -30,9 +30,9 @@ class BezettingControllerTest extends TestCase
     }
 
     #[Test]
-    public function bkd_sees_all_opd_in_bezetting()
+    public function admin_sees_all_opd_in_bezetting()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
 
@@ -41,9 +41,9 @@ class BezettingControllerTest extends TestCase
     }
 
     #[Test]
-    public function bkd_can_export_bezetting_excel()
+    public function admin_can_export_bezetting_excel()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.export'));
 
@@ -62,7 +62,7 @@ class BezettingControllerTest extends TestCase
     #[Test]
     public function bezetting_does_not_show_projections()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
 
@@ -72,9 +72,9 @@ class BezettingControllerTest extends TestCase
     }
 
     #[Test]
-    public function bezetting_shows_opd_filter_for_bkd()
+    public function bezetting_shows_opd_filter_for_admin()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
 
@@ -83,9 +83,9 @@ class BezettingControllerTest extends TestCase
     }
 
     #[Test]
-    public function bkd_can_filter_bezetting_by_opd()
+    public function admin_can_filter_bezetting_by_opd()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         // Filter to OPD 3 (Dinkes — IDs shifted: 1=Pemkot, 2=DIKBUD, 3=DINKES)
         $response = $this->actingAs($user)->get(route('admin.bezetting.index', ['opd_id' => 3]));
@@ -98,7 +98,7 @@ class BezettingControllerTest extends TestCase
     #[Test]
     public function bezetting_has_expand_collapse_functionality()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
 

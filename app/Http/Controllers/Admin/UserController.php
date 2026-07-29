@@ -53,7 +53,7 @@ class UserController extends Controller
     {
         $rules = [
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:bkd,user',
+            'role' => 'required|in:admin,user',
         ];
 
         if ($request->role === 'user') {
@@ -65,7 +65,7 @@ class UserController extends Controller
             ];
             $rules['username'] = 'nullable';
         } else {
-            // Super admin: bisa dengan username custom
+            // Admin: bisa dengan username custom
             $rules['username'] = 'required|string|max:255|unique:users,nip';
             $rules['nip'] = 'nullable';
         }
@@ -108,16 +108,21 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        $isSelf = $user->id === auth()->id();
+
         $validated = $request->validate([
             'password' => 'nullable|string|min:6|confirmed',
-            'role' => 'required|in:bkd,user',
+            'role' => 'required|in:admin,user',
             'is_active' => 'boolean',
         ]);
 
-        $data = [
-            'role' => $validated['role'],
-            'is_active' => $request->boolean('is_active'),
-        ];
+        $data = [];
+
+        // Proteksi: admin tidak bisa mengubah role/status dirinya sendiri
+        if (!$isSelf) {
+            $data['role'] = $validated['role'];
+            $data['is_active'] = $request->boolean('is_active');
+        }
 
         // Hanya update password jika diisi
         if (!empty($validated['password'])) {
@@ -126,8 +131,13 @@ class UserController extends Controller
 
         $user->update($data);
 
+        $message = 'User berhasil diperbarui.';
+        if ($isSelf) {
+            $message = 'Profil berhasil diperbarui.';
+        }
+
         return redirect()->route('admin.user.index')
-            ->with('success', 'User berhasil diperbarui.');
+            ->with('success', $message);
     }
 
     /**
@@ -135,7 +145,7 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        // Cegah super admin menghapus dirinya sendiri
+        // Cegah admin menghapus dirinya sendiri
         if ($user->id === auth()->id()) {
             return back()->with('error', 'Anda tidak dapat menghapus akun sendiri.');
         }

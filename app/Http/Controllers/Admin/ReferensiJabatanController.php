@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\MasterJabatan;
+use App\Models\ReferensiJabatan;
 use App\Enums\JenisJabatan;
 use Illuminate\Http\Request;
 
-class MasterJabatanController extends Controller
+class ReferensiJabatanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = MasterJabatan::with('parent')
+        $query = ReferensiJabatan::with('parent')
             ->orderBy('jenis_jabatan')
             ->orderBy('parent_id')
             ->orderBy('nama_jabatan');
@@ -28,25 +28,25 @@ class MasterJabatanController extends Controller
 
         // Ambil semua children
         $parentIds = $masterList->pluck('id');
-        $children = MasterJabatan::whereIn('parent_id', $parentIds)
+        $children = ReferensiJabatan::whereIn('parent_id', $parentIds)
             ->orderBy('nama_jabatan')
             ->get()
             ->groupBy('parent_id');
         $jenisJabatanList = JenisJabatan::labels();
 
-        return view('admin.master-jabatan.index', compact('masterList', 'children', 'jenisJabatanList'));
+        return view('admin.referensi-jabatan.index', compact('masterList', 'children', 'jenisJabatanList'));
     }
 
     public function create()
     {
         // Hanya root-level (parent_id = null) yang bisa jadi induk
-        $parentList = MasterJabatan::whereNull('parent_id')
+        $parentList = ReferensiJabatan::whereNull('parent_id')
             ->where('jenis_jabatan', 'Fungsional')
             ->orderBy('nama_jabatan')
             ->get()
             ->mapWithKeys(fn($m) => [$m->id => $m->nama_jabatan . ' (' . $m->jenis_jabatan . ')']);
 
-        return view('admin.master-jabatan.create', [
+        return view('admin.referensi-jabatan.create', [
             'jenisJabatanList' => JenisJabatan::labels(),
             'parentList' => $parentList,
         ]);
@@ -65,46 +65,46 @@ class MasterJabatanController extends Controller
         }
 
         // Cek duplikat: nama + jenis + parent_id harus unik
-        $exists = MasterJabatan::where('nama_jabatan', $validated['nama_jabatan'])
+        $exists = ReferensiJabatan::where('nama_jabatan', $validated['nama_jabatan'])
             ->where('jenis_jabatan', $validated['jenis_jabatan'])
             ->where('parent_id', $validated['parent_id'])
             ->exists();
 
         if ($exists) {
-            return back()->withInput()->with('error', 'Master jabatan "' . $validated['nama_jabatan'] . '" sudah ada untuk jenis dan induk yang sama.');
+            return back()->withInput()->with('error', 'Referensi jabatan "' . $validated['nama_jabatan'] . '" sudah ada untuk jenis dan induk yang sama.');
         }
 
         // Validasi: induk harus root-level (parent_id = null)
         if (!empty($validated['parent_id'])) {
-            $induk = MasterJabatan::find($validated['parent_id']);
+            $induk = ReferensiJabatan::find($validated['parent_id']);
             if ($induk && $induk->parent_id !== null) {
                 return back()->withInput()->with('error', 'Induk yang dipilih adalah sub-jabatan. Sub-jabatan tidak bisa menjadi induk. Pilih jabatan utama.');
             }
         }
 
-        MasterJabatan::create($validated);
+        ReferensiJabatan::create($validated);
 
-        return redirect()->route('admin.master-jabatan.index')
-            ->with('success', 'Master jabatan berhasil ditambahkan.');
+        return redirect()->route('admin.referensi-jabatan.index')
+            ->with('success', 'Referensi jabatan berhasil ditambahkan.');
     }
 
-    public function edit(MasterJabatan $masterJabatan)
+    public function edit(ReferensiJabatan $referensiJabatan)
     {
-        $parentList = MasterJabatan::whereNull('parent_id')
-            ->where('id', '!=', $masterJabatan->id)
+        $parentList = ReferensiJabatan::whereNull('parent_id')
+            ->where('id', '!=', $referensiJabatan->id)
             ->orderBy('jenis_jabatan')
             ->orderBy('nama_jabatan')
             ->get()
             ->mapWithKeys(fn($m) => [$m->id => $m->nama_jabatan . ' (' . $m->jenis_jabatan . ')']);
 
-        return view('admin.master-jabatan.edit', [
-            'masterJabatan' => $masterJabatan,
+        return view('admin.referensi-jabatan.edit', [
+            'referensiJabatan' => $referensiJabatan,
             'jenisJabatanList' => JenisJabatan::labels(),
             'parentList' => $parentList,
         ]);
     }
 
-    public function update(Request $request, MasterJabatan $masterJabatan)
+    public function update(Request $request, ReferensiJabatan $referensiJabatan)
     {
         $validated = $request->validate([
             'nama_jabatan' => 'required|string|max:255',
@@ -117,44 +117,44 @@ class MasterJabatanController extends Controller
         }
 
         // Prevent self-reference
-        if (!empty($validated['parent_id']) && $validated['parent_id'] == $masterJabatan->id) {
+        if (!empty($validated['parent_id']) && $validated['parent_id'] == $referensiJabatan->id) {
             return back()->withInput()->with('error', 'Sub jabatan tidak bisa menjadi induk dari dirinya sendiri.');
         }
 
         // Validasi: induk harus root-level (parent_id = null)
         if (!empty($validated['parent_id'])) {
-            $induk = MasterJabatan::find($validated['parent_id']);
+            $induk = ReferensiJabatan::find($validated['parent_id']);
             if ($induk && $induk->parent_id !== null) {
                 return back()->withInput()->with('error', 'Induk yang dipilih adalah sub-jabatan. Sub-jabatan tidak bisa menjadi induk. Pilih jabatan utama.');
             }
         }
 
         // Cek duplikat (kecuali record sendiri)
-        $exists = MasterJabatan::where('nama_jabatan', $validated['nama_jabatan'])
+        $exists = ReferensiJabatan::where('nama_jabatan', $validated['nama_jabatan'])
             ->where('jenis_jabatan', $validated['jenis_jabatan'])
             ->where('parent_id', $validated['parent_id'])
-            ->where('id', '!=', $masterJabatan->id)
+            ->where('id', '!=', $referensiJabatan->id)
             ->exists();
 
         if ($exists) {
-            return back()->withInput()->with('error', 'Master jabatan "' . $validated['nama_jabatan'] . '" sudah ada untuk jenis dan induk yang sama.');
+            return back()->withInput()->with('error', 'Referensi jabatan "' . $validated['nama_jabatan'] . '" sudah ada untuk jenis dan induk yang sama.');
         }
 
-        $masterJabatan->update($validated);
+        $referensiJabatan->update($validated);
 
-        return redirect()->route('admin.master-jabatan.index')
-            ->with('success', 'Master jabatan berhasil diperbarui.');
+        return redirect()->route('admin.referensi-jabatan.index')
+            ->with('success', 'Referensi jabatan berhasil diperbarui.');
     }
 
-    public function destroy(MasterJabatan $masterJabatan)
+    public function destroy(ReferensiJabatan $referensiJabatan)
     {
-        if ($masterJabatan->children()->exists()) {
-            return back()->with('error', 'Master jabatan tidak dapat dihapus karena masih memiliki sub jabatan.');
+        if ($referensiJabatan->children()->exists()) {
+            return back()->with('error', 'Referensi jabatan tidak dapat dihapus karena masih memiliki sub jabatan.');
         }
 
-        $masterJabatan->delete();
+        $referensiJabatan->delete();
 
-        return redirect()->route('admin.master-jabatan.index')
-            ->with('success', 'Master jabatan berhasil dihapus.');
+        return redirect()->route('admin.referensi-jabatan.index')
+            ->with('success', 'Referensi jabatan berhasil dihapus.');
     }
 }

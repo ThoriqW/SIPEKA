@@ -21,18 +21,18 @@ class TugasTambahanTest extends TestCase
     }
 
     #[Test]
-    public function bkd_can_access_index()
+    public function admin_can_access_index()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $response = $this->actingAs($user)->get(route('admin.tugas-tambahan.index'));
         $response->assertStatus(200);
-        $response->assertSee('Master Tugas Tambahan');
+        $response->assertSee('Tugas Tambahan');
     }
 
     #[Test]
-    public function bkd_can_create_tugas_tambahan()
+    public function admin_can_create_tugas_tambahan()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $response = $this->actingAs($user)->post(route('admin.tugas-tambahan.store'), [
             'nama_tugas' => 'Plt. Kepala Sekolah',
         ]);
@@ -41,9 +41,9 @@ class TugasTambahanTest extends TestCase
     }
 
     #[Test]
-    public function bkd_can_update_tugas_tambahan()
+    public function admin_can_update_tugas_tambahan()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $tugas = MasterTugasTambahan::first();
         $this->actingAs($user)->put(route('admin.tugas-tambahan.update', $tugas), [
             'nama_tugas' => 'Kepala Sekolah Updated',
@@ -52,9 +52,9 @@ class TugasTambahanTest extends TestCase
     }
 
     #[Test]
-    public function bkd_can_delete_unused_tugas()
+    public function admin_can_delete_unused_tugas()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $tugas = MasterTugasTambahan::create(['nama_tugas' => 'Temp']);
         $this->actingAs($user)->delete(route('admin.tugas-tambahan.destroy', $tugas));
         $this->assertDatabaseMissing('master_tugas_tambahan', ['id' => $tugas->id]);
@@ -95,7 +95,7 @@ class TugasTambahanTest extends TestCase
     #[Test]
     public function duplicate_nama_tugas_is_rejected()
     {
-        $user = User::where('role', 'bkd')->first();
+        $user = User::where('role', 'admin')->first();
         $response = $this->actingAs($user)->post(route('admin.tugas-tambahan.store'), [
             'nama_tugas' => 'Kepala Sekolah', // already seeded
         ]);

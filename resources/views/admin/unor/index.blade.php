@@ -16,7 +16,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">No</th>
-                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Unit Organisasi</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi</th>
                         <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase w-32">Aksi</th>
                     </tr>
                 </thead>
