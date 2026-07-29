@@ -27,7 +27,7 @@ class KebutuhanPegawaiTest extends TestCase
         $unor = Unor::where('kode_unor', 'DIKBUD')->first();
 
         $response = $this->actingAs($user)->post(route('admin.jabatan.store'), [
-            'nama_jabatan' => 'Analis Kebijakan',
+            'nama_jabatan' => 'Statistisi',
             'jenis_jabatan' => 'Fungsional',
             'kelas_jabatan' => 8,
             'jenjang' => 'Ahli Muda',
@@ -35,10 +35,11 @@ class KebutuhanPegawaiTest extends TestCase
             'opd_id' => $unor->id,
         ]);
 
-        $response->assertRedirect();
+        $response->assertRedirect(route('admin.jabatan.index'));
 
-        $jabatan = Jabatan::where('nama_jabatan', 'Analis Kebijakan')->first();
-        $this->assertNotNull($jabatan);
+        $jabatan = Jabatan::where('nama_jabatan', 'Statistisi')
+            ->where('opd_id', $unor->id)->first();
+        $this->assertNotNull($jabatan, 'Jabatan should be created after valid POST');
 
         $kebutuhan = KebutuhanPegawai::where('unor_id', $unor->id)
             ->where('jabatan_id', $jabatan->id)

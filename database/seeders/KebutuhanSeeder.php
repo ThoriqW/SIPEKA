@@ -11,41 +11,36 @@ class KebutuhanSeeder extends Seeder
 {
     public function run(): void
     {
-        $dikbud = Unor::where('kode_unor', 'DIKBUD')->first();
-        $dinkes = Unor::where('kode_unor', 'DINKES')->first();
+        $unorList = Unor::whereNotNull('parent_id')->get();
 
-        // ── DIKBUD ──
-        KebutuhanPegawai::create([
-            'unor_id' => $dikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-005')->first()->id,
-            'tahun' => null,
-            'jumlah' => 3,
-        ]);
-        KebutuhanPegawai::create([
-            'unor_id' => $dikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
-            'tahun' => null,
-            'jumlah' => 10,
-        ]);
-        KebutuhanPegawai::create([
-            'unor_id' => $dikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-007')->first()->id,
-            'tahun' => null,
-            'jumlah' => 5,
-        ]);
+        foreach ($unorList as $unor) {
+            $jabatanList = Jabatan::where('opd_id', $unor->id)->get();
 
-        // ── DINKES ──
-        KebutuhanPegawai::create([
-            'unor_id' => $dinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-003')->first()->id,
-            'tahun' => null,
-            'jumlah' => 5,
-        ]);
-        KebutuhanPegawai::create([
-            'unor_id' => $dinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-004')->first()->id,
-            'tahun' => null,
-            'jumlah' => 8,
-        ]);
+            foreach ($jabatanList as $jabatan) {
+                $jumlah = match (true) {
+                    // Struktural — Pimpinan Tinggi Pratama: selalu 1
+                    $jabatan->jenis_jabatan === 'Struktural' && $jabatan->jenjang === 'Pimpinan Tinggi Pratama' => 1,
+                    // Struktural — Administrator / Pengawas: 1-2
+                    $jabatan->jenis_jabatan === 'Struktural' => 1,
+                    // Guru, Dokter, Perawat, Bidan: butuh lebih banyak
+                    str_contains($jabatan->nama_jabatan, 'Guru') => rand(3, 6),
+                    str_contains($jabatan->nama_jabatan, 'Dokter') => rand(2, 4),
+                    str_contains($jabatan->nama_jabatan, 'Perawat') => rand(2, 5),
+                    str_contains($jabatan->nama_jabatan, 'Bidan') => rand(2, 3),
+                    // Fungsional lain: 1-3
+                    $jabatan->jenis_jabatan === 'Fungsional' => rand(1, 3),
+                    // Pelaksana: 2-5
+                    $jabatan->jenis_jabatan === 'Pelaksana' => rand(2, 5),
+                    default => 1,
+                };
+
+                KebutuhanPegawai::create([
+                    'unor_id' => $unor->id,
+                    'jabatan_id' => $jabatan->id,
+                    'tahun' => null,
+                    'jumlah' => $jumlah,
+                ]);
+            }
+        }
     }
 }

@@ -10,108 +10,170 @@ class JabatanSeeder extends Seeder
 {
     public function run(): void
     {
-        $opdDikbud = Unor::where('kode_unor', 'DIKBUD')->first();
-        $opdDinkes = Unor::where('kode_unor', 'DINKES')->first();
+        $dikbud = Unor::where('kode_unor', 'DIKBUD')->first();
+        $dinkes = Unor::where('kode_unor', 'DINKES')->first();
+        $pupr   = Unor::where('kode_unor', 'PUPR')->first();
+        $bkpsdm = Unor::where('kode_unor', 'BKPSDM')->first();
+        $setda  = Unor::where('kode_unor', 'SETDA')->first();
 
-        // ── OPD 1: Dinas Pendidikan dan Kebudayaan ──
-        Jabatan::create([
-            'nama_jabatan' => 'Kepala Dinas Pendidikan dan Kebudayaan',
-            'kode_jabatan' => 'DIKBUD-001',
-            'jenis_jabatan' => 'Struktural',
-            'kelas_jabatan' => 15,
-            'jenjang' => 'Pimpinan Tinggi Pratama',
-            'opd_id' => $opdDikbud->id,
-        ]);
+        // ============================================================
+        // DIKBUD — Dinas Pendidikan dan Kebudayaan
+        // ============================================================
+        $dikbudJabatan = [
+            // Struktural
+            ['nama' => 'Kepala Dinas',                                'jenis' => 'Struktural', 'kelas' => 15, 'jenjang' => 'Pimpinan Tinggi Pratama'],
+            ['nama' => 'Sekretaris Dinas',                            'jenis' => 'Struktural', 'kelas' => 13, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Bidang',                               'jenis' => 'Struktural', 'kelas' => 12, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Bidang',                               'jenis' => 'Struktural', 'kelas' => 12, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Sub Bagian',                           'jenis' => 'Struktural', 'kelas' => 10, 'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Sub Bagian',                           'jenis' => 'Struktural', 'kelas' => 10, 'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Seksi',                                'jenis' => 'Struktural', 'kelas' => 9,  'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Seksi',                                'jenis' => 'Struktural', 'kelas' => 9,  'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Seksi',                                'jenis' => 'Struktural', 'kelas' => 9,  'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Seksi',                                'jenis' => 'Struktural', 'kelas' => 9,  'jenjang' => 'Pengawas'],
+            // Fungsional Guru (dengan sub-jabatan)
+            ['nama' => 'Guru - Guru Kelas',                           'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Pertama'],
+            ['nama' => 'Guru - Guru Kelas',                           'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Muda'],
+            ['nama' => 'Guru - Guru Matematika',                      'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Pertama'],
+            ['nama' => 'Guru - Guru Matematika',                      'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Muda'],
+            ['nama' => 'Guru - Guru Bahasa Indonesia',                'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Pertama'],
+            ['nama' => 'Guru - Guru Bahasa Inggris',                  'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Pertama'],
+            ['nama' => 'Guru - Guru IPA',                             'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Pertama'],
+            ['nama' => 'Guru - Guru PPKN',                            'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Muda'],
+            ['nama' => 'Guru - Guru PENJASORKES',                     'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Pertama'],
+            ['nama' => 'Guru - Guru Bimbingan dan Konseling',         'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Muda'],
+            // Pelaksana
+            ['nama' => 'Pengelola Keuangan',                          'jenis' => 'Pelaksana',  'kelas' => 6, 'jenjang' => 'Pelaksana'],
+            ['nama' => 'Pengadministrasi Umum',                       'jenis' => 'Pelaksana',  'kelas' => 5, 'jenjang' => 'Pelaksana'],
+            ['nama' => 'Pengadministrasi Umum',                       'jenis' => 'Pelaksana',  'kelas' => 5, 'jenjang' => 'Pelaksana'],
+            ['nama' => 'Operator Komputer',                           'jenis' => 'Pelaksana',  'kelas' => 5, 'jenjang' => 'Pelaksana'],
+            ['nama' => 'Bendahara',                                   'jenis' => 'Pelaksana',  'kelas' => 6, 'jenjang' => 'Pelaksana'],
+        ];
 
-        Jabatan::create([
-            'nama_jabatan' => 'Sekretariat',
-            'kode_jabatan' => 'DIKBUD-002',
-            'jenis_jabatan' => 'Struktural',
-            'kelas_jabatan' => 13,
-            'jenjang' => 'Administrator',
-            'opd_id' => $opdDikbud->id,
-        ]);
+        foreach ($dikbudJabatan as $i => $j) {
+            Jabatan::create([
+                'nama_jabatan'  => $j['nama'],
+                'kode_jabatan'  => sprintf('DIKBUD-%03d', $i + 1),
+                'jenis_jabatan' => $j['jenis'],
+                'kelas_jabatan' => $j['kelas'],
+                'jenjang'       => $j['jenjang'],
+                'opd_id'        => $dikbud->id,
+            ]);
+        }
 
-        Jabatan::create([
-            'nama_jabatan' => 'Bidang Sekolah Dasar',
-            'kode_jabatan' => 'DIKBUD-003',
-            'jenis_jabatan' => 'Struktural',
-            'kelas_jabatan' => 12,
-            'jenjang' => 'Administrator',
-            'opd_id' => $opdDikbud->id,
-        ]);
+        // ============================================================
+        // DINKES — Dinas Kesehatan
+        // ============================================================
+        $dinkesJabatan = [
+            // Struktural
+            ['nama' => 'Kepala Dinas',                                'jenis' => 'Struktural', 'kelas' => 15, 'jenjang' => 'Pimpinan Tinggi Pratama'],
+            ['nama' => 'Sekretaris Dinas',                            'jenis' => 'Struktural', 'kelas' => 13, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Bidang',                               'jenis' => 'Struktural', 'kelas' => 12, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Bidang',                               'jenis' => 'Struktural', 'kelas' => 12, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Sub Bagian',                           'jenis' => 'Struktural', 'kelas' => 10, 'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Seksi',                                'jenis' => 'Struktural', 'kelas' => 9,  'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Seksi',                                'jenis' => 'Struktural', 'kelas' => 9,  'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Seksi',                                'jenis' => 'Struktural', 'kelas' => 9,  'jenjang' => 'Pengawas'],
+            // Fungsional Nakes
+            ['nama' => 'Dokter - Dokter Umum',                        'jenis' => 'Fungsional', 'kelas' => 9, 'jenjang' => 'Ahli Pertama'],
+            ['nama' => 'Dokter - Dokter Umum',                        'jenis' => 'Fungsional', 'kelas' => 9, 'jenjang' => 'Ahli Muda'],
+            ['nama' => 'Dokter - Dokter Spesialis Anak',              'jenis' => 'Fungsional', 'kelas' => 10,'jenjang' => 'Ahli Muda'],
+            ['nama' => 'Dokter - Dokter Spesialis Obgyn',             'jenis' => 'Fungsional', 'kelas' => 10,'jenjang' => 'Ahli Madya'],
+            ['nama' => 'Dokter Gigi',                                 'jenis' => 'Fungsional', 'kelas' => 9, 'jenjang' => 'Ahli Pertama'],
+            ['nama' => 'Perawat',                                     'jenis' => 'Fungsional', 'kelas' => 7, 'jenjang' => 'Keterampilan - Terampil'],
+            ['nama' => 'Bidan',                                       'jenis' => 'Fungsional', 'kelas' => 7, 'jenjang' => 'Keterampilan - Terampil'],
+            // Pelaksana
+            ['nama' => 'Pengelola Keuangan',                          'jenis' => 'Pelaksana',  'kelas' => 6, 'jenjang' => 'Pelaksana'],
+            ['nama' => 'Pengadministrasi Umum',                       'jenis' => 'Pelaksana',  'kelas' => 5, 'jenjang' => 'Pelaksana'],
+        ];
 
-        Jabatan::create([
-            'nama_jabatan' => 'Sub Bagian Keuangan',
-            'kode_jabatan' => 'DIKBUD-004',
-            'jenis_jabatan' => 'Struktural',
-            'kelas_jabatan' => 10,
-            'jenjang' => 'Pengawas',
-            'opd_id' => $opdDikbud->id,
-        ]);
+        foreach ($dinkesJabatan as $i => $j) {
+            Jabatan::create([
+                'nama_jabatan'  => $j['nama'],
+                'kode_jabatan'  => sprintf('DINKES-%03d', $i + 1),
+                'jenis_jabatan' => $j['jenis'],
+                'kelas_jabatan' => $j['kelas'],
+                'jenjang'       => $j['jenjang'],
+                'opd_id'        => $dinkes->id,
+            ]);
+        }
 
-        Jabatan::create([
-            'nama_jabatan' => 'Pengelola Keuangan',
-            'kode_jabatan' => 'DIKBUD-005',
-            'jenis_jabatan' => 'Pelaksana',
-            'kelas_jabatan' => 6,
-            'jenjang' => 'Pelaksana',
-            'opd_id' => $opdDikbud->id,
-        ]);
+        // ============================================================
+        // PUPR — Dinas Pekerjaan Umum dan Penataan Ruang
+        // ============================================================
+        $puprJabatan = [
+            ['nama' => 'Kepala Dinas',                                'jenis' => 'Struktural', 'kelas' => 15, 'jenjang' => 'Pimpinan Tinggi Pratama'],
+            ['nama' => 'Sekretaris Dinas',                            'jenis' => 'Struktural', 'kelas' => 13, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Bidang',                               'jenis' => 'Struktural', 'kelas' => 12, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Seksi',                                'jenis' => 'Struktural', 'kelas' => 9,  'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Seksi',                                'jenis' => 'Struktural', 'kelas' => 9,  'jenjang' => 'Pengawas'],
+            ['nama' => 'Analis Kebijakan',                            'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Muda'],
+            ['nama' => 'Operator Komputer',                           'jenis' => 'Pelaksana',  'kelas' => 5, 'jenjang' => 'Pelaksana'],
+            ['nama' => 'Pengadministrasi Umum',                       'jenis' => 'Pelaksana',  'kelas' => 5, 'jenjang' => 'Pelaksana'],
+        ];
 
-        Jabatan::create([
-            'nama_jabatan' => 'Guru - Guru Kelas',
-            'kode_jabatan' => 'DIKBUD-006',
-            'jenis_jabatan' => 'Fungsional',
-            'kelas_jabatan' => 8,
-            'jenjang' => 'Ahli Pertama',
-            'opd_id' => $opdDikbud->id,
-        ]);
+        foreach ($puprJabatan as $i => $j) {
+            Jabatan::create([
+                'nama_jabatan'  => $j['nama'],
+                'kode_jabatan'  => sprintf('PUPR-%03d', $i + 1),
+                'jenis_jabatan' => $j['jenis'],
+                'kelas_jabatan' => $j['kelas'],
+                'jenjang'       => $j['jenjang'],
+                'opd_id'        => $pupr->id,
+            ]);
+        }
 
-        Jabatan::create([
-            'nama_jabatan' => 'Operator Sekolah',
-            'kode_jabatan' => 'DIKBUD-007',
-            'jenis_jabatan' => 'Pelaksana',
-            'kelas_jabatan' => 5,
-            'jenjang' => 'Pelaksana',
-            'opd_id' => $opdDikbud->id,
-        ]);
+        // ============================================================
+        // BKPSDM — Badan Kepegawaian dan Pengembangan SDM
+        // ============================================================
+        $bkpsdmJabatan = [
+            ['nama' => 'Kepala Badan',                                'jenis' => 'Struktural', 'kelas' => 15, 'jenjang' => 'Pimpinan Tinggi Pratama'],
+            ['nama' => 'Sekretaris Badan',                            'jenis' => 'Struktural', 'kelas' => 13, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Bidang',                               'jenis' => 'Struktural', 'kelas' => 12, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Sub Bidang',                           'jenis' => 'Struktural', 'kelas' => 10, 'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Sub Bidang',                           'jenis' => 'Struktural', 'kelas' => 10, 'jenjang' => 'Pengawas'],
+            ['nama' => 'Analis Kepegawaian',                          'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Muda'],
+            ['nama' => 'Pranata Komputer',                            'jenis' => 'Fungsional', 'kelas' => 8, 'jenjang' => 'Ahli Pertama'],
+            ['nama' => 'Pengelola Kepegawaian',                       'jenis' => 'Pelaksana',  'kelas' => 6, 'jenjang' => 'Pelaksana'],
+            ['nama' => 'Pengadministrasi Umum',                       'jenis' => 'Pelaksana',  'kelas' => 5, 'jenjang' => 'Pelaksana'],
+        ];
 
-        // ── OPD 2: Dinas Kesehatan ──
-        Jabatan::create([
-            'nama_jabatan' => 'Kepala Dinas Kesehatan',
-            'kode_jabatan' => 'DINKES-001',
-            'jenis_jabatan' => 'Struktural',
-            'kelas_jabatan' => 15,
-            'jenjang' => 'Pimpinan Tinggi Pratama',
-            'opd_id' => $opdDinkes->id,
-        ]);
+        foreach ($bkpsdmJabatan as $i => $j) {
+            Jabatan::create([
+                'nama_jabatan'  => $j['nama'],
+                'kode_jabatan'  => sprintf('BKPSDM-%03d', $i + 1),
+                'jenis_jabatan' => $j['jenis'],
+                'kelas_jabatan' => $j['kelas'],
+                'jenjang'       => $j['jenjang'],
+                'opd_id'        => $bkpsdm->id,
+            ]);
+        }
 
-        Jabatan::create([
-            'nama_jabatan' => 'Bidang Pelayanan Kesehatan',
-            'kode_jabatan' => 'DINKES-002',
-            'jenis_jabatan' => 'Struktural',
-            'kelas_jabatan' => 12,
-            'jenjang' => 'Administrator',
-            'opd_id' => $opdDinkes->id,
-        ]);
+        // ============================================================
+        // SETDA — Sekretariat Daerah
+        // ============================================================
+        $setdaJabatan = [
+            ['nama' => 'Sekretaris Daerah',                           'jenis' => 'Struktural', 'kelas' => 15, 'jenjang' => 'Pimpinan Tinggi Pratama'],
+            ['nama' => 'Asisten Pemerintahan',                        'jenis' => 'Struktural', 'kelas' => 13, 'jenjang' => 'Administrator'],
+            ['nama' => 'Asisten Administrasi Umum',                   'jenis' => 'Struktural', 'kelas' => 13, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Bagian',                               'jenis' => 'Struktural', 'kelas' => 12, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Bagian',                               'jenis' => 'Struktural', 'kelas' => 12, 'jenjang' => 'Administrator'],
+            ['nama' => 'Kepala Sub Bagian',                           'jenis' => 'Struktural', 'kelas' => 10, 'jenjang' => 'Pengawas'],
+            ['nama' => 'Kepala Sub Bagian',                           'jenis' => 'Struktural', 'kelas' => 10, 'jenjang' => 'Pengawas'],
+            ['nama' => 'Operator Komputer',                           'jenis' => 'Pelaksana',  'kelas' => 5, 'jenjang' => 'Pelaksana'],
+            ['nama' => 'Bendahara',                                   'jenis' => 'Pelaksana',  'kelas' => 6, 'jenjang' => 'Pelaksana'],
+            ['nama' => 'Pengadministrasi Umum',                       'jenis' => 'Pelaksana',  'kelas' => 5, 'jenjang' => 'Pelaksana'],
+        ];
 
-        Jabatan::create([
-            'nama_jabatan' => 'Dokter - Dokter Umum',
-            'kode_jabatan' => 'DINKES-003',
-            'jenis_jabatan' => 'Fungsional',
-            'kelas_jabatan' => 9,
-            'jenjang' => 'Ahli Pertama',
-            'opd_id' => $opdDinkes->id,
-        ]);
-
-        Jabatan::create([
-            'nama_jabatan' => 'Perawat',
-            'kode_jabatan' => 'DINKES-004',
-            'jenis_jabatan' => 'Fungsional',
-            'kelas_jabatan' => 7,
-            'jenjang' => 'Keterampilan - Terampil',
-            'opd_id' => $opdDinkes->id,
-        ]);
+        foreach ($setdaJabatan as $i => $j) {
+            Jabatan::create([
+                'nama_jabatan'  => $j['nama'],
+                'kode_jabatan'  => sprintf('SETDA-%03d', $i + 1),
+                'jenis_jabatan' => $j['jenis'],
+                'kelas_jabatan' => $j['kelas'],
+                'jenjang'       => $j['jenjang'],
+                'opd_id'        => $setda->id,
+            ]);
+        }
     }
 }

@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\TugasTambahanPegawai;
 use App\Models\MasterTugasTambahan;
 use App\Models\Pegawai;
-use App\Models\Jabatan;
 use App\Models\Unor;
 use Illuminate\Database\Seeder;
 
@@ -15,34 +14,55 @@ class TugasTambahanSeeder extends Seeder
     {
         $kepalaSekolah = MasterTugasTambahan::where('nama_tugas', 'Kepala Sekolah')->first();
         $kepalaPuskesmas = MasterTugasTambahan::where('nama_tugas', 'Kepala Puskesmas')->first();
+        $pltKadis = MasterTugasTambahan::where('nama_tugas', 'Plt. Kepala Dinas')->first();
 
-        // Guru Kelas di DIKBUD → Kepala Sekolah
+        $smpn1 = Unor::where('kode_unor', 'SMPN1')->first();
+        $pkmTalise = Unor::where('kode_unor', 'PKM-TALISE')->first();
+
+        // Kepala Sekolah — untuk Guru Kelas di Dikbud
         $guru = Pegawai::whereHas('jabatan', function ($q) {
-            $q->where('kode_jabatan', 'DIKBUD-006');
+            $q->where('nama_jabatan', 'like', '%Guru Kelas%');
         })->first();
 
-        if ($guru && $kepalaSekolah) {
+        if ($guru && $kepalaSekolah && $smpn1) {
             TugasTambahanPegawai::create([
                 'pegawai_id' => $guru->id,
                 'tugas_tambahan_id' => $kepalaSekolah->id,
-                'unor_id' => $guru->opd_id,
-                'tanggal_mulai' => '2023-01-01',
+                'unor_id' => $smpn1->id,
+                'tanggal_mulai' => '2024-01-01',
                 'tanggal_selesai' => null,
                 'is_active' => true,
             ]);
         }
 
-        // Dokter Umum di DINKES → Kepala Puskesmas
+        // Kepala Puskesmas — untuk Dokter di Dinkes
         $dokter = Pegawai::whereHas('jabatan', function ($q) {
-            $q->where('kode_jabatan', 'DINKES-003');
+            $q->where('nama_jabatan', 'like', '%Dokter Umum%');
         })->first();
 
-        if ($dokter && $kepalaPuskesmas) {
+        if ($dokter && $kepalaPuskesmas && $pkmTalise) {
             TugasTambahanPegawai::create([
                 'pegawai_id' => $dokter->id,
                 'tugas_tambahan_id' => $kepalaPuskesmas->id,
-                'unor_id' => $dokter->opd_id,
-                'tanggal_mulai' => '2023-01-01',
+                'unor_id' => $pkmTalise->id,
+                'tanggal_mulai' => '2024-01-01',
+                'tanggal_selesai' => null,
+                'is_active' => true,
+            ]);
+        }
+
+        // Plt. Kepala Dinas — contoh di PUPR (tidak ada Kadis definitif)
+        $pltPegawai = Pegawai::where('opd_id', Unor::where('kode_unor', 'PUPR')->first()->id)
+            ->whereHas('jabatan', function ($q) {
+                $q->where('jenjang', 'Administrator');
+            })->first();
+
+        if ($pltPegawai && $pltKadis) {
+            TugasTambahanPegawai::create([
+                'pegawai_id' => $pltPegawai->id,
+                'tugas_tambahan_id' => $pltKadis->id,
+                'unor_id' => $pltPegawai->opd_id,
+                'tanggal_mulai' => '2025-01-01',
                 'tanggal_selesai' => null,
                 'is_active' => true,
             ]);

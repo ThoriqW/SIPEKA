@@ -11,296 +11,143 @@ class PegawaiSeeder extends Seeder
 {
     public function run(): void
     {
-        $opdDikbud = Unor::where('kode_unor', 'DIKBUD')->first();
-        $opdDinkes = Unor::where('kode_unor', 'DINKES')->first();
+        $dikbud  = Unor::where('kode_unor', 'DIKBUD')->first();
+        $dinkes  = Unor::where('kode_unor', 'DINKES')->first();
+        $pupr    = Unor::where('kode_unor', 'PUPR')->first();
+        $bkpsdm  = Unor::where('kode_unor', 'BKPSDM')->first();
+        $setda   = Unor::where('kode_unor', 'SETDA')->first();
 
-        // OPD 1 - Dinas Pendidikan dan Kebudayaan
-        // Kepala OPD
-        Pegawai::create([
-            'nama' => 'Dr. Andi Mahmud, M.Pd.',
-            'nip' => '197505152000011001',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1975-05-15',
-            'golongan_pangkat' => 'IV/c',
-            'pendidikan' => 'S3',
-            'jenjang' => 'Pimpinan Tinggi Pratama',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-001')->first()->id,
-        ]);
+        $jDikbud = fn(string $kode) => Jabatan::where('kode_jabatan', $kode)->first()->id;
+        $jDinkes = fn(string $kode) => Jabatan::where('kode_jabatan', $kode)->first()->id;
+        $jPupr   = fn(string $kode) => Jabatan::where('kode_jabatan', $kode)->first()->id;
+        $jBkpsdm = fn(string $kode) => Jabatan::where('kode_jabatan', $kode)->first()->id;
+        $jSetda  = fn(string $kode) => Jabatan::where('kode_jabatan', $kode)->first()->id;
 
-        // Sekretariat
-        Pegawai::create([
-            'nama' => 'Siti Rahayu, S.E., M.M.',
-            'nip' => '198002202005012002',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1980-02-20',
-            'golongan_pangkat' => 'III/d',
-            'pendidikan' => 'S2',
-            'jenjang' => 'Administrator',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-002')->first()->id,
-        ]);
+        // ============================================================
+        // DIKBUD — 15 pegawai
+        // ============================================================
+        $dikbudPegawai = [
+            // Struktural
+            ['nama' => 'Dr. Andi Mahmud, M.Pd.',         'nip' => '197505152000011001', 'jenis' => 'PNS',  'tgl' => '1975-05-15', 'gol' => 'IV/c', 'pend' => 'S3', 'jenjang' => 'Pimpinan Tinggi Pratama', 'jabatan_id' => $jDikbud('DIKBUD-001')],
+            ['nama' => 'Siti Rahayu, S.E., M.M.',         'nip' => '198002202005012002', 'jenis' => 'PNS',  'tgl' => '1980-02-20', 'gol' => 'III/d','pend' => 'S2', 'jenjang' => 'Administrator',            'jabatan_id' => $jDikbud('DIKBUD-002')],
+            ['nama' => 'Budi Santoso, S.Pd., M.Si.',      'nip' => '197811102003011003', 'jenis' => 'PNS',  'tgl' => '1978-11-10', 'gol' => 'III/c','pend' => 'S2', 'jenjang' => 'Administrator',            'jabatan_id' => $jDikbud('DIKBUD-003')],
+            ['nama' => 'Dra. Megawati H.M., M.Pd.',       'nip' => '196606082000012004', 'jenis' => 'PNS',  'tgl' => '1966-06-08', 'gol' => 'IV/b','pend' => 'S2', 'jenjang' => 'Administrator',            'jabatan_id' => $jDikbud('DIKBUD-004')],
+            ['nama' => 'Dewi Anggraini, S.E.',             'nip' => '198505252010012005', 'jenis' => 'PNS',  'tgl' => '1985-05-25', 'gol' => 'III/a','pend' => 'S1', 'jenjang' => 'Pengawas',                 'jabatan_id' => $jDikbud('DIKBUD-005')],
+            ['nama' => 'Rahmat Hidayat, S.E.',             'nip' => '198710102015011006', 'jenis' => 'PNS',  'tgl' => '1987-10-10', 'gol' => 'III/b','pend' => 'S1', 'jenjang' => 'Pengawas',                 'jabatan_id' => $jDikbud('DIKBUD-006')],
+            // Kasi (4)
+            ['nama' => 'Nurul Aini, S.Sos.',               'nip' => '198803152015012007', 'jenis' => 'PNS',  'tgl' => '1988-03-15', 'gol' => 'III/a','pend' => 'S1', 'jenjang' => 'Pengawas',                 'jabatan_id' => $jDikbud('DIKBUD-007')],
+            ['nama' => 'Hendra Setiawan, S.Pd.',           'nip' => '198911202015011008', 'jenis' => 'PPPK','tgl' => '1989-11-20', 'gol' => 'III/a','pend' => 'S1', 'jenjang' => 'Pengawas',                 'jabatan_id' => $jDikbud('DIKBUD-008')],
+            // Guru (5)
+            ['nama' => 'Dra. Nurhayati',                   'nip' => '196701011990012007', 'jenis' => 'PNS',  'tgl' => '1967-01-01', 'gol' => 'IV/a','pend' => 'S1', 'jenjang' => 'Ahli Pertama',             'jabatan_id' => $jDikbud('DIKBUD-011')],
+            ['nama' => 'Suparno, S.Pd.',                   'nip' => '197003121995011008', 'jenis' => 'PNS',  'tgl' => '1970-03-12', 'gol' => 'III/d','pend' => 'S1', 'jenjang' => 'Ahli Muda',                'jabatan_id' => $jDikbud('DIKBUD-012')],
+            ['nama' => 'Rina Kusuma, S.Pd.',               'nip' => '197508082000012009', 'jenis' => 'PNS',  'tgl' => '1975-08-08', 'gol' => 'III/c','pend' => 'S1', 'jenjang' => 'Ahli Pertama',             'jabatan_id' => $jDikbud('DIKBUD-013')],
+            ['nama' => 'Dedi Irawan, S.Pd.',               'nip' => '196804302010011010', 'jenis' => 'PNS',  'tgl' => '1968-04-30', 'gol' => 'IV/a','pend' => 'S1', 'jenjang' => 'Ahli Muda',                'jabatan_id' => $jDikbud('DIKBUD-014')],
+            ['nama' => 'Fitriani, S.Pd.',                  'nip' => '198807152015022011', 'jenis' => 'PPPK','tgl' => '1988-07-15', 'gol' => 'III/a','pend' => 'S1', 'jenjang' => 'Ahli Pertama',             'jabatan_id' => $jDikbud('DIKBUD-015')],
+            // Pelaksana (2)
+            ['nama' => 'Ahmad Fauzi',                      'nip' => '199003152015011013', 'jenis' => 'PNS',  'tgl' => '1990-03-15', 'gol' => 'II/c', 'pend' => 'D3', 'jenjang' => 'Pelaksana',                'jabatan_id' => $jDikbud('DIKBUD-021')],
+            ['nama' => 'Bayu Prasetyo',                    'nip' => '199505102020011014', 'jenis' => 'PPPK','tgl' => '1995-05-10', 'gol' => 'II/a', 'pend' => 'SMA','jenjang' => 'Pelaksana',                'jabatan_id' => $jDikbud('DIKBUD-024')],
+        ];
 
-        // Bidang SD
-        Pegawai::create([
-            'nama' => 'Budi Santoso, S.Pd., M.Si.',
-            'nip' => '197811102003011003',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1978-11-10',
-            'golongan_pangkat' => 'III/c',
-            'pendidikan' => 'S2',
-            'jenjang' => 'Administrator',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-003')->first()->id,
-        ]);
+        foreach ($dikbudPegawai as $p) {
+            Pegawai::create([
+                'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
+                'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
+                'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
+                'opd_id' => $dikbud->id, 'jabatan_id' => $p['jabatan_id'],
+            ]);
+        }
 
-        // Sub Bagian Keuangan
-        Pegawai::create([
-            'nama' => 'Dewi Anggraini, S.E.',
-            'nip' => '198505252010012004',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1985-05-25',
-            'golongan_pangkat' => 'III/a',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Pengawas',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-004')->first()->id,
-        ]);
+        // ============================================================
+        // DINKES — 10 pegawai
+        // ============================================================
+        $dinkesPegawai = [
+            ['nama' => 'dr. Hj. Rahmaniar, M.Kes.',        'nip' => '197003152005012001', 'jenis' => 'PNS',  'tgl' => '1970-03-15', 'gol' => 'IV/c', 'pend' => 'S2', 'jenjang' => 'Pimpinan Tinggi Pratama', 'jabatan_id' => $jDinkes('DINKES-001')],
+            ['nama' => 'drg. Markus Latuconsina',          'nip' => '197508102000011002', 'jenis' => 'PNS',  'tgl' => '1975-08-10', 'gol' => 'III/d','pend' => 'S1', 'jenjang' => 'Administrator',            'jabatan_id' => $jDinkes('DINKES-002')],
+            ['nama' => 'dr. Nurul Hidayah, M.K.M.',        'nip' => '196807152000012003', 'jenis' => 'PNS',  'tgl' => '1968-07-15', 'gol' => 'IV/a', 'pend' => 'S2', 'jenjang' => 'Administrator',            'jabatan_id' => $jDinkes('DINKES-003')],
+            ['nama' => 'dr. H. Syamsul Bahri, M.Kes.',     'nip' => '196512102000011004', 'jenis' => 'PNS',  'tgl' => '1965-12-10', 'gol' => 'IV/b', 'pend' => 'S2', 'jenjang' => 'Administrator',            'jabatan_id' => $jDinkes('DINKES-004')],
+            ['nama' => 'Rosmawati, S.K.M.',                'nip' => '198502152010012005', 'jenis' => 'PNS',  'tgl' => '1985-02-15', 'gol' => 'III/b','pend' => 'S1', 'jenjang' => 'Pengawas',                 'jabatan_id' => $jDinkes('DINKES-005')],
+            // Dokter (2)
+            ['nama' => 'dr. Andini Putri',                 'nip' => '198506152010012006', 'jenis' => 'PNS',  'tgl' => '1985-06-15', 'gol' => 'III/b','pend' => 'S1', 'jenjang' => 'Ahli Pertama',             'jabatan_id' => $jDinkes('DINKES-009')],
+            ['nama' => 'dr. Rizky Pratama',                'nip' => '198810252015011007', 'jenis' => 'PNS',  'tgl' => '1988-10-25', 'gol' => 'III/a','pend' => 'S1', 'jenjang' => 'Ahli Muda',                'jabatan_id' => $jDinkes('DINKES-010')],
+            // Perawat + Bidan (2)
+            ['nama' => 'Nurul Hidayah, A.Md.Kep.',         'nip' => '198812012010012008', 'jenis' => 'PNS',  'tgl' => '1988-12-01', 'gol' => 'II/d', 'pend' => 'D3', 'jenjang' => 'Keterampilan - Terampil',   'jabatan_id' => $jDinkes('DINKES-014')],
+            ['nama' => 'Rini Astuti, A.Md.Keb.',           'nip' => '199302202020012009', 'jenis' => 'PPPK','tgl' => '1993-02-20', 'gol' => 'II/b', 'pend' => 'D3', 'jenjang' => 'Keterampilan - Terampil',   'jabatan_id' => $jDinkes('DINKES-015')],
+            // Pelaksana
+            ['nama' => 'Agus Salim',                       'nip' => '199006152015011010', 'jenis' => 'PNS',  'tgl' => '1990-06-15', 'gol' => 'II/c', 'pend' => 'D3', 'jenjang' => 'Pelaksana',                'jabatan_id' => $jDinkes('DINKES-016')],
+        ];
 
-        // Pengelola Keuangan - 2 pegawai
-        Pegawai::create([
-            'nama' => 'Ahmad Fauzi',
-            'nip' => '199003152015011005',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1990-03-15',
-            'golongan_pangkat' => 'II/c',
-            'pendidikan' => 'D3',
-            'jenjang' => 'Pelaksana',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-005')->first()->id,
-        ]);
+        foreach ($dinkesPegawai as $p) {
+            Pegawai::create([
+                'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
+                'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
+                'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
+                'opd_id' => $dinkes->id, 'jabatan_id' => $p['jabatan_id'],
+            ]);
+        }
 
-        Pegawai::create([
-            'nama' => 'Ratna Dewi',
-            'nip' => '199207202015012006',
-            'jenis_kepegawaian' => 'PPPK',
-            'tanggal_lahir' => '1992-07-20',
-            'golongan_pangkat' => 'II/b',
-            'pendidikan' => 'D3',
-            'jenjang' => 'Pelaksana',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-005')->first()->id,
-        ]);
+        // ============================================================
+        // PUPR — 6 pegawai
+        // ============================================================
+        $puprPegawai = [
+            ['nama' => 'Ir. La Ode Muhidin, M.T.',         'nip' => '197304102000011001', 'jenis' => 'PNS',  'tgl' => '1973-04-10', 'gol' => 'IV/c', 'pend' => 'S2', 'jenjang' => 'Pimpinan Tinggi Pratama', 'jabatan_id' => $jPupr('PUPR-001')],
+            ['nama' => 'Wa Ode Nurhayati, S.T., M.T.',     'nip' => '197808152005012002', 'jenis' => 'PNS',  'tgl' => '1978-08-15', 'gol' => 'III/d','pend' => 'S2', 'jenjang' => 'Administrator',            'jabatan_id' => $jPupr('PUPR-002')],
+            ['nama' => 'Ahmad Yani, S.T.',                  'nip' => '198212102010011003', 'jenis' => 'PNS',  'tgl' => '1982-12-10', 'gol' => 'III/c','pend' => 'S1', 'jenjang' => 'Administrator',            'jabatan_id' => $jPupr('PUPR-003')],
+            ['nama' => 'Sri Wahyuni, S.T.',                 'nip' => '198703252015012004', 'jenis' => 'PNS',  'tgl' => '1987-03-25', 'gol' => 'III/a','pend' => 'S1', 'jenjang' => 'Pengawas',                 'jabatan_id' => $jPupr('PUPR-004')],
+            ['nama' => 'Muh. Yusuf',                       'nip' => '199107102015011005', 'jenis' => 'PNS',  'tgl' => '1991-07-10', 'gol' => 'II/c', 'pend' => 'D3', 'jenjang' => 'Pelaksana',                'jabatan_id' => $jPupr('PUPR-007')],
+            ['nama' => 'Linda Marlina',                     'nip' => '199403152020012006', 'jenis' => 'PPPK','tgl' => '1994-03-15', 'gol' => 'II/a', 'pend' => 'D3', 'jenjang' => 'Pelaksana',                'jabatan_id' => $jPupr('PUPR-008')],
+        ];
 
-        // Guru SD - 6 pegawai
-        Pegawai::create([
-            'nama' => 'Dra. Nurhayati',
-            'nip' => '196501011990012007',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1965-01-01',
-            'golongan_pangkat' => 'IV/a',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Madya',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
-        ]);
+        foreach ($puprPegawai as $p) {
+            Pegawai::create([
+                'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
+                'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
+                'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
+                'opd_id' => $pupr->id, 'jabatan_id' => $p['jabatan_id'],
+            ]);
+        }
 
-        Pegawai::create([
-            'nama' => 'Suparno, S.Pd.',
-            'nip' => '197003121995011008',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1970-03-12',
-            'golongan_pangkat' => 'III/d',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Muda',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
-        ]);
+        // ============================================================
+        // BKPSDM — 7 pegawai
+        // ============================================================
+        $bkpsdmPegawai = [
+            ['nama' => 'Drs. Abdul Muis, M.Si.',           'nip' => '197205202000011001', 'jenis' => 'PNS',  'tgl' => '1972-05-20', 'gol' => 'IV/c', 'pend' => 'S2', 'jenjang' => 'Pimpinan Tinggi Pratama', 'jabatan_id' => $jBkpsdm('BKPSDM-001')],
+            ['nama' => 'Hj. Nurjannah, S.Sos., M.M.',      'nip' => '196903102005012002', 'jenis' => 'PNS',  'tgl' => '1969-03-10', 'gol' => 'IV/b', 'pend' => 'S2', 'jenjang' => 'Administrator',            'jabatan_id' => $jBkpsdm('BKPSDM-002')],
+            ['nama' => 'I Made Suardika, S.H.',             'nip' => '197911152010011003', 'jenis' => 'PNS',  'tgl' => '1979-11-15', 'gol' => 'III/d','pend' => 'S1', 'jenjang' => 'Administrator',            'jabatan_id' => $jBkpsdm('BKPSDM-003')],
+            ['nama' => 'Indah Permatasari, S.E.',          'nip' => '198412202015012004', 'jenis' => 'PNS',  'tgl' => '1984-12-20', 'gol' => 'III/b','pend' => 'S1', 'jenjang' => 'Pengawas',                 'jabatan_id' => $jBkpsdm('BKPSDM-004')],
+            ['nama' => 'Moh. Thoriq, S.Kom.',               'nip' => '199005152015011005', 'jenis' => 'PNS',  'tgl' => '1990-05-15', 'gol' => 'III/a','pend' => 'S1', 'jenjang' => 'Ahli Pertama',             'jabatan_id' => $jBkpsdm('BKPSDM-007')],
+            ['nama' => 'Zulkifli, A.Md.',                   'nip' => '198806102010011006', 'jenis' => 'PNS',  'tgl' => '1988-06-10', 'gol' => 'II/c', 'pend' => 'D3', 'jenjang' => 'Pelaksana',                'jabatan_id' => $jBkpsdm('BKPSDM-008')],
+            ['nama' => 'Kartika Dewi',                      'nip' => '199307202020012007', 'jenis' => 'PPPK','tgl' => '1993-07-20', 'gol' => 'II/a', 'pend' => 'D3', 'jenjang' => 'Pelaksana',                'jabatan_id' => $jBkpsdm('BKPSDM-009')],
+        ];
 
-        Pegawai::create([
-            'nama' => 'Rina Kusuma, S.Pd.',
-            'nip' => '197508082000012009',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1975-08-08',
-            'golongan_pangkat' => 'III/c',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Muda',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
-        ]);
+        foreach ($bkpsdmPegawai as $p) {
+            Pegawai::create([
+                'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
+                'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
+                'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
+                'opd_id' => $bkpsdm->id, 'jabatan_id' => $p['jabatan_id'],
+            ]);
+        }
 
-        Pegawai::create([
-            'nama' => 'Dedi Irawan, S.Pd.',
-            'nip' => '198204302010011010',
-            'jenis_kepegawaian' => 'PPPK',
-            'tanggal_lahir' => '1982-04-30',
-            'golongan_pangkat' => 'III/a',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Pertama',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
-        ]);
+        // ============================================================
+        // SETDA — 7 pegawai
+        // ============================================================
+        $setdaPegawai = [
+            ['nama' => 'Dr. H. Asri, M.Si.',                'nip' => '196804052000011001', 'jenis' => 'PNS',  'tgl' => '1968-04-05', 'gol' => 'IV/d', 'pend' => 'S3', 'jenjang' => 'Pimpinan Tinggi Pratama', 'jabatan_id' => $jSetda('SETDA-001')],
+            ['nama' => 'Hj. Syarifah, S.H., M.Hum.',       'nip' => '197305202005012002', 'jenis' => 'PNS',  'tgl' => '1973-05-20', 'gol' => 'IV/b', 'pend' => 'S2', 'jenjang' => 'Administrator',            'jabatan_id' => $jSetda('SETDA-002')],
+            ['nama' => 'Drs. Sutrisno, M.M.',               'nip' => '197007152000011003', 'jenis' => 'PNS',  'tgl' => '1970-07-15', 'gol' => 'IV/a', 'pend' => 'S2', 'jenjang' => 'Administrator',            'jabatan_id' => $jSetda('SETDA-003')],
+            ['nama' => 'Ruslan Abdul Gani, S.STP.',          'nip' => '198108102010011004', 'jenis' => 'PNS',  'tgl' => '1981-08-10', 'gol' => 'III/c','pend' => 'S1', 'jenjang' => 'Administrator',            'jabatan_id' => $jSetda('SETDA-004')],
+            ['nama' => 'Amiruddin, S.E.',                   'nip' => '198511152015011005', 'jenis' => 'PNS',  'tgl' => '1985-11-15', 'gol' => 'III/b','pend' => 'S1', 'jenjang' => 'Pengawas',                 'jabatan_id' => $jSetda('SETDA-006')],
+            ['nama' => 'Faisal Rahman',                     'nip' => '199202152015011006', 'jenis' => 'PNS',  'tgl' => '1992-02-15', 'gol' => 'II/c', 'pend' => 'D3', 'jenjang' => 'Pelaksana',                'jabatan_id' => $jSetda('SETDA-008')],
+            ['nama' => 'Nurul Aulia',                       'nip' => '199508102020012007', 'jenis' => 'PPPK','tgl' => '1995-08-10', 'gol' => 'II/a', 'pend' => 'D3', 'jenjang' => 'Pelaksana',                'jabatan_id' => $jSetda('SETDA-010')],
+        ];
 
-        Pegawai::create([
-            'nama' => 'Fitriani, S.Pd.',
-            'nip' => '198807152015022011',
-            'jenis_kepegawaian' => 'PPPK',
-            'tanggal_lahir' => '1988-07-15',
-            'golongan_pangkat' => 'III/a',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Pertama',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
-        ]);
-
-        Pegawai::create([
-            'nama' => 'Hendra Gunawan, S.Pd.',
-            'nip' => '199101012020011012',
-            'jenis_kepegawaian' => 'PPPK',
-            'tanggal_lahir' => '1991-01-01',
-            'golongan_pangkat' => 'III/a',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Pertama',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-006')->first()->id,
-        ]);
-
-        // Operator Sekolah - 2 pegawai
-        Pegawai::create([
-            'nama' => 'Bayu Prasetyo',
-            'nip' => '199505102020011013',
-            'jenis_kepegawaian' => 'PPPK',
-            'tanggal_lahir' => '1995-05-10',
-            'golongan_pangkat' => 'II/a',
-            'pendidikan' => 'SMA',
-            'jenjang' => 'Pelaksana',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-007')->first()->id,
-        ]);
-
-        Pegawai::create([
-            'nama' => 'Indah Permata',
-            'nip' => '199608252020012014',
-            'jenis_kepegawaian' => 'PPPK',
-            'tanggal_lahir' => '1996-08-25',
-            'golongan_pangkat' => 'II/a',
-            'pendidikan' => 'SMA',
-            'jenjang' => 'Pelaksana',
-            'opd_id' => $opdDikbud->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DIKBUD-007')->first()->id,
-        ]);
-
-        // OPD 2 - Dinas Kesehatan
-        // Kepala Dinkes
-        Pegawai::create([
-            'nama' => 'dr. Hj. Rahmaniar, M.Kes.',
-            'nip' => '197003152005012001',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1970-03-15',
-            'golongan_pangkat' => 'IV/c',
-            'pendidikan' => 'S2',
-            'jenjang' => 'Pimpinan Tinggi Pratama',
-            'opd_id' => $opdDinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-001')->first()->id,
-        ]);
-
-        // Bidang Pelayanan
-        Pegawai::create([
-            'nama' => 'drg. Markus Latuconsina',
-            'nip' => '197508102000011002',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1975-08-10',
-            'golongan_pangkat' => 'III/d',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Administrator',
-            'opd_id' => $opdDinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-002')->first()->id,
-        ]);
-
-        // Dokter Umum - 3 pegawai
-        Pegawai::create([
-            'nama' => 'dr. Andini Putri',
-            'nip' => '198506152010012003',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1985-06-15',
-            'golongan_pangkat' => 'III/b',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Pertama',
-            'opd_id' => $opdDinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-003')->first()->id,
-        ]);
-
-        Pegawai::create([
-            'nama' => 'dr. Rizky Pratama',
-            'nip' => '198810252015011004',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1988-10-25',
-            'golongan_pangkat' => 'III/a',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Pertama',
-            'opd_id' => $opdDinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-003')->first()->id,
-        ]);
-
-        Pegawai::create([
-            'nama' => 'dr. Melisa Sari',
-            'nip' => '199205102020012005',
-            'jenis_kepegawaian' => 'PPPK',
-            'tanggal_lahir' => '1992-05-10',
-            'golongan_pangkat' => 'III/a',
-            'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Pertama',
-            'opd_id' => $opdDinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-003')->first()->id,
-        ]);
-
-        // Perawat - 4 pegawai
-        Pegawai::create([
-            'nama' => 'Nurul Hidayah, A.Md.Kep.',
-            'nip' => '198812012010012008',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1988-12-01',
-            'golongan_pangkat' => 'II/d',
-            'pendidikan' => 'D3',
-            'jenjang' => 'Keterampilan - Terampil',
-            'opd_id' => $opdDinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-004')->first()->id,
-        ]);
-
-        Pegawai::create([
-            'nama' => 'Agus Salim, A.Md.Kep.',
-            'nip' => '199006152015011009',
-            'jenis_kepegawaian' => 'PNS',
-            'tanggal_lahir' => '1990-06-15',
-            'golongan_pangkat' => 'II/c',
-            'pendidikan' => 'D3',
-            'jenjang' => 'Keterampilan - Terampil',
-            'opd_id' => $opdDinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-004')->first()->id,
-        ]);
-
-        Pegawai::create([
-            'nama' => 'Rini Astuti, A.Md.Kep.',
-            'nip' => '199302202020012010',
-            'jenis_kepegawaian' => 'PPPK',
-            'tanggal_lahir' => '1993-02-20',
-            'golongan_pangkat' => 'II/b',
-            'pendidikan' => 'D3',
-            'jenjang' => 'Keterampilan - Terampil',
-            'opd_id' => $opdDinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-004')->first()->id,
-        ]);
-
-        Pegawai::create([
-            'nama' => 'Dian Permata, A.Md.Kep.',
-            'nip' => '199507102020012011',
-            'jenis_kepegawaian' => 'PPPK',
-            'tanggal_lahir' => '1995-07-10',
-            'golongan_pangkat' => 'II/a',
-            'pendidikan' => 'D3',
-            'jenjang' => 'Keterampilan - Terampil',
-            'opd_id' => $opdDinkes->id,
-            'jabatan_id' => Jabatan::where('kode_jabatan', 'DINKES-004')->first()->id,
-        ]);
+        foreach ($setdaPegawai as $p) {
+            Pegawai::create([
+                'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
+                'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
+                'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
+                'opd_id' => $setda->id, 'jabatan_id' => $p['jabatan_id'],
+            ]);
+        }
     }
 }

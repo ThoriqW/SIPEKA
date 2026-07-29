@@ -17,7 +17,7 @@
                     <input type="text" name="search" placeholder="Cari Jabatan..." value="{{ request('search') }}" class="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @if($opdList->isNotEmpty())
                     <select name="opd_id" class="w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Semua OPD</option>
+                        <option value="">Semua Unor</option>
                         @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ request('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                     </select>
                     @endif
@@ -29,26 +29,27 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Jabatan</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPD</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kelas</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenjang</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPD</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Jabatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unor</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kelas</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenjang</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase w-28">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @forelse($jabatanList as $key => $j)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-4 text-sm text-gray-500">{{ $jabatanList->firstItem() + $key }}</td>
-                            <td class="px-4 py-4 text-sm font-medium text-gray-900">{{ $j->nama_jabatan }}</td>
-                            <td class="px-4 py-4 text-sm text-gray-500">{{ $j->opd->nama_unor ?? '-' }}</td>
-                            <td class="px-4 py-4 text-sm text-center"><span class="px-2 py-1 text-xs rounded-full {{ $j->jenis_jabatan === 'Struktural' ? 'bg-purple-100 text-purple-800' : ($j->jenis_jabatan === 'Fungsional' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">{{ $j->jenis_jabatan }}</span></td>
-                            <td class="px-4 py-4 text-sm text-gray-500 text-center">{{ $j->kelas_jabatan }}</td>
-                            <td class="px-4 py-4 text-sm text-gray-500">{{ $j->jenjang ?? '-' }}</td>
-                            <td class="px-4 py-4 text-sm text-center">
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $jabatanList->firstItem() + $key }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $j->nama_jabatan }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $j->opd->nama_unor ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-center">
+                                <span class="px-2 py-1 text-xs rounded-full {{ $j->jenis_jabatan === 'Struktural' ? 'bg-purple-100 text-purple-800' : ($j->jenis_jabatan === 'Fungsional' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">{{ $j->jenis_jabatan }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500 text-center">{{ $j->kelas_jabatan }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $j->jenjang ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-center">
                                 <a href="{{ route('admin.jabatan.edit', $j) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">Edit</a>
                                 <form action="{{ route('admin.jabatan.destroy', $j) }}" method="POST" class="inline" onsubmit="return confirm('Hapus jabatan ini?')">
                                     @csrf @method('DELETE')
@@ -57,7 +58,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="9" class="px-6 py-10 text-center text-gray-500">Tidak ada data jabatan.</td></tr>
+                        <tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">Tidak ada data jabatan.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

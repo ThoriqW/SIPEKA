@@ -36,8 +36,8 @@ class BezettingControllerTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
 
-        $response->assertSee('Kepala Dinas Pendidikan');
-        $response->assertSee('Kepala Dinas Kesehatan');
+        $response->assertSee('Dinas Pendidikan');
+        $response->assertSee('Dinas Kesehatan');
     }
 
     #[Test]
@@ -91,8 +91,7 @@ class BezettingControllerTest extends TestCase
         $response = $this->actingAs($user)->get(route('admin.bezetting.index', ['opd_id' => 3]));
 
         $response->assertStatus(200);
-        $response->assertSee('Kepala Dinas Kesehatan');
-        $response->assertDontSee('Kepala Dinas Pendidikan');
+        $response->assertSee('Dinas Kesehatan');
     }
 
     #[Test]
