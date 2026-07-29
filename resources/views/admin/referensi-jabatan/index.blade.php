@@ -72,7 +72,7 @@
                             <tr class="hover:bg-gray-50 bg-gray-50/50" x-show="open[{{ $m->id }}]" x-cloak>
                                 <td class="px-6 py-3"></td>
                                 <td class="px-6 py-3 text-sm text-gray-700">
-                                    <span class="pl-8 text-gray-400">—</span> {{ $child->nama_jabatan }}
+                                    <span class="pl-8 text-gray-400">—</span> {{ $child->sub_jabatan }}
                                 </td>
                                 <td class="px-6 py-3 text-sm text-center">
                                     <span class="px-2 py-1 text-xs rounded-full {{ $child->jenis_jabatan === 'Struktural' ? 'bg-purple-100 text-purple-800' : ($child->jenis_jabatan === 'Fungsional' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">{{ $child->jenis_jabatan }}</span>
