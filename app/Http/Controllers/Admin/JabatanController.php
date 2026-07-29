@@ -16,28 +16,41 @@ class JabatanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Jabatan::query()->with(['opd']);
+        $query = Jabatan::query()->with(['opd.parent']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama_jabatan', 'like', "%{$search}%")->orWhere('kode_jabatan', 'like', "%{$search}%");
             });
         }
-        if ($request->filled('opd_id')) $query->where('opd_id', $request->opd_id);
+        if ($request->filled('opd_id')) {
+            $indukId = $request->opd_id;
+            $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
+            $descendantIds = $this->collectDescendants($indukId, $allUnor);
+            $query->whereIn('opd_id', array_merge([$indukId], $descendantIds));
+        }
 
         $jabatanList = $query->withCount('pegawai')->orderBy('nama_jabatan')->paginate(15)->withQueryString();
-        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
-        return view('admin.jabatan.index', compact('jabatanList', 'opdList'));
+
+        // Filter Unor Induk saja (level OPD, bukan root dan bukan sub-unit)
+        $pemkot = Unor::whereNull('parent_id')->first();
+        $opdList = Unor::where('parent_id', $pemkot?->id)
+            ->orderBy('nama_unor')->pluck('nama_unor', 'id');
+
+        return view('admin.jabatan.index', compact('jabatanList', 'opdList', 'pemkot'));
     }
 
     public function create()
     {
-        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
+        $pemkot = Unor::whereNull('parent_id')->first();
+        $indukList = Unor::where('parent_id', $pemkot?->id)
+            ->orderBy('nama_unor')->pluck('nama_unor', 'id');
+
+        $unorByInduk = $this->buildUnorByInduk($indukList);
 
         return view('admin.jabatan.create', [
-            'opdList' => $opdList,
-            'indukList' => collect(),
-            'indukByOpd' => [],
+            'indukList' => $indukList,
+            'unorByInduk' => $unorByInduk,
             'jenisJabatanList' => JenisJabatan::labels(),
             'jenjangOptions' => [
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),
@@ -77,8 +90,7 @@ class JabatanController extends Controller
 
         // Jika ada sub-jabatan, validasi bahwa sub adalah child valid dari parent
         if ($namaSub) {
-            $subExists = ReferensiJabatan::where('nama_jabatan', $namaSub)
-                ->where('jenis_jabatan', $validated['jenis_jabatan'])
+            $subExists = ReferensiJabatan::where('sub_jabatan', $namaSub)
                 ->where('parent_id', $parentMaster->id)
                 ->exists();
 
@@ -130,7 +142,11 @@ class JabatanController extends Controller
 
     public function edit(Jabatan $jabatan)
     {
-        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
+        $pemkot = Unor::whereNull('parent_id')->first();
+        $indukList = Unor::where('parent_id', $pemkot?->id)
+            ->orderBy('nama_unor')->pluck('nama_unor', 'id');
+
+        $unorByInduk = $this->buildUnorByInduk($indukList);
 
         // Load kebutuhan existing
         $kebutuhan = KebutuhanPegawai::where('unor_id', $jabatan->opd_id)
@@ -138,12 +154,22 @@ class JabatanController extends Controller
             ->whereNull('tahun')
             ->value('jumlah');
 
+        // Determine current induk
+        $currentOpd = $jabatan->opd;
+        $currentIndukId = null;
+        if ($currentOpd) {
+            $currentIndukId = ($currentOpd->parent_id == $pemkot->id)
+                ? $currentOpd->id
+                : $currentOpd->parent_id;
+        }
+
         return view('admin.jabatan.edit', [
             'jabatan' => $jabatan,
             'kebutuhan' => $kebutuhan,
-            'opdList' => $opdList,
-            'indukList' => collect(),
-            'indukByOpd' => [],
+            'indukList' => $indukList,
+            'unorByInduk' => $unorByInduk,
+            'currentIndukId' => $currentIndukId,
+            'currentUnitId' => $jabatan->opd_id,
             'jenisJabatanList' => JenisJabatan::labels(),
             'jenjangOptions' => [
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),
@@ -232,6 +258,44 @@ class JabatanController extends Controller
     }
 
     /**
+     * Build mapping induk → semua turunan (induk + children + grandchildren ...) untuk dropdown bertingkat.
+     */
+    private function buildUnorByInduk($indukList): array
+    {
+        $allUnor = Unor::whereNotNull('parent_id')->orderBy('nama_unor')->get()->keyBy('id');
+        $result = [];
+
+        foreach ($indukList as $indukId => $indukNama) {
+            $items = [['id' => $indukId, 'nama' => $indukNama]];
+            $descendantIds = $this->collectDescendants($indukId, $allUnor);
+            foreach ($descendantIds as $id) {
+                $unor = $allUnor->get($id);
+                if ($unor) {
+                    $items[] = ['id' => $unor->id, 'nama' => $unor->nama_unor];
+                }
+            }
+            $result[$indukId] = $items;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Rekursif kumpulkan semua ID turunan dari suatu Unor.
+     */
+    private function collectDescendants($parentId, $allUnor): array
+    {
+        $ids = [];
+        foreach ($allUnor as $unor) {
+            if ($unor->parent_id == $parentId) {
+                $ids[] = $unor->id;
+                $ids = array_merge($ids, $this->collectDescendants($unor->id, $allUnor));
+            }
+        }
+        return $ids;
+    }
+
+    /**
      * Build referensi jabatan data: root entries (parent_id=null) with their children.
      * Returns { Struktural: [{id, nama}], Fungsional: [{id, nama, children}], Pelaksana: [{id, nama}] }
      */
@@ -248,7 +312,7 @@ class JabatanController extends Controller
             $roots = [];
             foreach ($all as $item) {
                 if ($item->parent_id) {
-                    $childrenMap[$item->parent_id][] = ['id' => $item->id, 'nama' => $item->nama_jabatan];
+                    $childrenMap[$item->parent_id][] = ['id' => $item->id, 'nama' => $item->sub_jabatan];
                 } else {
                     $roots[] = $item;
                 }

@@ -14,10 +14,10 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="p-4 border-b">
                 <form method="GET" class="flex flex-wrap gap-4">
-                    <input type="text" name="search" placeholder="Cari Jabatan..." value="{{ request('search') }}" class="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input type="text" name="search" placeholder="Cari Jabatan" value="{{ request('search') }}" class="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @if($opdList->isNotEmpty())
-                    <select name="opd_id" class="w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Semua Unor</option>
+                    <select name="opd_id" class="w-64 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Semua OPD</option>
                         @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ request('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                     </select>
                     @endif
@@ -30,8 +30,9 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">No</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Jabatan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unor</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jabatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unor Induk</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kelas</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenjang</th>
@@ -40,10 +41,21 @@
                     </thead>
                     <tbody class="divide-y divide-gray-200">
                         @forelse($jabatanList as $key => $j)
+                        @php
+                            $unor = $j->opd;
+                            // Unor Induk: walk up until parent is Pemkot (root)
+                            $induk = $unor;
+                            if ($unor && $pemkot) {
+                                while ($induk && $induk->parent_id !== $pemkot->id) {
+                                    $induk = $induk->parent;
+                                }
+                            }
+                        @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $jabatanList->firstItem() + $key }}</td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $j->nama_jabatan }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $j->opd->nama_unor ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $induk->nama_unor ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $unor->nama_unor ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-center">
                                 <span class="px-2 py-1 text-xs rounded-full {{ $j->jenis_jabatan === 'Struktural' ? 'bg-purple-100 text-purple-800' : ($j->jenis_jabatan === 'Fungsional' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">{{ $j->jenis_jabatan }}</span>
                             </td>
@@ -58,7 +70,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">Tidak ada data jabatan.</td></tr>
+                        <tr><td colspan="8" class="px-6 py-10 text-center text-gray-500">Tidak ada data jabatan.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

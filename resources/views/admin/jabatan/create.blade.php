@@ -9,18 +9,18 @@
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
              x-data="jabatanForm()"
-             x-init="onJenisChange('{{ old('jenis_jabatan', '') }}', '', '{{ old('nama_jabatan', '') }}')">
+             x-init="init('{{ old('jenis_jabatan', '') }}', '{{ old('nama_jabatan', '') }}')">
             <form action="{{ route('admin.jabatan.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="nama_jabatan" x-ref="namaJabatanHidden" value="{{ old('nama_jabatan') }}">
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {{-- Jenis Jabatan --}}
+                    {{-- Jenis Jabatan — regular select --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Jabatan</label>
                         <select name="jenis_jabatan" x-on:change="onJenisChange($el.value)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_jabatan') border-red-500 @enderror">
-                            <option value="">-- Pilih --</option>
+                            <option value="">-- Pilih Jenis Jabatan --</option>
                             @foreach($jenisJabatanList as $val => $label)
                                 <option value="{{ $val }}" {{ old('jenis_jabatan') == $val ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
@@ -28,23 +28,58 @@
                         @error('jenis_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Nama Jabatan (dari Master) --}}
+                    {{-- Nama Jabatan — searchable + validasi blur --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nama Jabatan <span class="text-red-500">*</span></label>
-                        <select x-ref="namaJabatanSelect" x-on:change="onParentChange($el)"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nama_jabatan') border-red-500 @enderror">
-                            <option value="">-- Pilih Jenis Jabatan dulu --</option>
-                        </select>
+                        <div class="relative">
+                            <div class="relative">
+                                <input type="text" x-model="namaSearch" x-ref="namaSearch"
+                                       @focus="namaOpen = true" @click="namaOpen = true" @input="namaOpen = true"
+                                       @blur="$nextTick(() => { namaOpen = false; if (namaSearch && namaSearch !== namaSelected) namaSearch = '' })"
+                                       :placeholder="namaSelected || 'Cari Jabatan'"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-8 @error('nama_jabatan') border-red-500 @enderror">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                                      @click.stop="$refs.namaSearch.focus(); namaOpen = true">▾</span>
+                            </div>
+                            <div x-show="namaOpen && filteredNamaList.length > 0" x-cloak @mousedown.prevent
+                                 class="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                <template x-for="item in filteredNamaList" :key="item.id || item.nama">
+                                    <div @click="selectNama(item)"
+                                         class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer">
+                                        <span x-text="item.nama"></span>
+                                        <span x-show="item.children && item.children.length > 0"
+                                              class="ml-1 text-xs text-gray-400"
+                                              x-text="'(' + item.children.length + ')'"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                         @error('nama_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Sub Jabatan --}}
+                    {{-- Sub Jabatan — searchable + validasi blur --}}
                     <div x-show="hasChildren" x-cloak>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Sub Jabatan <span class="text-red-500">*</span></label>
-                        <select x-ref="subJabatanSelect" x-on:change="onSubChange($el)"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Pilih Sub Jabatan --</option>
-                        </select>
+                        <div class="relative">
+                            <div class="relative">
+                                <input type="text" x-model="subSearch" x-ref="subSearch"
+                                       @focus="subOpen = true" @click="subOpen = true" @input="subOpen = true"
+                                       @blur="$nextTick(() => { subOpen = false; if (subSearch && subSearch !== subSelected) subSearch = '' })"
+                                       :placeholder="subSelected || 'Cari Sub Jabatan'"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-8">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                                      @click.stop="$refs.subSearch.focus(); subOpen = true">▾</span>
+                            </div>
+                            <div x-show="subOpen && filteredSubList.length > 0" x-cloak @mousedown.prevent
+                                 class="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                <template x-for="item in filteredSubList" :key="item.nama">
+                                    <div @click="selectSub(item)"
+                                         class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer">
+                                        <span x-text="item.nama"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
                     </div>
 
                     {{-- Kelas Jabatan --}}
@@ -55,12 +90,15 @@
                         @error('kelas_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Jenjang --}}
-                    <div x-show="selectedJenis !== 'Pelaksana'">
+                    {{-- Jenjang — regular select --}}
+                    <div x-show="jenjangList.length > 0">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
                         <select name="jenjang" x-ref="jenjangSelect"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenjang') border-red-500 @enderror">
-                            <option value="">-- Pilih Jenis Jabatan dulu --</option>
+                            <option value="">-- Pilih Jenjang --</option>
+                            <template x-for="item in jenjangList" :key="item.id">
+                                <option :value="item.nama" x-text="item.nama"></option>
+                            </template>
                         </select>
                         @error('jenjang')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
@@ -73,15 +111,27 @@
                         @error('kebutuhan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- OPD --}}
+                    {{-- Unor Induk — regular select --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
-                        <select name="opd_id"
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unor Induk</label>
+                        <select x-on:change="onIndukChange($el.value)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
-                            <option value="">-- Pilih --</option>
-                            @foreach($opdList as $id => $nama)
+                            <option value="">-- Pilih Unor Induk --</option>
+                            @foreach($indukList as $id => $nama)
                                 <option value="{{ $id }}" {{ old('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>
                             @endforeach
+                        </select>
+                        @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+
+                    {{-- Unit Organisasi — regular select --}}
+                    <div x-show="unitList.length > 0" x-cloak>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
+                        <select name="opd_id" x-ref="unitSelect"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
+                            <template x-for="u in unitList" :key="u.id">
+                                <option :value="u.id" x-text="u.nama"></option>
+                            </template>
                         </select>
                         @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
@@ -101,109 +151,101 @@
 function jabatanForm() {
     var options = @json($jenjangOptions);
     var masterData = @json($masterJabatanData);
-    var currentChildren = [];
+    var unorData = @json($unorByInduk);
 
     return {
         selectedJenis: '',
         hasChildren: false,
+        unitList: [],
+        namaJabatanList: [], subJabatanList: [], jenjangList: [],
 
-        onJenisChange(jenis, _, preNama) {
+        // Search state (only for Nama + Sub)
+        namaSearch: '', namaOpen: false, namaSelected: '',
+        subSearch: '', subOpen: false, subSelected: '',
+
+        get filteredNamaList() { return this.filterList(this.namaJabatanList, this.namaSearch); },
+        get filteredSubList() { return this.filterList(this.subJabatanList, this.subSearch); },
+
+        filterList: function(list, s) {
+            if (!s) return list;
+            var q = s.toLowerCase();
+            return list.filter(function(i) { return (i.nama || '').toLowerCase().includes(q); });
+        },
+
+        init: function(jenis, preNama) {
+            if (jenis) this.onJenisChange(jenis, preNama);
+        },
+
+        onJenisChange: function(jenis, preNama) {
             this.selectedJenis = jenis;
             this.hasChildren = false;
-            currentChildren = [];
+            this.subJabatanList = [];
+            this.subSearch = ''; this.subSelected = '';
 
             var pn = preNama || '';
             var parentName = pn.split(' - ')[0] || '';
             var subName = pn.split(' - ').slice(1).join(' - ') || '';
 
-            // Populate jenjang
-            var js = this.$refs.jenjangSelect;
-            js.innerHTML = '<option value="">-- Pilih Jenjang --</option>';
+            this.jenjangList = [];
             if (jenis && options[jenis]) {
-                Object.entries(options[jenis]).forEach(function(e) {
-                    var opt = document.createElement('option');
-                    opt.value = e[0]; opt.textContent = e[1];
-                    js.appendChild(opt);
+                this.jenjangList = Object.entries(options[jenis]).map(function(e) {
+                    return {id: e[0], nama: e[1]};
                 });
             }
 
-            this.populateParentSelect(jenis, parentName, subName);
+            this.namaJabatanList = [];
+            if (jenis && masterData[jenis]) {
+                this.namaJabatanList = masterData[jenis].map(function(item) {
+                    return {id: item.id, nama: item.nama, children: item.children || []};
+                });
+            }
+
+            if (parentName) this.selectNamaByName(parentName, subName);
             this.updateHidden();
         },
 
-        populateParentSelect(jenis, preSelectParent, preSelectSub) {
-            var select = this.$refs.namaJabatanSelect;
-            select.innerHTML = '<option value="">-- Pilih dari Master --</option>';
-            if (!jenis || !masterData[jenis]) return;
-
-            var self = this;
-            var ps = preSelectParent || '';
-            var ss = preSelectSub || '';
-
-            masterData[jenis].forEach(function(item) {
-                var opt = document.createElement('option');
-                opt.value = item.nama;
-                opt.textContent = item.nama;
-                opt.setAttribute('data-has-children', (item.children && item.children.length > 0) ? '1' : '0');
-                opt.setAttribute('data-children', item.children ? JSON.stringify(item.children) : '[]');
-                if (ps && item.nama === ps) opt.selected = true;
-                select.appendChild(opt);
-
-                if (ps && item.nama === ps && item.children && item.children.length > 0) {
-                    currentChildren = item.children;
-                    self.hasChildren = true;
-                    var subSel = self.$refs.subJabatanSelect;
-                    subSel.innerHTML = '<option value="">-- Pilih Sub Jabatan --</option>';
-                    item.children.forEach(function(child) {
-                        var co = document.createElement('option');
-                        co.value = child.nama;
-                        co.textContent = child.nama;
-                        if (ss && child.nama === ss) co.selected = true;
-                        subSel.appendChild(co);
-                    });
+        selectNamaByName: function(name, subName) {
+            this.namaSearch = ''; this.namaSelected = ''; this.namaOpen = false;
+            var match = this.namaJabatanList.find(function(i) { return i.nama === name; });
+            if (match) {
+                this.namaSelected = match.nama;
+                if (match.children && match.children.length > 0) {
+                    this.hasChildren = true;
+                    this.subJabatanList = match.children;
+                    if (subName) this.subSelected = subName;
                 }
-            });
+            }
         },
 
-        onParentChange(selectEl) {
+        selectNama: function(item) {
+            this.namaOpen = false; this.namaSearch = ''; this.namaSelected = item.nama;
             this.hasChildren = false;
-            currentChildren = [];
-            if (!selectEl.value) { this.updateHidden(); return; }
-
-            var opt = selectEl.options[selectEl.selectedIndex];
-            var hasChildren = opt.getAttribute('data-has-children') === '1';
-            var childrenJson = opt.getAttribute('data-children') || '[]';
-
-            if (hasChildren) {
-                currentChildren = JSON.parse(childrenJson);
+            this.subJabatanList = [];
+            this.subSearch = ''; this.subSelected = '';
+            if (item.children && item.children.length > 0) {
                 this.hasChildren = true;
-
-                var subSelect = this.$refs.subJabatanSelect;
-                subSelect.innerHTML = '<option value="">-- Pilih Sub Jabatan --</option>';
-                currentChildren.forEach(function(child) {
-                    var co = document.createElement('option');
-                    co.value = child.nama;
-                    co.textContent = child.nama;
-                    subSelect.appendChild(co);
-                });
+                this.subJabatanList = item.children;
             }
             this.updateHidden();
         },
 
-        onSubChange() {
+        selectSub: function(item) {
+            this.subOpen = false; this.subSearch = ''; this.subSelected = item.nama;
             this.updateHidden();
         },
 
-        updateHidden() {
-            var parentName = this.$refs.namaJabatanSelect.value || '';
-            if (this.hasChildren && this.$refs.subJabatanSelect) {
-                var subName = this.$refs.subJabatanSelect.value;
-                this.$refs.namaJabatanHidden.value = subName ? parentName + ' - ' + subName : '';
+        onIndukChange: function(indukId) {
+            this.unitList = unorData[indukId] || [];
+        },
+
+        updateHidden: function() {
+            if (this.hasChildren && this.subSelected) {
+                this.$refs.namaJabatanHidden.value = this.namaSelected + ' - ' + this.subSelected;
             } else {
-                this.$refs.namaJabatanHidden.value = parentName;
+                this.$refs.namaJabatanHidden.value = this.namaSelected;
             }
         }
-    }
+    };
 }
 </script>
 @append
