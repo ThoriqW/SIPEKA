@@ -97,6 +97,12 @@ class JabatanController extends Controller
             if (!$subExists) {
                 return back()->withInput()->with('error', 'Sub jabatan "' . $namaSub . '" tidak valid untuk "' . $namaParent . '". Silakan pilih dari daftar yang tersedia.');
             }
+        } else {
+            // Validasi: jika induk memiliki sub-jabatan, sub wajib dipilih
+            $hasSubs = ReferensiJabatan::where('parent_id', $parentMaster->id)->exists();
+            if ($hasSubs) {
+                return back()->withInput()->with('error', 'Sub jabatan wajib dipilih untuk "' . $namaParent . '". Silakan pilih sub jabatan yang sesuai.');
+            }
         }
 
         // Validasi: satu UNOR hanya boleh memiliki satu JPTP (Kepala OPD)
@@ -201,6 +207,28 @@ class JabatanController extends Controller
 
         if (!$existsInMaster) {
             return back()->withInput()->with('error', 'Nama jabatan "' . $namaUntukCek . '" tidak ditemukan di Referensi Jabatan. Silakan pilih dari daftar yang tersedia.');
+        }
+
+        // Validasi sub-jabatan wajib (sama seperti store)
+        $parts = explode(' - ', $validated['nama_jabatan']);
+        $namaSub = count($parts) > 1 ? $parts[1] : null;
+        $parentMaster = ReferensiJabatan::where('nama_jabatan', $namaUntukCek)
+            ->where('jenis_jabatan', $validated['jenis_jabatan'])
+            ->whereNull('parent_id')
+            ->first();
+
+        if ($namaSub) {
+            $subExists = ReferensiJabatan::where('sub_jabatan', $namaSub)
+                ->where('parent_id', $parentMaster->id)
+                ->exists();
+            if (!$subExists) {
+                return back()->withInput()->with('error', 'Sub jabatan "' . $namaSub . '" tidak valid untuk "' . $namaUntukCek . '". Silakan pilih dari daftar yang tersedia.');
+            }
+        } elseif ($parentMaster) {
+            $hasSubs = ReferensiJabatan::where('parent_id', $parentMaster->id)->exists();
+            if ($hasSubs) {
+                return back()->withInput()->with('error', 'Sub jabatan wajib dipilih untuk "' . $namaUntukCek . '". Silakan pilih sub jabatan yang sesuai.');
+            }
         }
 
         // Validasi: satu UNOR hanya boleh memiliki satu JPTP (Kepala OPD)

@@ -32,8 +32,8 @@
                             <input type="text" x-model="search" x-ref="searchInput"
                                    @focus="open = true" @click="open = true"
                                    @input="open = true"
-                                   @blur="setTimeout(() => open = false, 150)"
-                                   :placeholder="selectedText || 'Ketik untuk mencari...'"
+                                   @blur="setTimeout(() => { open = false; if (search && search !== selectedText) search = '' }, 150)"
+                                   :placeholder="selectedText || 'Cari Unit Organisasi Induk'"
                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-8">
                             <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
                                   @click.stop="$refs.searchInput.focus(); open = true">▾</span>
@@ -41,8 +41,6 @@
                         <div x-show="open" x-cloak
                              @mousedown.prevent
                              class="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                            <div @click="open = false; search = ''; selectedText = ''; $refs.parentId.value = ''; onParentChange(null)"
-                                 class="px-3 py-2 text-sm text-gray-500 hover:bg-gray-100 cursor-pointer">-- Tanpa Induk --</div>
                             @foreach($parentList as $id => $nama)
                             <div @click="open = false; search = ''; selectedText = '{{ $nama }}'; $refs.parentId.value = '{{ $id }}'; onParentChange({{ $id }})"
                                  x-show="!search || '{{ strtolower($nama) }}'.includes(search.toLowerCase())"
