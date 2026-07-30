@@ -7,7 +7,7 @@
             <h1 class="text-2xl font-semibold text-gray-900">Edit Pegawai</h1>
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.pegawai.index') }}" class="hover:text-gray-700">Pegawai</a> / Edit</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()" x-init="loadJabatan({{ $pegawai->penempatanAktif->unor_id ?? 0 }}); initGolongan('{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}')">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()" x-init="initGolongan('{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}'); @if($currentIndukId) loadJabatan({{ $currentIndukId }}) @endif">
             <form action="{{ route('admin.pegawai.update', $pegawai) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -36,7 +36,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Golongan/Pangkat</label>
                         <select name="golongan_pangkat" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('golongan_pangkat') border-red-500 @enderror">
-                            <option value="">-- Pilih --</option>
+                            <option value="">-- Pilih Golongan/Pangkat --</option>
                         </select>
                         @error('golongan_pangkat')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
@@ -51,15 +51,17 @@
                         <input type="text" name="kualifikasi_pendidikan" value="{{ old('kualifikasi_pendidikan', $pegawai->kualifikasi_pendidikan) }}" placeholder="Contoh: S1 Teknik Informatika" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unor Induk</label>
-                        <select x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('unor_id', $pegawai->penempatanAktif->unor_id ?? '') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
+                        <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
+                        <select name="induk_id" x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('induk_id') border-red-500 @enderror">
+                            <option value="">-- Pilih OPD --</option>
+                            @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('induk_id', $currentIndukId) == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
+                        @error('induk_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div x-show="opdSelected">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
                         <select name="jabatan_id" x-ref="jabatanSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Memuat... --</option>
+                            <option value="">-- Pilih Jabatan --</option>
                         </select>
                     </div>
                 </div>
@@ -89,7 +91,7 @@ function pegawaiForm() {
         onJenisKepegawaianChange(jenis, preSelect) {
             var list = jenis === 'PPPK' ? golonganPPPK : golonganPNS;
             var select = document.querySelector('[name="golongan_pangkat"]');
-            select.innerHTML = '<option value="">-- Pilih --</option>';
+            select.innerHTML = '<option value="">-- Pilih Golongan/Pangkat --</option>';
             Object.entries(list).forEach(function(_a) {
                 var val = _a[0], label = _a[1];
                 var opt = document.createElement('option');
@@ -102,7 +104,7 @@ function pegawaiForm() {
         loadJabatan(opdId) {
             this.opdSelected = !!opdId;
             var select = this.$refs.jabatanSelect;
-            select.innerHTML = '<option value="">-- Memuat... --</option>';
+            select.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
             if (!opdId) {
                 return;
             }

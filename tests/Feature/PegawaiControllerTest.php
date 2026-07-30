@@ -65,6 +65,7 @@ class PegawaiControllerTest extends TestCase
             'tanggal_lahir' => '2000-01-01',
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
+            'induk_id' => $unorId,
             'jabatan_id' => $jabatan->id,
         ]);
 
@@ -84,7 +85,8 @@ class PegawaiControllerTest extends TestCase
     public function multiple_pegawai_can_share_same_struktural_jabatan()
     {
         $user = User::where('role', 'admin')->first();
-        $jabatan = Jabatan::where('kode_jabatan', 'DIKBUD-001')->first(); // Kepala Dinas (struktural)
+        $jabatan = Jabatan::with('sotkEntries')->where('kode_jabatan', 'DIKBUD-001')->first(); // Kepala Dinas (struktural)
+        $unorId = $jabatan->sotkEntries->first()?->unor_id;
 
         // Tambah pegawai pertama
         Pegawai::create([
@@ -102,6 +104,7 @@ class PegawaiControllerTest extends TestCase
             'tanggal_lahir' => '2000-02-01',
             'golongan_pangkat' => 'III/b',
             'pendidikan' => 'S1',
+            'induk_id' => $unorId,
             'jabatan_id' => $jabatan->id,
         ]);
 
@@ -115,7 +118,8 @@ class PegawaiControllerTest extends TestCase
     {
         $user = User::where('role', 'admin')->first();
         $pegawai = Pegawai::with('penempatanAktif')->first();
-        $newJabatan = Jabatan::where('id', '!=', $pegawai->jabatan_id)->first();
+        $newJabatan = Jabatan::with('sotkEntries')->where('id', '!=', $pegawai->jabatan_id)->first();
+        $newUnorId = $newJabatan->sotkEntries->first()?->unor_id;
 
         $oldPenempatanId = $pegawai->penempatanAktif->id ?? null;
         $this->assertNotNull($oldPenempatanId, 'Pegawai harus punya penempatan awal');
@@ -127,6 +131,7 @@ class PegawaiControllerTest extends TestCase
             'tanggal_lahir' => $pegawai->tanggal_lahir->format('Y-m-d'),
             'golongan_pangkat' => $pegawai->golongan_pangkat,
             'pendidikan' => $pegawai->pendidikan,
+            'induk_id' => $newUnorId,
             'jabatan_id' => $newJabatan->id,
         ]);
 

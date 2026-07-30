@@ -57,15 +57,16 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
-                        <select x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <select name="induk_id" x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('induk_id') border-red-500 @enderror">
                             <option value="">-- Pilih OPD --</option>
-                            @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('unor_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
+                            @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('induk_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
+                        @error('induk_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div x-show="opdSelected">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
                         <select name="jabatan_id" x-ref="jabatanSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Memuat... --</option>
+                            <option value="">-- Pilih Jabatan --</option>
                         </select>
                         @error('jabatan_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
@@ -106,7 +107,7 @@ function pegawaiForm() {
         loadJabatan(opdId) {
             this.opdSelected = !!opdId;
             var select = this.$refs.jabatanSelect;
-            select.innerHTML = '<option value="">-- Memuat... --</option>';
+            select.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
             if (!opdId) {
                 return;
             }
