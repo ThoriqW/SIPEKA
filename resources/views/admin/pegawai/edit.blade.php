@@ -84,7 +84,7 @@ function pegawaiForm() {
     var currentGolongan = '{{ old('golongan_pangkat', $pegawai->golongan_pangkat) }}';
     var currentJenis = '{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}';
     return {
-        opdSelected: true,
+        opdSelected: false,
         initGolongan(jenis) {
             this.onJenisKepegawaianChange(jenis || 'PNS', currentGolongan);
         },
