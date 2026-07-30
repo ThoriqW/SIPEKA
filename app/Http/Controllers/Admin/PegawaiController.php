@@ -24,9 +24,18 @@ class PegawaiController extends Controller
                 $q->where('nama', 'like', "%{$search}%")->orWhere('nip', 'like', "%{$search}%");
             });
         }
-        if ($request->filled('opd_id')) $query->where('opd_id', $request->opd_id);
+        if ($request->filled('opd_id')) {
+            $indukId = $request->opd_id;
+            $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
+            $descendantIds = $this->collectDescendants($indukId, $allUnor);
+            $query->whereIn('opd_id', array_merge([$indukId], $descendantIds));
+        }
         $pegawaiList = $query->orderBy('nama')->paginate(15)->withQueryString();
-        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
+
+        // Filter Unor Induk saja (level OPD, bukan root dan bukan sub-unit)
+        $pemkot = Unor::whereNull('parent_id')->first();
+        $opdList = Unor::where('parent_id', $pemkot?->id)
+            ->orderBy('nama_unor')->pluck('nama_unor', 'id');
         return view('admin.pegawai.index', compact('pegawaiList', 'opdList'));
     }
 
@@ -160,5 +169,20 @@ class PegawaiController extends Controller
         $tanggalLahir = app(NipParser::class)->extractTanggalLahir($request->nip);
         if (!$tanggalLahir) return response()->json(['success' => false, 'message' => 'NIP tidak valid.'], 422);
         return response()->json(['success' => true, 'tanggal_lahir' => $tanggalLahir]);
+    }
+
+    /**
+     * Rekursif kumpulkan semua ID turunan dari suatu Unor.
+     */
+    private function collectDescendants($parentId, $allUnor): array
+    {
+        $ids = [];
+        foreach ($allUnor as $unor) {
+            if ($unor->parent_id == $parentId) {
+                $ids[] = $unor->id;
+                $ids = array_merge($ids, $this->collectDescendants($unor->id, $allUnor));
+            }
+        }
+        return $ids;
     }
 }

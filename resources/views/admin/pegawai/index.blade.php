@@ -14,7 +14,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             <div class="p-4 border-b">
                 <form method="GET" class="flex flex-wrap gap-4">
-                    <input type="text" name="search" placeholder="Cari Nama atau NIP..." value="{{ request('search') }}" class="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input type="text" name="search" placeholder="Cari Nama atau NIP" value="{{ request('search') }}" class="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @if($opdList->isNotEmpty())
                     <select name="opd_id" class="w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">Semua OPD</option>
