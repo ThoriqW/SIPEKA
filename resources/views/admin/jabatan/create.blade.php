@@ -9,7 +9,7 @@
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
              x-data="jabatanForm()"
-             x-init="init('{{ old('jenis_jabatan', '') }}', '{{ old('nama_jabatan', '') }}')">
+             x-init="init('{{ old('jenis_jabatan', '') }}', '{{ old('nama_jabatan', '') }}', '{{ $currentIndukId }}', '{{ old('opd_id') }}')">
             <form action="{{ route('admin.jabatan.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="nama_jabatan" x-ref="namaJabatanHidden" value="{{ old('nama_jabatan') }}">
@@ -113,11 +113,11 @@
                     {{-- Unor Induk — regular select --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk</label>
-                        <select x-on:change="onIndukChange($el.value)"
+                        <select name="induk_id" x-on:change="onIndukChange($el.value)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
                             <option value="">-- Pilih Unit Organisasi Induk --</option>
                             @foreach($indukList as $id => $nama)
-                                <option value="{{ $id }}" {{ old('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>
+                                <option value="{{ $id }}" {{ old('induk_id', $currentIndukId) == $id ? 'selected' : '' }}>{{ $nama }}</option>
                             @endforeach
                         </select>
                         @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -126,7 +126,8 @@
                     {{-- Unit Organisasi — regular select --}}
                     <div x-show="unitList.length > 0" x-cloak>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
-                        <select name="opd_id"                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
+                        <select name="opd_id" x-ref="unitSelect"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
                             <option value="">-- Pilih Unit Organisasi --</option>
                             <template x-for="u in unitList" :key="u.id">
                                 <option :value="u.id" x-text="u.nama"></option>
@@ -171,8 +172,17 @@ function jabatanForm() {
             return list.filter(function(i) { return (i.nama || '').toLowerCase().includes(q); });
         },
 
-        init: function(jenis, preNama) {
+        init: function(jenis, preNama, indukId, unitId) {
             if (jenis) this.onJenisChange(jenis, preNama);
+            if (indukId) {
+                this.unitList = unorData[indukId] || [];
+                if (unitId) {
+                    this.$nextTick(function() {
+                        var sel = document.querySelector('[x-ref="unitSelect"]');
+                        if (sel) sel.value = unitId;
+                    });
+                }
+            }
         },
 
         onJenisChange: function(jenis, preNama) {

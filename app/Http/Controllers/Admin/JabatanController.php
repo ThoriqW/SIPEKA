@@ -54,9 +54,21 @@ class JabatanController extends Controller
 
         $unorByInduk = $this->buildUnorByInduk($indukList, $pemkot);
 
+        // Komputasi currentIndukId dari old input (untuk restore form setelah error)
+        $currentIndukId = old('induk_id');
+        if (!$currentIndukId && old('opd_id') && $pemkot) {
+            $unitUnor = Unor::find(old('opd_id'));
+            if ($unitUnor) {
+                $currentIndukId = ($unitUnor->parent_id == $pemkot->id)
+                    ? $unitUnor->id
+                    : $unitUnor->parent_id;
+            }
+        }
+
         return view('admin.jabatan.create', [
             'indukList' => $indukList,
             'unorByInduk' => $unorByInduk,
+            'currentIndukId' => $currentIndukId,
             'jenisJabatanList' => JenisJabatan::labels(),
             'jenjangOptions' => [
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),
