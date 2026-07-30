@@ -50,6 +50,14 @@
                                     $indukPegawai = $indukPegawai->parent;
                                 }
                             }
+                            // Khusus JPTP: induk adalah Pemkot, bukan OPD itu sendiri
+                            if ($p->jabatan
+                                && $p->jabatan->jenis_jabatan === 'Struktural'
+                                && $p->jabatan->jenjang === 'Pimpinan Tinggi Pratama'
+                                && $indukPegawai && $unorPegawai
+                                && $indukPegawai->id === $unorPegawai->id) {
+                                $indukPegawai = $pemkot;
+                            }
                         @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $pegawaiList->firstItem() + $key }}</td>
