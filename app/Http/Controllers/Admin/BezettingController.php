@@ -20,7 +20,7 @@ class BezettingController extends Controller
      */
     public function index(Request $request)
     {
-        $opdId = $request->filled('opd_id') ? (int) $request->opd_id : null;
+        $opdId = $request->filled('unor_id') ? (int) $request->unor_id : null;
         $tree = $this->flattenedTreeService->buildFlatTree(
             unorId: $opdId,
             includeRoot: true,
@@ -36,7 +36,7 @@ class BezettingController extends Controller
      */
     public function export(Request $request)
     {
-        $opdId = $request->filled('opd_id') ? (int) $request->opd_id : null;
+        $opdId = $request->filled('unor_id') ? (int) $request->unor_id : null;
         $tree = $this->flattenedTreeService->buildFlatTree(
             unorId: $opdId,
             includeRoot: true,

@@ -24,8 +24,8 @@ class PegawaiController extends Controller
                 $q->where('nama', 'like', "%{$search}%")->orWhere('nip', 'like', "%{$search}%");
             });
         }
-        if ($request->filled('opd_id')) {
-            $indukId = $request->opd_id;
+        if ($request->filled('unor_id')) {
+            $indukId = $request->unor_id;
             $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
             $descendantIds = $this->collectDescendants($indukId, $allUnor);
             $targetIds = array_merge([$indukId], $descendantIds);

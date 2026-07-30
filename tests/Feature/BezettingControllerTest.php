@@ -88,7 +88,7 @@ class BezettingControllerTest extends TestCase
         $user = User::where('role', 'admin')->first();
 
         // Filter to OPD 3 (Dinkes — IDs shifted: 1=Pemkot, 2=DIKBUD, 3=DINKES)
-        $response = $this->actingAs($user)->get(route('admin.bezetting.index', ['opd_id' => 3]));
+        $response = $this->actingAs($user)->get(route('admin.bezetting.index', ['unor_id' => 3]));
 
         $response->assertStatus(200);
         $response->assertSee('Dinas Kesehatan');

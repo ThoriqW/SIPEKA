@@ -23,8 +23,8 @@ class JabatanController extends Controller
                 $q->where('nama_jabatan', 'like', "%{$search}%")->orWhere('kode_jabatan', 'like', "%{$search}%");
             });
         }
-        if ($request->filled('opd_id')) {
-            $indukId = $request->opd_id;
+        if ($request->filled('unor_id')) {
+            $indukId = $request->unor_id;
             $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
             $descendantIds = $this->collectDescendants($indukId, $allUnor);
             $targetIds = array_merge([$indukId], $descendantIds);
@@ -56,8 +56,8 @@ class JabatanController extends Controller
 
         // Komputasi currentIndukId dari old input (untuk restore form setelah error)
         $currentIndukId = old('induk_id');
-        if (!$currentIndukId && old('opd_id') && $pemkot) {
-            $unitUnor = Unor::find(old('opd_id'));
+        if (!$currentIndukId && old('unor_id') && $pemkot) {
+            $unitUnor = Unor::find(old('unor_id'));
             if ($unitUnor) {
                 $currentIndukId = ($unitUnor->parent_id == $pemkot->id)
                     ? $unitUnor->id
@@ -87,11 +87,11 @@ class JabatanController extends Controller
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'nullable|string|max:255',
             'kebutuhan' => 'nullable|integer|min:0',
-            'opd_id' => 'required|exists:unor,id',
+            'unor_id' => 'required|exists:unor,id',
         ]);
 
-        $unorId = (int) $validated['opd_id'];
-        unset($validated['opd_id'], $validated['kebutuhan']);
+        $unorId = (int) $validated['unor_id'];
+        unset($validated['unor_id'], $validated['kebutuhan']);
 
         // Validasi: nama_jabatan harus ada di referensi jabatan (cek parent-sub format)
         $parts = explode(' - ', $validated['nama_jabatan']);
@@ -231,11 +231,11 @@ class JabatanController extends Controller
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'nullable|string|max:255',
             'kebutuhan' => 'nullable|integer|min:0',
-            'opd_id' => 'required|exists:unor,id',
+            'unor_id' => 'required|exists:unor,id',
         ]);
 
-        $unorId = (int) $validated['opd_id'];
-        unset($validated['opd_id'], $validated['kebutuhan']);
+        $unorId = (int) $validated['unor_id'];
+        unset($validated['unor_id'], $validated['kebutuhan']);
 
         // Validasi: nama_jabatan harus ada di referensi jabatan
         $namaUntukCek = explode(' - ', $validated['nama_jabatan'])[0];
@@ -414,9 +414,9 @@ class JabatanController extends Controller
 
     public function getByOpd(Request $request)
     {
-        $request->validate(['opd_id' => 'required|exists:unor,id']);
+        $request->validate(['unor_id' => 'required|exists:unor,id']);
 
-        $indukId = $request->opd_id;
+        $indukId = $request->unor_id;
         $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
         $descendantIds = $this->collectDescendants($indukId, $allUnor);
         $targetIds = array_merge([$indukId], $descendantIds);

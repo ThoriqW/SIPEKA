@@ -59,7 +59,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Unor Induk</label>
                         <select x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Pilih Unor Induk --</option>
-                            @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
+                            @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('unor_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
                     </div>
                     <div x-show="opdSelected">
@@ -110,7 +110,7 @@ function pegawaiForm() {
             if (!opdId) {
                 return;
             }
-            fetch('/admin/jabatan/by-opd?opd_id=' + opdId)
+            fetch('/admin/jabatan/by-opd?unor_id=' + opdId)
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
                     select.innerHTML = '<option value="">-- Pilih Jabatan --</option>';

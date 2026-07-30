@@ -9,7 +9,7 @@
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
              x-data="jabatanForm()"
-             x-init="init('{{ old('jenis_jabatan', '') }}', '{{ old('nama_jabatan', '') }}', '{{ $currentIndukId }}', '{{ old('opd_id') }}')">
+             x-init="init('{{ old('jenis_jabatan', '') }}', '{{ old('nama_jabatan', '') }}', '{{ $currentIndukId }}', '{{ old('unor_id') }}')">
             <form action="{{ route('admin.jabatan.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="nama_jabatan" x-ref="namaJabatanHidden" value="{{ old('nama_jabatan') }}">
@@ -114,26 +114,26 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk</label>
                         <select name="induk_id" x-on:change="onIndukChange($el.value)"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('unor_id') border-red-500 @enderror">
                             <option value="">-- Pilih Unit Organisasi Induk --</option>
                             @foreach($indukList as $id => $nama)
                                 <option value="{{ $id }}" {{ old('induk_id', $currentIndukId) == $id ? 'selected' : '' }}>{{ $nama }}</option>
                             @endforeach
                         </select>
-                        @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        @error('unor_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
                     {{-- Unit Organisasi — regular select --}}
                     <div x-show="unitList.length > 0" x-cloak>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
-                        <select name="opd_id" x-ref="unitSelect"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
+                        <select name="unor_id" x-ref="unitSelect"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('unor_id') border-red-500 @enderror">
                             <option value="">-- Pilih Unit Organisasi --</option>
                             <template x-for="u in unitList" :key="u.id">
                                 <option :value="u.id" x-text="u.nama"></option>
                             </template>
                         </select>
-                        @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        @error('unor_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">

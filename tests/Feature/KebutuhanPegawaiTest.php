@@ -33,7 +33,7 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => 8,
             'jenjang' => 'Ahli Muda',
             'kebutuhan' => 5,
-            'opd_id' => $unor->id,
+            'unor_id' => $unor->id,
         ]);
 
         $response->assertRedirect(route('admin.jabatan.index'));
@@ -66,7 +66,7 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
             'kebutuhan' => 10,
-            'opd_id' => $unorId,
+            'unor_id' => $unorId,
         ]);
 
         $kebutuhan = KebutuhanPegawai::where('unor_id', $unorId)
@@ -91,7 +91,7 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
             'kebutuhan' => 0,
-            'opd_id' => $unorId,
+            'unor_id' => $unorId,
         ]);
 
         $kebutuhan = KebutuhanPegawai::where('unor_id', $unorId)
@@ -116,7 +116,7 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
             'kebutuhan' => 3,
-            'opd_id' => $unorId,
+            'unor_id' => $unorId,
         ]);
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
             'nama_jabatan' => $jabatan->nama_jabatan,
@@ -124,7 +124,7 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
             'kebutuhan' => 7,
-            'opd_id' => $unorId,
+            'unor_id' => $unorId,
         ]);
 
         $count = KebutuhanPegawai::where('unor_id', $unorId)

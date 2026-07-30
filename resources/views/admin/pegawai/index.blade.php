@@ -16,13 +16,13 @@
                 <form method="GET" class="flex flex-wrap gap-4">
                     <input type="text" name="search" placeholder="Cari Nama atau NIP" value="{{ request('search') }}" class="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @if($opdList->isNotEmpty())
-                    <select name="opd_id" class="w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <select name="unor_id" class="w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                         <option value="">Semua OPD</option>
-                        @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ request('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
+                        @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ request('unor_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                     </select>
                     @endif
                     <button type="submit" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Cari</button>
-                    @if(request('search') || request('opd_id'))<a href="{{ route('admin.pegawai.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">Reset</a>@endif
+                    @if(request('search') || request('unor_id'))<a href="{{ route('admin.pegawai.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">Reset</a>@endif
                 </form>
             </div>
             <div class="overflow-x-auto">
