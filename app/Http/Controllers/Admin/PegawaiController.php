@@ -17,7 +17,7 @@ class PegawaiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pegawai::query()->with(['opd', 'jabatan', 'penempatanAktif.unor']);
+        $query = Pegawai::query()->with(['opd.parent', 'jabatan', 'penempatanAktif.unor']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -36,7 +36,7 @@ class PegawaiController extends Controller
         $pemkot = Unor::whereNull('parent_id')->first();
         $opdList = Unor::where('parent_id', $pemkot?->id)
             ->orderBy('nama_unor')->pluck('nama_unor', 'id');
-        return view('admin.pegawai.index', compact('pegawaiList', 'opdList'));
+        return view('admin.pegawai.index', compact('pegawaiList', 'opdList', 'pemkot'));
     }
 
     public function create()
