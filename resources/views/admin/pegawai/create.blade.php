@@ -25,7 +25,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kepegawaian</label>
                         <select name="jenis_kepegawaian" x-on:change="onJenisKepegawaianChange($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Pilih --</option>
+                            <option value="">-- Pilih Jenis Kepegawaian --</option>
                             @foreach($jenisKepegawaianList as $val => $label)<option value="{{ $val }}" {{ old('jenis_kepegawaian') == $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach
                         </select>
                         @error('jenis_kepegawaian')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -38,14 +38,14 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Golongan/Pangkat</label>
                         <select name="golongan_pangkat" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Pilih --</option>
+                            <option value="">-- Pilih Golongan/Pangkat --</option>
                         </select>
                         @error('golongan_pangkat')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
                         <select name="pendidikan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Pilih --</option>
+                            <option value="">-- Pilih Pendidikan --</option>
                             @foreach($pendidikanList as $val => $label)<option value="{{ $val }}" {{ old('pendidikan') == $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach
                         </select>
                         @error('pendidikan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -56,9 +56,9 @@
                         @error('kualifikasi_pendidikan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unor Induk</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
                         <select x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Pilih Unor Induk --</option>
+                            <option value="">-- Pilih OPD --</option>
                             @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('unor_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
                     </div>
@@ -93,7 +93,7 @@ function pegawaiForm() {
         onJenisKepegawaianChange(jenis, preSelect) {
             var list = jenis === 'PPPK' ? golonganPPPK : golonganPNS;
             var select = document.querySelector('[name="golongan_pangkat"]');
-            select.innerHTML = '<option value="">-- Pilih --</option>';
+            select.innerHTML = '<option value="">-- Pilih Golongan/Pangkat --</option>';
             Object.entries(list).forEach(function(_a) {
                 var val = _a[0], label = _a[1];
                 var opt = document.createElement('option');
@@ -122,6 +122,9 @@ function pegawaiForm() {
                             var label = j.nama;
                             if (j.jenjang) {
                                 label += ' — ' + j.jenjang;
+                            }
+                            if (j.unor_nama) {
+                                label += ' (' + j.unor_nama + ')';
                             }
                             if (j.jenis_jabatan === 'Struktural' && j.pegawai_count >= 1) {
                                 label += ' (Terisi)';

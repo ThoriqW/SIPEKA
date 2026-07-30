@@ -422,6 +422,7 @@ class JabatanController extends Controller
         $targetIds = array_merge([$indukId], $descendantIds);
 
         $jabatanList = Jabatan::withCount('pegawai')
+            ->with(['sotkEntries.unor'])
             ->whereHas('sotkEntries', fn($q) => $q->whereIn('unor_id', $targetIds))
             ->orderBy('nama_jabatan')->get()
             ->map(fn($j) => [
@@ -430,6 +431,9 @@ class JabatanController extends Controller
                 'jenis_jabatan' => $j->jenis_jabatan,
                 'jenjang' => $j->jenjang,
                 'pegawai_count' => $j->pegawai_count,
+                'unor_nama' => $j->sotkEntries
+                    ->first(fn($s) => in_array($s->unor_id, $targetIds))
+                    ?->unor?->nama_unor,
             ]);
         return response()->json(['success' => true, 'data' => $jabatanList]);
     }
