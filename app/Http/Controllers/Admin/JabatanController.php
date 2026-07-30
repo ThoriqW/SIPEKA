@@ -47,7 +47,12 @@ class JabatanController extends Controller
         $indukList = Unor::where('parent_id', $pemkot?->id)
             ->orderBy('nama_unor')->pluck('nama_unor', 'id');
 
-        $unorByInduk = $this->buildUnorByInduk($indukList);
+        // Tambahkan Pemkot di awal sebagai opsi Unor Induk (untuk JPTP)
+        if ($pemkot) {
+            $indukList = collect([$pemkot->id => $pemkot->nama_unor])->union($indukList);
+        }
+
+        $unorByInduk = $this->buildUnorByInduk($indukList, $pemkot);
 
         return view('admin.jabatan.create', [
             'indukList' => $indukList,
@@ -154,7 +159,12 @@ class JabatanController extends Controller
         $indukList = Unor::where('parent_id', $pemkot?->id)
             ->orderBy('nama_unor')->pluck('nama_unor', 'id');
 
-        $unorByInduk = $this->buildUnorByInduk($indukList);
+        // Tambahkan Pemkot di awal sebagai opsi Unor Induk
+        if ($pemkot) {
+            $indukList = collect([$pemkot->id => $pemkot->nama_unor])->union($indukList);
+        }
+
+        $unorByInduk = $this->buildUnorByInduk($indukList, $pemkot);
 
         // Resolve primary UNOR dari SOTK
         $currentUnitId = $jabatan->sotkEntries->first()?->unor_id;
@@ -172,9 +182,16 @@ class JabatanController extends Controller
         $currentOpd = $jabatan->sotkEntries->first()?->unor;
         $currentIndukId = null;
         if ($currentOpd) {
-            $currentIndukId = ($currentOpd->parent_id == $pemkot->id)
-                ? $currentOpd->id
-                : $currentOpd->parent_id;
+            // JPTP: induk adalah Pemkot
+            if ($jabatan->jenis_jabatan === 'Struktural'
+                && $jabatan->jenjang === 'Pimpinan Tinggi Pratama'
+                && $pemkot) {
+                $currentIndukId = $pemkot->id;
+            } else {
+                $currentIndukId = ($currentOpd->parent_id == $pemkot->id)
+                    ? $currentOpd->id
+                    : $currentOpd->parent_id;
+            }
         }
 
         return view('admin.jabatan.edit', [
@@ -299,12 +316,24 @@ class JabatanController extends Controller
     /**
      * Build mapping induk → semua turunan (induk + children + grandchildren ...) untuk dropdown bertingkat.
      */
-    private function buildUnorByInduk($indukList): array
+    private function buildUnorByInduk($indukList, $pemkot = null): array
     {
         $allUnor = Unor::whereNotNull('parent_id')->orderBy('nama_unor')->get()->keyBy('id');
         $result = [];
 
         foreach ($indukList as $indukId => $indukNama) {
+            // Pemkot sebagai induk: tampilkan semua OPD (anak langsung Pemkot)
+            if ($pemkot && (int) $indukId === (int) $pemkot->id) {
+                $items = [];
+                foreach ($allUnor as $unor) {
+                    if ((int) $unor->parent_id === (int) $pemkot->id) {
+                        $items[] = ['id' => $unor->id, 'nama' => $unor->nama_unor];
+                    }
+                }
+                $result[$indukId] = $items;
+                continue;
+            }
+
             $items = [['id' => $indukId, 'nama' => $indukNama]];
             $descendantIds = $this->collectDescendants($indukId, $allUnor);
             foreach ($descendantIds as $id) {
