@@ -112,10 +112,10 @@
 
                     {{-- Unor Induk — regular select --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unor Induk</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk</label>
                         <select x-on:change="onIndukChange($el.value)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('opd_id') border-red-500 @enderror">
-                            <option value="">-- Pilih Unor Induk --</option>
+                            <option value="">-- Pilih Unit Organisasi Induk --</option>
                             @foreach($indukList as $id => $nama)
                                 <option value="{{ $id }}" {{ old('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>
                             @endforeach
@@ -149,7 +149,7 @@
 <script>
 function jabatanForm() {
     var options = @json($jenjangOptions);
-    var referensiData = @json($masterJabatanData);
+    var referensiData = @json($referensiJabatanData);
     var unorData = @json($unorByInduk);
 
     return {
