@@ -53,7 +53,7 @@ class PegawaiSeeder extends Seeder
                 'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
                 'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
                 'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
-                'opd_id' => $dikbud->id, 'jabatan_id' => $p['jabatan_id'],
+                'jabatan_id' => $p['jabatan_id'],
             ]);
         }
 
@@ -81,7 +81,7 @@ class PegawaiSeeder extends Seeder
                 'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
                 'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
                 'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
-                'opd_id' => $dinkes->id, 'jabatan_id' => $p['jabatan_id'],
+                'jabatan_id' => $p['jabatan_id'],
             ]);
         }
 
@@ -102,7 +102,7 @@ class PegawaiSeeder extends Seeder
                 'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
                 'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
                 'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
-                'opd_id' => $pupr->id, 'jabatan_id' => $p['jabatan_id'],
+                'jabatan_id' => $p['jabatan_id'],
             ]);
         }
 
@@ -124,7 +124,7 @@ class PegawaiSeeder extends Seeder
                 'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
                 'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
                 'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
-                'opd_id' => $bkpsdm->id, 'jabatan_id' => $p['jabatan_id'],
+                'jabatan_id' => $p['jabatan_id'],
             ]);
         }
 
@@ -146,7 +146,7 @@ class PegawaiSeeder extends Seeder
                 'nama' => $p['nama'], 'nip' => $p['nip'], 'jenis_kepegawaian' => $p['jenis'],
                 'tanggal_lahir' => $p['tgl'], 'golongan_pangkat' => $p['gol'],
                 'pendidikan' => $p['pend'], 'jenjang' => $p['jenjang'],
-                'opd_id' => $setda->id, 'jabatan_id' => $p['jabatan_id'],
+                'jabatan_id' => $p['jabatan_id'],
             ]);
         }
     }

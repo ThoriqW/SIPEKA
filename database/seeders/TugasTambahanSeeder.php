@@ -52,7 +52,8 @@ class TugasTambahanSeeder extends Seeder
         }
 
         // Plt. Kepala Dinas — contoh di PUPR (tidak ada Kadis definitif)
-        $pltPegawai = Pegawai::where('opd_id', Unor::where('kode_unor', 'PUPR')->first()->id)
+        $pupr = Unor::where('kode_unor', 'PUPR')->first();
+        $pltPegawai = Pegawai::whereHas('penempatanAktif', fn($q) => $q->where('unor_id', $pupr->id))
             ->whereHas('jabatan', function ($q) {
                 $q->where('jenjang', 'Administrator');
             })->first();
@@ -61,7 +62,7 @@ class TugasTambahanSeeder extends Seeder
             TugasTambahanPegawai::create([
                 'pegawai_id' => $pltPegawai->id,
                 'tugas_tambahan_id' => $pltKadis->id,
-                'unor_id' => $pltPegawai->opd_id,
+                'unor_id' => $pltPegawai->penempatanAktif->unor_id,
                 'tanggal_mulai' => '2025-01-01',
                 'tanggal_selesai' => null,
                 'is_active' => true,

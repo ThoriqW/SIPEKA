@@ -16,7 +16,6 @@ class Jabatan extends Model
         'jenis_jabatan',
         'kelas_jabatan',
         'jenjang',
-        'opd_id',
     ];
 
     protected function casts(): array
@@ -27,20 +26,12 @@ class Jabatan extends Model
     }
 
     /**
-     * Backward compatibility: opd_id sekarang references unor.
-     * Akan digantikan oleh SOTK di Phase 2.
+     * Dapatkan UNOR utama jabatan ini melalui tabel SOTK.
+     * Mengembalikan UNOR pertama (non-root) dari SOTK entries.
      */
-    public function opd(): BelongsTo
+    public function unor(): ?Unor
     {
-        return $this->belongsTo(Unor::class, 'opd_id');
-    }
-
-    /**
-     * Alias untuk opd() — lebih deskriptif.
-     */
-    public function unor(): BelongsTo
-    {
-        return $this->belongsTo(Unor::class, 'opd_id');
+        return $this->sotkEntries->first()?->unor;
     }
 
     public function pegawai(): HasMany

@@ -56,12 +56,11 @@
                         @error('kualifikasi_pendidikan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
-                        <select name="opd_id" x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">-- Pilih --</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unor Induk</label>
+                        <select x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">-- Pilih Unor Induk --</option>
                             @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
-                        @error('opd_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div x-show="opdSelected">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>

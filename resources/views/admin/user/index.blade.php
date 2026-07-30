@@ -39,7 +39,7 @@
                             <td class="px-6 py-4 text-sm text-gray-900">
                                 {{ $user->name }}
                                 @if($user->pegawai)
-                                    <div class="text-xs text-gray-500">{{ $user->pegawai->opd->nama_unor ?? '—' }}</div>
+                                    <div class="text-xs text-gray-500">{{ $user->pegawai->penempatanAktif->unor->nama_unor ?? '—' }}</div>
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-sm text-center">

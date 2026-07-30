@@ -28,24 +28,6 @@ class Unor extends Model
     }
 
     /**
-     * Backward compatibility: jabatan yang masih punya opd_id.
-     * Akan dihapus di Phase 2 setelah SOTK mengambil alih.
-     */
-    public function jabatan(): HasMany
-    {
-        return $this->hasMany(Jabatan::class, 'opd_id');
-    }
-
-    /**
-     * Backward compatibility: pegawai yang masih punya opd_id.
-     * Akan dihapus di Phase 3 setelah penempatan_pegawai mengambil alih.
-     */
-    public function pegawai(): HasMany
-    {
-        return $this->hasMany(Pegawai::class, 'opd_id');
-    }
-
-    /**
      * SOTK entries untuk UNOR ini.
      */
     public function sotkEntries(): HasMany

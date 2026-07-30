@@ -20,7 +20,6 @@ class Pegawai extends Model
         'pendidikan',
         'kualifikasi_pendidikan',
         'jenjang',
-        'opd_id',
         'jabatan_id',
     ];
 
@@ -29,15 +28,6 @@ class Pegawai extends Model
         return [
             'tanggal_lahir' => 'date',
         ];
-    }
-
-    /**
-     * Backward compatibility: opd_id sekarang references unor.
-     * Akan dihapus di Phase 3 setelah penempatan_pegawai mengambil alih.
-     */
-    public function opd(): BelongsTo
-    {
-        return $this->belongsTo(Unor::class, 'opd_id');
     }
 
     public function jabatan(): BelongsTo

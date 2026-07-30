@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
 use App\Models\PenempatanPegawai;
+use App\Models\Sotk;
 use App\Models\Unor;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -54,8 +55,8 @@ class PegawaiControllerTest extends TestCase
     public function can_create_pegawai_with_penempatan()
     {
         $user = User::where('role', 'admin')->first();
-        $unor = Unor::first();
-        $jabatan = Jabatan::first();
+        $jabatan = Jabatan::with('sotkEntries')->first();
+        $unorId = $jabatan->sotkEntries->first()?->unor_id;
 
         $response = $this->actingAs($user)->post(route('admin.pegawai.store'), [
             'nip' => '200001012025011001',
@@ -64,7 +65,6 @@ class PegawaiControllerTest extends TestCase
             'tanggal_lahir' => '2000-01-01',
             'golongan_pangkat' => 'III/a',
             'pendidikan' => 'S1',
-            'opd_id' => $unor->id,
             'jabatan_id' => $jabatan->id,
         ]);
 
@@ -76,7 +76,7 @@ class PegawaiControllerTest extends TestCase
 
         // Harus ada penempatan aktif
         $this->assertNotNull($pegawai->penempatanAktif);
-        $this->assertEquals($unor->id, $pegawai->penempatanAktif->unor_id);
+        $this->assertEquals($unorId, $pegawai->penempatanAktif->unor_id);
         $this->assertEquals($jabatan->id, $pegawai->penempatanAktif->jabatan_id);
     }
 
@@ -84,7 +84,6 @@ class PegawaiControllerTest extends TestCase
     public function multiple_pegawai_can_share_same_struktural_jabatan()
     {
         $user = User::where('role', 'admin')->first();
-        $unor = Unor::where('kode_unor', 'DIKBUD')->first();
         $jabatan = Jabatan::where('kode_jabatan', 'DIKBUD-001')->first(); // Kepala Dinas (struktural)
 
         // Tambah pegawai pertama
@@ -92,7 +91,7 @@ class PegawaiControllerTest extends TestCase
             'nip' => '200001012025011001', 'nama' => 'Pegawai 1',
             'jenis_kepegawaian' => 'PNS', 'tanggal_lahir' => '2000-01-01',
             'golongan_pangkat' => 'III/a', 'pendidikan' => 'S1',
-            'jenjang' => $jabatan->jenjang, 'opd_id' => $unor->id, 'jabatan_id' => $jabatan->id,
+            'jenjang' => $jabatan->jenjang, 'jabatan_id' => $jabatan->id,
         ]);
 
         // Tambah pegawai kedua pada jabatan struktural yang SAMA — HARUS DITERIMA
@@ -103,7 +102,6 @@ class PegawaiControllerTest extends TestCase
             'tanggal_lahir' => '2000-02-01',
             'golongan_pangkat' => 'III/b',
             'pendidikan' => 'S1',
-            'opd_id' => $unor->id,
             'jabatan_id' => $jabatan->id,
         ]);
 
@@ -116,7 +114,7 @@ class PegawaiControllerTest extends TestCase
     public function updating_jabatan_creates_new_penempatan_and_deactivates_old()
     {
         $user = User::where('role', 'admin')->first();
-        $pegawai = Pegawai::first();
+        $pegawai = Pegawai::with('penempatanAktif')->first();
         $newJabatan = Jabatan::where('id', '!=', $pegawai->jabatan_id)->first();
 
         $oldPenempatanId = $pegawai->penempatanAktif->id ?? null;
@@ -129,7 +127,6 @@ class PegawaiControllerTest extends TestCase
             'tanggal_lahir' => $pegawai->tanggal_lahir->format('Y-m-d'),
             'golongan_pangkat' => $pegawai->golongan_pangkat,
             'pendidikan' => $pegawai->pendidikan,
-            'opd_id' => $pegawai->opd_id,
             'jabatan_id' => $newJabatan->id,
         ]);
 

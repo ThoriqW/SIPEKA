@@ -7,7 +7,7 @@
             <h1 class="text-2xl font-semibold text-gray-900">Edit Pegawai</h1>
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.pegawai.index') }}" class="hover:text-gray-700">Pegawai</a> / Edit</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()" x-init="loadJabatan({{ $pegawai->opd_id }}); initGolongan('{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}')">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()" x-init="loadJabatan({{ $pegawai->penempatanAktif->unor_id ?? 0 }}); initGolongan('{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}')">
             <form action="{{ route('admin.pegawai.update', $pegawai) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -51,9 +51,9 @@
                         <input type="text" name="kualifikasi_pendidikan" value="{{ old('kualifikasi_pendidikan', $pegawai->kualifikasi_pendidikan) }}" placeholder="Contoh: S1 Teknik Informatika" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
-                        <select name="opd_id" x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id', $pegawai->opd_id) == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unor Induk</label>
+                        <select x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('opd_id', $pegawai->penempatanAktif->unor_id ?? '') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
                     </div>
                     <div x-show="opdSelected">

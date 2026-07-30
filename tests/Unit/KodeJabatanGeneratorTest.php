@@ -42,8 +42,6 @@ class KodeJabatanGeneratorTest extends TestCase
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'kebutuhan' => 1,
-            'opd_id' => 1,
         ]);
 
         $kode = $this->generator->generate('DIKBUD', 'Struktural');
@@ -60,8 +58,6 @@ class KodeJabatanGeneratorTest extends TestCase
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'kebutuhan' => 1,
-            'opd_id' => 1,
         ]);
 
         $kode = $this->generator->generate('DIKBUD', 'Fungsional');
@@ -78,8 +74,6 @@ class KodeJabatanGeneratorTest extends TestCase
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 15,
             'jenjang' => 'Pimpinan Tinggi Pratama',
-            'kebutuhan' => 1,
-            'opd_id' => 1,
         ]);
 
         $kode = $this->generator->generate('DINKES', 'Struktural');
@@ -105,8 +99,6 @@ class KodeJabatanGeneratorTest extends TestCase
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 10,
             'jenjang' => 'Pengawas',
-            'kebutuhan' => 1,
-            'opd_id' => 1,
         ]);
 
         $kode = $this->generator->generate('DIKBUD', 'Struktural');
@@ -124,8 +116,6 @@ class KodeJabatanGeneratorTest extends TestCase
             'jenis_jabatan' => 'Struktural',
             'kelas_jabatan' => 10,
             'jenjang' => 'Pengawas',
-            'kebutuhan' => 1,
-            'opd_id' => 1,
         ]);
 
         $kode = $this->generator->generate('DIKBUD', 'Struktural');

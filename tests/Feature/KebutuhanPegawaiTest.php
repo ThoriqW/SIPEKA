@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\KebutuhanPegawai;
+use App\Models\Sotk;
 use App\Models\User;
 use App\Models\Unor;
 use App\Models\Jabatan;
@@ -38,8 +39,10 @@ class KebutuhanPegawaiTest extends TestCase
         $response->assertRedirect(route('admin.jabatan.index'));
 
         $jabatan = Jabatan::where('nama_jabatan', 'Statistisi')
-            ->where('opd_id', $unor->id)->first();
+            ->whereHas('sotkEntries', fn($q) => $q->where('unor_id', $unor->id))
+            ->first();
         $this->assertNotNull($jabatan, 'Jabatan should be created after valid POST');
+        $unorId = $jabatan->sotkEntries()->first()?->unor_id;
 
         $kebutuhan = KebutuhanPegawai::where('unor_id', $unor->id)
             ->where('jabatan_id', $jabatan->id)
@@ -54,7 +57,8 @@ class KebutuhanPegawaiTest extends TestCase
     public function kebutuhan_updated_when_updating_jabatan()
     {
         $user = User::where('role', 'admin')->first();
-        $jabatan = Jabatan::where('kode_jabatan', 'DIKBUD-005')->first(); // Pengelola Keuangan
+        $jabatan = Jabatan::where('nama_jabatan', 'Pengelola Keuangan')->first();
+        $unorId = $jabatan->sotkEntries()->first()?->unor_id;
 
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
             'nama_jabatan' => $jabatan->nama_jabatan,
@@ -62,10 +66,10 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
             'kebutuhan' => 10,
-            'opd_id' => $jabatan->opd_id,
+            'opd_id' => $unorId,
         ]);
 
-        $kebutuhan = KebutuhanPegawai::where('unor_id', $jabatan->opd_id)
+        $kebutuhan = KebutuhanPegawai::where('unor_id', $unorId)
             ->where('jabatan_id', $jabatan->id)
             ->whereNull('tahun')
             ->first();
@@ -78,7 +82,8 @@ class KebutuhanPegawaiTest extends TestCase
     public function kebutuhan_zero_is_valid()
     {
         $user = User::where('role', 'admin')->first();
-        $jabatan = Jabatan::where('kode_jabatan', 'DIKBUD-005')->first();
+        $jabatan = Jabatan::where('nama_jabatan', 'Pengelola Keuangan')->first();
+        $unorId = $jabatan->sotkEntries()->first()?->unor_id;
 
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
             'nama_jabatan' => $jabatan->nama_jabatan,
@@ -86,10 +91,10 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
             'kebutuhan' => 0,
-            'opd_id' => $jabatan->opd_id,
+            'opd_id' => $unorId,
         ]);
 
-        $kebutuhan = KebutuhanPegawai::where('unor_id', $jabatan->opd_id)
+        $kebutuhan = KebutuhanPegawai::where('unor_id', $unorId)
             ->where('jabatan_id', $jabatan->id)
             ->whereNull('tahun')
             ->first();
@@ -102,7 +107,8 @@ class KebutuhanPegawaiTest extends TestCase
     public function kebutuhan_not_duplicated_on_multiple_updates()
     {
         $user = User::where('role', 'admin')->first();
-        $jabatan = Jabatan::where('kode_jabatan', 'DIKBUD-005')->first();
+        $jabatan = Jabatan::where('nama_jabatan', 'Pengelola Keuangan')->first();
+        $unorId = $jabatan->sotkEntries()->first()?->unor_id;
 
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
             'nama_jabatan' => $jabatan->nama_jabatan,
@@ -110,7 +116,7 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
             'kebutuhan' => 3,
-            'opd_id' => $jabatan->opd_id,
+            'opd_id' => $unorId,
         ]);
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
             'nama_jabatan' => $jabatan->nama_jabatan,
@@ -118,10 +124,10 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
             'kebutuhan' => 7,
-            'opd_id' => $jabatan->opd_id,
+            'opd_id' => $unorId,
         ]);
 
-        $count = KebutuhanPegawai::where('unor_id', $jabatan->opd_id)
+        $count = KebutuhanPegawai::where('unor_id', $unorId)
             ->where('jabatan_id', $jabatan->id)
             ->whereNull('tahun')
             ->count();

@@ -72,14 +72,14 @@ class TugasTambahanTest extends TestCase
         $this->assertNotNull($guru->jabatan_id, 'Pegawai harus memiliki jabatan utama');
 
         $jabatanUtama = $guru->jabatan_id;
-        $penempatanUtama = $guru->opd_id;
+        $penempatanUtama = $guru->penempatanAktif->unor_id;
 
         // Assign tugas tambahan
         $kepsek = MasterTugasTambahan::where('nama_tugas', 'Kepala Sekolah')->first();
         TugasTambahanPegawai::create([
             'pegawai_id' => $guru->id,
             'tugas_tambahan_id' => $kepsek->id,
-            'unor_id' => $guru->opd_id,
+            'unor_id' => $penempatanUtama,
             'tanggal_mulai' => '2024-01-01',
             'is_active' => true,
         ]);
@@ -88,7 +88,7 @@ class TugasTambahanTest extends TestCase
         $guru->refresh();
         $this->assertEquals($jabatanUtama, $guru->jabatan_id,
             'Tugas tambahan TIDAK boleh mengubah jabatan utama');
-        $this->assertEquals($penempatanUtama, $guru->opd_id,
+        $this->assertEquals($penempatanUtama, $guru->penempatanAktif->unor_id,
             'Tugas tambahan TIDAK boleh mengubah penempatan utama');
     }
 

@@ -17,7 +17,7 @@ class PegawaiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pegawai::query()->with(['opd.parent', 'jabatan', 'penempatanAktif.unor']);
+        $query = Pegawai::query()->with(['jabatan', 'penempatanAktif.unor.parent']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -28,7 +28,8 @@ class PegawaiController extends Controller
             $indukId = $request->opd_id;
             $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
             $descendantIds = $this->collectDescendants($indukId, $allUnor);
-            $query->whereIn('opd_id', array_merge([$indukId], $descendantIds));
+            $targetIds = array_merge([$indukId], $descendantIds);
+            $query->whereHas('penempatanAktif', fn($q) => $q->whereIn('unor_id', $targetIds));
         }
         $pegawaiList = $query->orderBy('nama')->paginate(15)->withQueryString();
 
@@ -41,7 +42,9 @@ class PegawaiController extends Controller
 
     public function create()
     {
-        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
+        $pemkot = Unor::whereNull('parent_id')->first();
+        $opdList = Unor::where('parent_id', $pemkot?->id)
+            ->orderBy('nama_unor')->pluck('nama_unor', 'id');
         return view('admin.pegawai.create', [
             'opdList' => $opdList,
             'golonganPangkatList' => GolonganPangkat::labels(),
@@ -61,13 +64,12 @@ class PegawaiController extends Controller
             'golongan_pangkat' => 'required',
             'pendidikan' => 'required',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
-            'opd_id' => 'required|exists:unor,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
 
         // Jenjang otomatis dari jabatan yang dipilih
         if (!empty($validated['jabatan_id'])) {
-            $jabatan = Jabatan::find($validated['jabatan_id']);
+            $jabatan = Jabatan::with('sotkEntries')->find($validated['jabatan_id']);
             if ($jabatan) {
                 $validated['jenjang'] = $jabatan->jenjang;
             }
@@ -75,13 +77,16 @@ class PegawaiController extends Controller
             $validated['jenjang'] = null;
         }
 
+        // Resolve UNOR dari SOTK jabatan
+        $unorId = $jabatan->sotkEntries->first()?->unor_id ?? null;
+
         $pegawai = Pegawai::create($validated);
 
         // Buat penempatan otomatis
-        if ($pegawai->opd_id && $pegawai->jabatan_id) {
+        if ($unorId && $pegawai->jabatan_id) {
             PenempatanPegawai::create([
                 'pegawai_id' => $pegawai->id,
-                'unor_id' => $pegawai->opd_id,
+                'unor_id' => $unorId,
                 'jabatan_id' => $pegawai->jabatan_id,
                 'tanggal_mulai' => now()->toDateString(),
                 'is_active' => true,
@@ -94,7 +99,9 @@ class PegawaiController extends Controller
     public function edit(Pegawai $pegawai)
     {
         $pegawai->load('penempatanAktif');
-        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
+        $pemkot = Unor::whereNull('parent_id')->first();
+        $opdList = Unor::where('parent_id', $pemkot?->id)
+            ->orderBy('nama_unor')->pluck('nama_unor', 'id');
         return view('admin.pegawai.edit', [
             'pegawai' => $pegawai,
             'opdList' => $opdList,
@@ -115,13 +122,12 @@ class PegawaiController extends Controller
             'golongan_pangkat' => 'required',
             'pendidikan' => 'required',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
-            'opd_id' => 'required|exists:unor,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
 
         // Jenjang otomatis dari jabatan yang dipilih
         if (!empty($validated['jabatan_id'])) {
-            $jabatan = Jabatan::find($validated['jabatan_id']);
+            $jabatan = Jabatan::with('sotkEntries')->find($validated['jabatan_id']);
             if ($jabatan) {
                 $validated['jenjang'] = $jabatan->jenjang;
             }
@@ -129,24 +135,26 @@ class PegawaiController extends Controller
             $validated['jenjang'] = null;
         }
 
-        // Deteksi perubahan penempatan
-        $opdChanged = (int) $validated['opd_id'] !== (int) $pegawai->opd_id;
+        // Deteksi perubahan jabatan
         $jabatanChanged = (int) ($validated['jabatan_id'] ?? 0) !== (int) ($pegawai->jabatan_id ?? 0);
 
         $pegawai->update($validated);
 
-        // Jika OPD atau jabatan berubah, nonaktifkan penempatan lama & buat baru
-        if ($opdChanged || $jabatanChanged) {
+        // Jika jabatan berubah, nonaktifkan penempatan lama & buat baru
+        if ($jabatanChanged) {
             // Nonaktifkan penempatan aktif sebelumnya
             PenempatanPegawai::where('pegawai_id', $pegawai->id)
                 ->where('is_active', true)
                 ->update(['is_active' => false, 'tanggal_selesai' => now()->toDateString()]);
 
+            // Resolve UNOR dari SOTK jabatan baru
+            $unorId = $jabatan->sotkEntries->first()?->unor_id ?? null;
+
             // Buat penempatan baru
-            if ($pegawai->opd_id && $pegawai->jabatan_id) {
+            if ($unorId && $pegawai->jabatan_id) {
                 PenempatanPegawai::create([
                     'pegawai_id' => $pegawai->id,
-                    'unor_id' => $pegawai->opd_id,
+                    'unor_id' => $unorId,
                     'jabatan_id' => $pegawai->jabatan_id,
                     'tanggal_mulai' => now()->toDateString(),
                     'is_active' => true,

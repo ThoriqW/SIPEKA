@@ -16,7 +16,7 @@ class JabatanController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Jabatan::query()->with(['opd.parent']);
+        $query = Jabatan::query()->with(['sotkEntries.unor.parent']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -27,7 +27,8 @@ class JabatanController extends Controller
             $indukId = $request->opd_id;
             $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
             $descendantIds = $this->collectDescendants($indukId, $allUnor);
-            $query->whereIn('opd_id', array_merge([$indukId], $descendantIds));
+            $targetIds = array_merge([$indukId], $descendantIds);
+            $query->whereHas('sotkEntries', fn($q) => $q->whereIn('unor_id', $targetIds));
         }
 
         $jabatanList = $query->withCount('pegawai')->orderBy('nama_jabatan')->paginate(15)->withQueryString();
@@ -72,7 +73,8 @@ class JabatanController extends Controller
             'opd_id' => 'required|exists:unor,id',
         ]);
 
-        unset($validated['kebutuhan']);
+        $unorId = (int) $validated['opd_id'];
+        unset($validated['opd_id'], $validated['kebutuhan']);
 
         // Validasi: nama_jabatan harus ada di referensi jabatan (cek parent-sub format)
         $parts = explode(' - ', $validated['nama_jabatan']);
@@ -105,22 +107,21 @@ class JabatanController extends Controller
             }
         }
 
-        // Validasi: satu UNOR hanya boleh memiliki satu JPTP (Kepala OPD)
-        $isPratama = $validated['jenis_jabatan'] === 'Struktural' && ($validated['jenjang'] ?? '') === 'Pimpinan Tinggi Pratama';
-        if ($isPratama) {
-            $existingPratama = Jabatan::where('opd_id', $validated['opd_id'])
-                ->where('jenis_jabatan', 'Struktural')
-                ->where('jenjang', 'Pimpinan Tinggi Pratama')
+        // Validasi: jabatan Struktural tidak boleh duplikat dalam UNOR yang sama
+        if ($validated['jenis_jabatan'] === 'Struktural') {
+            $exists = Jabatan::whereHas('sotkEntries', fn($q) => $q->where('unor_id', $unorId))
+                ->where('nama_jabatan', $validated['nama_jabatan'])
+                ->where('jenjang', $validated['jenjang'] ?? '')
                 ->exists();
-            if ($existingPratama) {
-                return back()->withInput()->with('error', 'UNOR ini sudah memiliki Jabatan Pimpinan Tinggi Pratama (Kepala OPD). Setiap UNOR hanya boleh memiliki satu Kepala OPD.');
+            if ($exists) {
+                return back()->withInput()->with('error', 'Jabatan Struktural "' . $validated['nama_jabatan'] . '" dengan jenjang "' . ($validated['jenjang'] ?? '') . '" sudah ada di UNOR ini.');
             }
         }
 
         if ($validated['jenis_jabatan'] === 'Pelaksana') $validated['jenjang'] = 'Pelaksana';
 
         // Auto-generate kode_jabatan
-        $opd = Unor::findOrFail($validated['opd_id']);
+        $opd = Unor::findOrFail($unorId);
         $validated['kode_jabatan'] = app(KodeJabatanGenerator::class)->generate(
             $opd->kode_unor,
             $validated['jenis_jabatan']
@@ -130,7 +131,7 @@ class JabatanController extends Controller
 
         // Otomatis daftarkan ke SOTK
         \App\Models\Sotk::firstOrCreate([
-            'unor_id' => $jabatan->opd_id,
+            'unor_id' => $unorId,
             'jabatan_id' => $jabatan->id,
         ]);
 
@@ -138,7 +139,7 @@ class JabatanController extends Controller
         $kebutuhan = $request->input('kebutuhan');
         if ($kebutuhan !== null && $kebutuhan !== '') {
             KebutuhanPegawai::updateOrCreate(
-                ['unor_id' => $jabatan->opd_id, 'jabatan_id' => $jabatan->id, 'tahun' => null],
+                ['unor_id' => $unorId, 'jabatan_id' => $jabatan->id, 'tahun' => null],
                 ['jumlah' => (int) $kebutuhan]
             );
         }
@@ -148,20 +149,27 @@ class JabatanController extends Controller
 
     public function edit(Jabatan $jabatan)
     {
+        $jabatan->load('sotkEntries.unor');
         $pemkot = Unor::whereNull('parent_id')->first();
         $indukList = Unor::where('parent_id', $pemkot?->id)
             ->orderBy('nama_unor')->pluck('nama_unor', 'id');
 
         $unorByInduk = $this->buildUnorByInduk($indukList);
 
+        // Resolve primary UNOR dari SOTK
+        $currentUnitId = $jabatan->sotkEntries->first()?->unor_id;
+
         // Load kebutuhan existing
-        $kebutuhan = KebutuhanPegawai::where('unor_id', $jabatan->opd_id)
-            ->where('jabatan_id', $jabatan->id)
-            ->whereNull('tahun')
-            ->value('jumlah');
+        $kebutuhan = null;
+        if ($currentUnitId) {
+            $kebutuhan = KebutuhanPegawai::where('unor_id', $currentUnitId)
+                ->where('jabatan_id', $jabatan->id)
+                ->whereNull('tahun')
+                ->value('jumlah');
+        }
 
         // Determine current induk
-        $currentOpd = $jabatan->opd;
+        $currentOpd = $jabatan->sotkEntries->first()?->unor;
         $currentIndukId = null;
         if ($currentOpd) {
             $currentIndukId = ($currentOpd->parent_id == $pemkot->id)
@@ -175,7 +183,7 @@ class JabatanController extends Controller
             'indukList' => $indukList,
             'unorByInduk' => $unorByInduk,
             'currentIndukId' => $currentIndukId,
-            'currentUnitId' => $jabatan->opd_id,
+            'currentUnitId' => $currentUnitId,
             'jenisJabatanList' => JenisJabatan::labels(),
             'jenjangOptions' => [
                 'Struktural' => Jenjang::forJenisJabatan('Struktural'),
@@ -196,7 +204,9 @@ class JabatanController extends Controller
             'kebutuhan' => 'nullable|integer|min:0',
             'opd_id' => 'required|exists:unor,id',
         ]);
-        unset($validated['kebutuhan']);
+
+        $unorId = (int) $validated['opd_id'];
+        unset($validated['opd_id'], $validated['kebutuhan']);
 
         // Validasi: nama_jabatan harus ada di referensi jabatan
         $namaUntukCek = explode(' - ', $validated['nama_jabatan'])[0];
@@ -231,16 +241,15 @@ class JabatanController extends Controller
             }
         }
 
-        // Validasi: satu UNOR hanya boleh memiliki satu JPTP (Kepala OPD)
-        $isPratama = $validated['jenis_jabatan'] === 'Struktural' && ($validated['jenjang'] ?? '') === 'Pimpinan Tinggi Pratama';
-        if ($isPratama) {
-            $existingPratama = Jabatan::where('opd_id', $validated['opd_id'])
-                ->where('jenis_jabatan', 'Struktural')
-                ->where('jenjang', 'Pimpinan Tinggi Pratama')
+        // Validasi: jabatan Struktural tidak boleh duplikat dalam UNOR yang sama
+        if ($validated['jenis_jabatan'] === 'Struktural') {
+            $exists = Jabatan::whereHas('sotkEntries', fn($q) => $q->where('unor_id', $unorId))
+                ->where('nama_jabatan', $validated['nama_jabatan'])
+                ->where('jenjang', $validated['jenjang'] ?? '')
                 ->where('id', '!=', $jabatan->id)
                 ->exists();
-            if ($existingPratama) {
-                return back()->withInput()->with('error', 'UNOR ini sudah memiliki Jabatan Pimpinan Tinggi Pratama (Kepala OPD). Setiap UNOR hanya boleh memiliki satu Kepala OPD.');
+            if ($exists) {
+                return back()->withInput()->with('error', 'Jabatan Struktural "' . $validated['nama_jabatan'] . '" dengan jenjang "' . ($validated['jenjang'] ?? '') . '" sudah ada di UNOR ini.');
             }
         }
 
@@ -251,11 +260,13 @@ class JabatanController extends Controller
 
         $jabatan->update($validated);
 
-        // Sync SOTK jika OPD berubah
-        if ((int) $jabatan->opd_id !== (int) $validated['opd_id']) {
-            $jabatan->sotkEntries()->delete();
+        // Sync SOTK jika UNOR berubah
+        $oldUnorId = $jabatan->sotkEntries->first()?->unor_id;
+        if ($oldUnorId && (int) $oldUnorId !== $unorId) {
+            // Hapus SOTK entry lama untuk UNOR sebelumnya
+            $jabatan->sotkEntries()->where('unor_id', $oldUnorId)->delete();
             \App\Models\Sotk::create([
-                'unor_id' => $validated['opd_id'],
+                'unor_id' => $unorId,
                 'jabatan_id' => $jabatan->id,
             ]);
         }
@@ -264,7 +275,7 @@ class JabatanController extends Controller
         $kebutuhan = $request->input('kebutuhan');
         if ($kebutuhan !== null && $kebutuhan !== '') {
             KebutuhanPegawai::updateOrCreate(
-                ['unor_id' => $jabatan->opd_id, 'jabatan_id' => $jabatan->id, 'tahun' => null],
+                ['unor_id' => $unorId, 'jabatan_id' => $jabatan->id, 'tahun' => null],
                 ['jumlah' => (int) $kebutuhan]
             );
         }
@@ -363,7 +374,15 @@ class JabatanController extends Controller
     public function getByOpd(Request $request)
     {
         $request->validate(['opd_id' => 'required|exists:unor,id']);
-        $jabatanList = Jabatan::withCount('pegawai')->where('opd_id', $request->opd_id)->orderBy('nama_jabatan')->get()
+
+        $indukId = $request->opd_id;
+        $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
+        $descendantIds = $this->collectDescendants($indukId, $allUnor);
+        $targetIds = array_merge([$indukId], $descendantIds);
+
+        $jabatanList = Jabatan::withCount('pegawai')
+            ->whereHas('sotkEntries', fn($q) => $q->whereIn('unor_id', $targetIds))
+            ->orderBy('nama_jabatan')->get()
             ->map(fn($j) => [
                 'id' => $j->id,
                 'nama' => $j->nama_jabatan,

@@ -43,7 +43,7 @@ class ProjectionService
             ->whereNotNull('jabatan_id');
 
         if ($opdId !== null) {
-            $query->where('opd_id', $opdId);
+            $query->whereHas('penempatanAktif', fn($q) => $q->where('unor_id', $opdId));
         }
 
         $pegawaiList = $query->get();

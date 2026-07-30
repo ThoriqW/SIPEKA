@@ -42,7 +42,11 @@
                     <tbody class="divide-y divide-gray-200">
                         @forelse($jabatanList as $key => $j)
                         @php
-                            $unor = $j->opd;
+                            // Dapatkan UNOR utama dari SOTK (non-root)
+                            $unor = $j->sotkEntries
+                                ->filter(fn($s) => $s->unor && (!$pemkot || $s->unor_id !== $pemkot->id))
+                                ->first()?->unor
+                                ?? $j->sotkEntries->first()?->unor;
                             // Unor Induk: walk up until parent is Pemkot (root)
                             $induk = $unor;
                             if ($unor && $pemkot) {

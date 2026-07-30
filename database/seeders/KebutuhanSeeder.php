@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\KebutuhanPegawai;
 use App\Models\Jabatan;
+use App\Models\Sotk;
 use App\Models\Unor;
 use Illuminate\Database\Seeder;
 
@@ -14,9 +15,13 @@ class KebutuhanSeeder extends Seeder
         $unorList = Unor::whereNotNull('parent_id')->get();
 
         foreach ($unorList as $unor) {
-            $jabatanList = Jabatan::where('opd_id', $unor->id)->get();
+            $sotkEntries = Sotk::where('unor_id', $unor->id)
+                ->with('jabatan')
+                ->get();
 
-            foreach ($jabatanList as $jabatan) {
+            foreach ($sotkEntries as $sotk) {
+                $jabatan = $sotk->jabatan;
+                if (!$jabatan) continue;
                 $jumlah = match (true) {
                     // Struktural — Pimpinan Tinggi Pratama: selalu 1
                     $jabatan->jenis_jabatan === 'Struktural' && $jabatan->jenjang === 'Pimpinan Tinggi Pratama' => 1,

@@ -43,7 +43,7 @@
                     <tbody class="divide-y divide-gray-200">
                         @forelse($pegawaiList as $key => $p)
                         @php
-                            $unorPegawai = $p->opd;
+                            $unorPegawai = $p->penempatanAktif->unor ?? null;
                             $indukPegawai = $unorPegawai;
                             if ($unorPegawai && $pemkot) {
                                 while ($indukPegawai && $indukPegawai->parent_id !== $pemkot->id) {
@@ -58,7 +58,7 @@
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $indukPegawai->nama_unor ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $p->jabatan->nama_jabatan ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ $p->penempatanAktif->unor->nama_unor ?? $p->opd->nama_unor ?? '-' }}
+                                {{ $p->penempatanAktif->unor->nama_unor ?? '-' }}
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $p->jenjang }}</td>
                             <td class="px-6 py-4 text-sm text-center"><span class="px-2 py-1 text-xs rounded-full {{ $p->jenis_kepegawaian === 'PNS' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">{{ $p->jenis_kepegawaian }}</span></td>

@@ -32,17 +32,17 @@ class FlattenedTreeServiceTest extends TestCase
         $kepala = Jabatan::create([
             'nama_jabatan' => 'Kepala Dinas Test', 'kode_jabatan' => 'DT-001',
             'jenis_jabatan' => 'Struktural', 'kelas_jabatan' => 15,
-            'jenjang' => 'Pimpinan Tinggi Pratama', 'opd_id' => $dikbud->id,
+            'jenjang' => 'Pimpinan Tinggi Pratama',
         ]);
         $pengelola = Jabatan::create([
             'nama_jabatan' => 'Pengelola Keuangan', 'kode_jabatan' => 'DT-002',
             'jenis_jabatan' => 'Pelaksana', 'kelas_jabatan' => 6,
-            'jenjang' => 'Pelaksana', 'opd_id' => $dikbud->id,
+            'jenjang' => 'Pelaksana',
         ]);
         $guru = Jabatan::create([
             'nama_jabatan' => 'Guru Matematika', 'kode_jabatan' => 'SMP-001',
             'jenis_jabatan' => 'Fungsional', 'kelas_jabatan' => 8,
-            'jenjang' => 'Ahli Pertama', 'opd_id' => $smpn->id,
+            'jenjang' => 'Ahli Pertama',
         ]);
 
         // ── Assign jabatan ke UNOR via SOTK ──
@@ -60,7 +60,7 @@ class FlattenedTreeServiceTest extends TestCase
             'nama' => 'Test Pegawai', 'nip' => '199001012020011001',
             'jenis_kepegawaian' => 'PNS', 'tanggal_lahir' => '1990-01-01',
             'golongan_pangkat' => 'III/a', 'pendidikan' => 'S1',
-            'jenjang' => 'Pelaksana', 'opd_id' => $dikbud->id, 'jabatan_id' => $pengelola->id,
+            'jenjang' => 'Pelaksana', 'jabatan_id' => $pengelola->id,
         ]);
         PenempatanPegawai::create([
             'pegawai_id' => $p1->id, 'unor_id' => $dikbud->id, 'jabatan_id' => $pengelola->id,
