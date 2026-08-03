@@ -50,8 +50,12 @@ class UnorController extends Controller
 
     public function create()
     {
-        $parentList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
+        $allUnor = Unor::with('parent')->get()->keyBy('id');
         $rootUnor = Unor::whereNull('parent_id')->first();
+        $parentList = $allUnor
+            ->mapWithKeys(fn($u) => [$u->id => $this->buildBreadcrumb($u, $allUnor)])
+            ->sort()
+            ->all();
         return view('admin.unor.create', compact('parentList', 'rootUnor'));
     }
 
@@ -83,9 +87,12 @@ class UnorController extends Controller
         $excludeIds = $this->getDescendantIds($unor);
         $excludeIds[] = $unor->id;
 
-        $parentList = Unor::whereNotIn('id', $excludeIds)
-            ->orderBy('nama_unor')->pluck('nama_unor', 'id');
+        $allUnor = Unor::with('parent')->whereNotIn('id', $excludeIds)->get()->keyBy('id');
         $rootUnor = Unor::whereNull('parent_id')->first();
+        $parentList = $allUnor
+            ->mapWithKeys(fn($u) => [$u->id => $this->buildBreadcrumb($u, $allUnor)])
+            ->sort()
+            ->all();
         return view('admin.unor.edit', compact('unor', 'parentList', 'rootUnor'));
     }
 
@@ -122,6 +129,22 @@ class UnorController extends Controller
     }
 
     // ── Helpers ──
+
+    /**
+     * Build breadcrumb path: "OPD » Sub » Sub" (tanpa PEMKOT root).
+     */
+    private function buildBreadcrumb(Unor $unor, $allUnor): string
+    {
+        $parts = [$unor->nama_unor];
+        $cursor = $unor;
+        while ($cursor->parent_id) {
+            $parent = $allUnor->get($cursor->parent_id);
+            if (!$parent || !$parent->parent_id) break; // stop di root
+            array_unshift($parts, $parent->nama_unor);
+            $cursor = $parent;
+        }
+        return implode(' » ', $parts);
+    }
 
     private function wouldCreateCycle(Unor $unor, int $newParentId): bool
     {
