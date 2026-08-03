@@ -30,7 +30,7 @@ class ProjectionCalculationTest extends TestCase
         $jabatan = Jabatan::create([
             'nama_jabatan' => 'Analis', 'kode_jabatan' => 'DT-001',
             'jenis_jabatan' => 'Fungsional', 'kelas_jabatan' => 8,
-            'jenjang' => 'Ahli Muda',
+           
         ]);
         Sotk::create(['unor_id' => $unor->id, 'jabatan_id' => $jabatan->id]);
 
@@ -46,7 +46,7 @@ class ProjectionCalculationTest extends TestCase
             'nama' => 'Pegawai Pensiun Thn Ini', 'nip' => '196001012025011001',
             'jenis_kepegawaian' => 'PNS', 'tanggal_lahir' => "{$birthYear1}-06-15",
             'golongan_pangkat' => 'III/d', 'pendidikan' => 'S2',
-            'jenjang' => 'Ahli Muda', 'jabatan_id' => $jabatan->id,
+            'jabatan_id' => $jabatan->id,
         ]);
         PenempatanPegawai::create([
             'pegawai_id' => $p1->id, 'unor_id' => $unor->id, 'jabatan_id' => $jabatan->id,
@@ -60,7 +60,7 @@ class ProjectionCalculationTest extends TestCase
             'nama' => 'Pegawai Pensiun T+2', 'nip' => '196201012025011002',
             'jenis_kepegawaian' => 'PNS', 'tanggal_lahir' => "{$birthYear2}-03-20",
             'golongan_pangkat' => 'III/d', 'pendidikan' => 'S2',
-            'jenjang' => 'Ahli Muda', 'jabatan_id' => $jabatan->id,
+            'jabatan_id' => $jabatan->id,
         ]);
         PenempatanPegawai::create([
             'pegawai_id' => $p2->id, 'unor_id' => $unor->id, 'jabatan_id' => $jabatan->id,
@@ -73,7 +73,7 @@ class ProjectionCalculationTest extends TestCase
             'nama' => 'Pegawai Muda', 'nip' => '199501012025011003',
             'jenis_kepegawaian' => 'PNS', 'tanggal_lahir' => ($t - 20) . '-01-01',
             'golongan_pangkat' => 'III/a', 'pendidikan' => 'S1',
-            'jenjang' => 'Ahli Muda', 'jabatan_id' => $jabatan->id,
+            'jabatan_id' => $jabatan->id,
         ]);
         PenempatanPegawai::create([
             'pegawai_id' => $p3->id, 'unor_id' => $unor->id, 'jabatan_id' => $jabatan->id,
@@ -86,7 +86,7 @@ class ProjectionCalculationTest extends TestCase
     #[Test]
     public function projection_counts_retiring_employees_per_year()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false, withProjections: true);
+        $tree = $this->service->buildFlatTree(withProjections: true);
 
         $jabatanRow = collect($tree)->first(fn($r) => $r['type'] === 'jabatan');
         $this->assertNotNull($jabatanRow);
@@ -104,7 +104,7 @@ class ProjectionCalculationTest extends TestCase
     #[Test]
     public function projection_is_one_to_one_replacement()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false, withProjections: true);
+        $tree = $this->service->buildFlatTree(withProjections: true);
 
         $jabatanRow = collect($tree)->first(fn($r) => $r['type'] === 'jabatan');
 
@@ -118,7 +118,7 @@ class ProjectionCalculationTest extends TestCase
     #[Test]
     public function projection_is_not_cumulative()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false, withProjections: true);
+        $tree = $this->service->buildFlatTree(withProjections: true);
 
         $jabatanRow = collect($tree)->first(fn($r) => $r['type'] === 'jabatan');
 
@@ -130,7 +130,7 @@ class ProjectionCalculationTest extends TestCase
     #[Test]
     public function projection_is_not_remaining_pegawai_count()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false, withProjections: true);
+        $tree = $this->service->buildFlatTree(withProjections: true);
 
         $jabatanRow = collect($tree)->first(fn($r) => $r['type'] === 'jabatan');
 
@@ -143,7 +143,7 @@ class ProjectionCalculationTest extends TestCase
     #[Test]
     public function young_employees_not_in_projection()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false, withProjections: true);
+        $tree = $this->service->buildFlatTree(withProjections: true);
 
         $jabatanRow = collect($tree)->first(fn($r) => $r['type'] === 'jabatan');
 

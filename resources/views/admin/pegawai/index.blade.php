@@ -68,7 +68,7 @@
                             <td class="px-6 py-4 text-sm text-gray-500">
                                 {{ $p->penempatanAktif->unor->nama_unor ?? '-' }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $p->jenjang }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $p->jabatan->jenjang ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-center"><span class="px-2 py-1 text-xs rounded-full {{ $p->jenis_kepegawaian === 'PNS' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">{{ $p->jenis_kepegawaian }}</span></td>
                             <td class="px-6 py-4 text-sm text-center">
                                 <a href="{{ route('admin.pegawai.edit', $p) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">Edit</a>

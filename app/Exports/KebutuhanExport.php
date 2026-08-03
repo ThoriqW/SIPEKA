@@ -14,7 +14,7 @@ class KebutuhanExport implements FromArray, WithHeadings, WithStyles
     public function array(): array
     {
         return array_map(function ($row) {
-            $indent = $row['level'] > 0 ? str_repeat('  ', $row['level'] - 1) : '';
+            $indent = $row['level'] > 0 ? str_repeat('  ', $row['level']) : '';
             return [
                 $indent . $row['nama_jabatan'],
                 $row['kelas_jabatan'] ?? '',

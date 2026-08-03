@@ -32,17 +32,17 @@ class FlattenedTreeServiceTest extends TestCase
         $kepala = Jabatan::create([
             'nama_jabatan' => 'Kepala Dinas Test', 'kode_jabatan' => 'DT-001',
             'jenis_jabatan' => 'Struktural', 'kelas_jabatan' => 15,
-            'jenjang' => 'Pimpinan Tinggi Pratama',
+           
         ]);
         $pengelola = Jabatan::create([
             'nama_jabatan' => 'Pengelola Keuangan', 'kode_jabatan' => 'DT-002',
             'jenis_jabatan' => 'Pelaksana', 'kelas_jabatan' => 6,
-            'jenjang' => 'Pelaksana',
+           
         ]);
         $guru = Jabatan::create([
             'nama_jabatan' => 'Guru Matematika', 'kode_jabatan' => 'SMP-001',
             'jenis_jabatan' => 'Fungsional', 'kelas_jabatan' => 8,
-            'jenjang' => 'Ahli Pertama',
+           
         ]);
 
         // ── Assign jabatan ke UNOR via SOTK ──
@@ -60,7 +60,7 @@ class FlattenedTreeServiceTest extends TestCase
             'nama' => 'Test Pegawai', 'nip' => '199001012020011001',
             'jenis_kepegawaian' => 'PNS', 'tanggal_lahir' => '1990-01-01',
             'golongan_pangkat' => 'III/a', 'pendidikan' => 'S1',
-            'jenjang' => 'Pelaksana', 'jabatan_id' => $pengelola->id,
+            'jabatan_id' => $pengelola->id,
         ]);
         PenempatanPegawai::create([
             'pegawai_id' => $p1->id, 'unor_id' => $dikbud->id, 'jabatan_id' => $pengelola->id,
@@ -73,16 +73,16 @@ class FlattenedTreeServiceTest extends TestCase
     #[Test]
     public function it_builds_tree_with_unor_and_jabatan_rows()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false);
+        $tree = $this->service->buildFlatTree();
 
         // Should have: DT (unor) + 2 jabatan + SMPN1 (unor) + 1 jabatan = 5 rows
         $this->assertGreaterThanOrEqual(5, count($tree));
     }
 
     #[Test]
-    public function it_includes_root_when_requested()
+    public function it_has_root_unor_at_level_zero()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: true);
+        $tree = $this->service->buildFlatTree();
 
         $this->assertGreaterThan(0, count($tree));
         $this->assertEquals('unor', $tree[0]['type']);
@@ -93,7 +93,7 @@ class FlattenedTreeServiceTest extends TestCase
     #[Test]
     public function it_assigns_unor_and_jabatan_types()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false);
+        $tree = $this->service->buildFlatTree();
 
         $types = array_column($tree, 'type');
         $this->assertContains('unor', $types);
@@ -103,7 +103,7 @@ class FlattenedTreeServiceTest extends TestCase
     #[Test]
     public function it_places_jabatan_under_correct_unor()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false);
+        $tree = $this->service->buildFlatTree();
 
         // Find a jabatan row and check its parent_id references a unor
         $jabatanRows = array_filter($tree, fn($r) => $r['type'] === 'jabatan');
@@ -117,7 +117,7 @@ class FlattenedTreeServiceTest extends TestCase
     #[Test]
     public function it_includes_child_unor_in_tree()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false);
+        $tree = $this->service->buildFlatTree();
 
         $names = array_column($tree, 'nama_jabatan');
         $this->assertContains('SMP Negeri 1', $names);
@@ -126,7 +126,7 @@ class FlattenedTreeServiceTest extends TestCase
     #[Test]
     public function it_computes_kebutuhan_from_kebutuhan_pegawai_table()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false);
+        $tree = $this->service->buildFlatTree();
 
         $pengelola = collect($tree)->first(fn($r) => $r['nama_jabatan'] === 'Pengelola Keuangan');
         $this->assertNotNull($pengelola);
@@ -136,7 +136,7 @@ class FlattenedTreeServiceTest extends TestCase
     #[Test]
     public function it_computes_bezetting_from_penempatan()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false);
+        $tree = $this->service->buildFlatTree();
 
         $pengelola = collect($tree)->first(fn($r) => $r['nama_jabatan'] === 'Pengelola Keuangan');
         $this->assertNotNull($pengelola);
@@ -146,7 +146,7 @@ class FlattenedTreeServiceTest extends TestCase
     #[Test]
     public function it_computes_selisih_correctly()
     {
-        $tree = $this->service->buildFlatTree(includeRoot: false);
+        $tree = $this->service->buildFlatTree();
 
         $pengelola = collect($tree)->first(fn($r) => $r['nama_jabatan'] === 'Pengelola Keuangan');
         // kebutuhan=3, bezetting=1 → selisih = -2
@@ -166,7 +166,7 @@ class FlattenedTreeServiceTest extends TestCase
         Unor::whereNotNull('parent_id')->delete();
         Unor::whereNull('parent_id')->delete();
 
-        $tree = $this->service->buildFlatTree(includeRoot: false);
+        $tree = $this->service->buildFlatTree();
         $this->assertIsArray($tree);
         $this->assertCount(0, $tree);
     }
@@ -175,7 +175,7 @@ class FlattenedTreeServiceTest extends TestCase
     public function it_filters_by_unor()
     {
         $dikbud = Unor::where('kode_unor', 'DT')->first();
-        $tree = $this->service->buildFlatTree(unorId: $dikbud->id, includeRoot: false);
+        $tree = $this->service->buildFlatTree(unorId: $dikbud->id);
 
         // Should only contain Dinas Test and its descendants
         $names = array_column($tree, 'nama_jabatan');

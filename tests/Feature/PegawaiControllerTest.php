@@ -73,7 +73,7 @@ class PegawaiControllerTest extends TestCase
 
         $pegawai = Pegawai::where('nip', '200001012025011001')->first();
         $this->assertNotNull($pegawai);
-        $this->assertEquals($jabatan->jenjang, $pegawai->jenjang);
+        $this->assertEquals($jabatan->jenjang, $pegawai->jabatan->jenjang);
 
         // Harus ada penempatan aktif
         $this->assertNotNull($pegawai->penempatanAktif);
@@ -93,7 +93,7 @@ class PegawaiControllerTest extends TestCase
             'nip' => '200001012025011001', 'nama' => 'Pegawai 1',
             'jenis_kepegawaian' => 'PNS', 'tanggal_lahir' => '2000-01-01',
             'golongan_pangkat' => 'III/a', 'pendidikan' => 'S1',
-            'jenjang' => $jabatan->jenjang, 'jabatan_id' => $jabatan->id,
+            'jabatan_id' => $jabatan->id,
         ]);
 
         // Tambah pegawai kedua pada jabatan struktural yang SAMA — HARUS DITERIMA

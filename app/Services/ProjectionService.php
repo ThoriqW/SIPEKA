@@ -39,7 +39,7 @@ class ProjectionService
 
         $query = Pegawai::query()
             ->with('jabatan')
-            ->select(['id', 'tanggal_lahir', 'jenjang', 'jenis_kepegawaian', 'jabatan_id'])
+            ->select(['id', 'tanggal_lahir', 'jenis_kepegawaian', 'jabatan_id'])
             ->whereNotNull('jabatan_id');
 
         if ($opdId !== null) {
@@ -51,7 +51,7 @@ class ProjectionService
         foreach ($pegawaiList as $pegawai) {
             $tanggalPensiun = $this->bupCalculator->hitungTanggalPensiun(
                 $pegawai->tanggal_lahir,
-                $pegawai->jenjang,
+                $pegawai->jabatan?->jenjang ?? '',
                 $pegawai->jenis_kepegawaian,
                 $pegawai->jabatan->nama_jabatan ?? null
             );

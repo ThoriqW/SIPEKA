@@ -99,7 +99,7 @@
 <script>
 document.addEventListener('alpine:init', () => {
     Alpine.data('treeData', () => ({
-        expandedItems: new Set(['u-0', '0']),
+        expandedItems: new Set([@json($tree[0]['id'] ?? 'u-0')]),
         isVisible(id, parentId) {
             if (parentId === '' || parentId === 'u-0' || parentId === '0' || parentId === 0) return true;
             return this.expandedItems.has(String(parentId));

@@ -19,7 +19,6 @@ class Pegawai extends Model
         'golongan_pangkat',
         'pendidikan',
         'kualifikasi_pendidikan',
-        'jenjang',
         'jabatan_id',
     ];
 

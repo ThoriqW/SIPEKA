@@ -23,7 +23,6 @@ class BezettingController extends Controller
         $opdId = $request->filled('unor_id') ? (int) $request->unor_id : null;
         $tree = $this->flattenedTreeService->buildFlatTree(
             unorId: $opdId,
-            includeRoot: true,
             withProjections: false,
         );
         $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
@@ -39,7 +38,6 @@ class BezettingController extends Controller
         $opdId = $request->filled('unor_id') ? (int) $request->unor_id : null;
         $tree = $this->flattenedTreeService->buildFlatTree(
             unorId: $opdId,
-            includeRoot: true,
             withProjections: false,
         );
 

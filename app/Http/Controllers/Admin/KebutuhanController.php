@@ -22,7 +22,6 @@ class KebutuhanController extends Controller
     {
         $tree = $this->flattenedTreeService->buildFlatTree(
             unorId: null,
-            includeRoot: true,
             withProjections: true,
         );
 
@@ -38,7 +37,6 @@ class KebutuhanController extends Controller
     {
         $tree = $this->flattenedTreeService->buildFlatTree(
             unorId: null,
-            includeRoot: true,
             withProjections: true,
         );
 

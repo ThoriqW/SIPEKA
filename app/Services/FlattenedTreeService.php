@@ -2,11 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Jabatan;
 use App\Models\Unor;
 use App\Models\KebutuhanPegawai;
 use App\Models\PenempatanPegawai;
-use Illuminate\Support\Collection;
 
 class FlattenedTreeService
 {
@@ -22,8 +20,9 @@ class FlattenedTreeService
      *   UNOR (level 0, 1, 2, ...) — folder nodes
      *   └── Jabatan (leaf nodes, level = parent UNOR level + 1)
      *
+     * The root UNOR (parent_id = null) sits at level 0.
+     *
      * @param int|null $unorId         Filter by UNOR (null = all UNORs)
-     * @param bool     $includeRoot    Prepend virtual level-0 root row
      * @param bool     $withProjections Compute pensiun & kebutuhan proyeksi Thn 1-5 per row
      * @return array   Flat ordered rows with keys: id, parent_id, type, level,
      *                 nama_jabatan, jenis_jabatan, jenjang, kelas_jabatan,
@@ -33,7 +32,6 @@ class FlattenedTreeService
      */
     public function buildFlatTree(
         ?int $unorId = null,
-        bool $includeRoot = false,
         bool $withProjections = false,
     ): array {
         // ── Load UNORs ──
@@ -73,28 +71,12 @@ class FlattenedTreeService
 
         $result = [];
 
-        // ── Virtual root row ──
-        if ($includeRoot) {
-            $rootUnorForDisplay = null;
-            if ($unorId !== null) {
-                $rootUnorForDisplay = $allUnor->get($unorId);
-            }
-            if (!$rootUnorForDisplay) {
-                $rootUnorForDisplay = $allUnor->firstWhere('parent_id', null);
-            }
-            $result[] = $this->makeRootRow(
-                $allUnor, $rootUnorForDisplay,
-                $kebutuhanMap, $bezettingMap,
-                $proyeksiPensiunPerJabatan, $withProjections
-            );
-        }
-
         // ── Traverse UNOR tree depth-first ──
         foreach ($rootUnors as $rootUnor) {
             $this->flattenUnor(
                 unor: $rootUnor,
-                parentId: $includeRoot ? 'u-0' : null,
-                level: 1,
+                parentId: null,
+                level: 0,
                 result: $result,
                 unorChildrenMap: $unorChildrenMap,
                 kebutuhanMap: $kebutuhanMap,
@@ -190,7 +172,7 @@ class FlattenedTreeService
                 foreach ($jabatan->pegawai as $p) {
                     $tglPensiun = $this->bupCalculator->hitungTanggalPensiun(
                         $p->tanggal_lahir,
-                        $p->jenjang,
+                        $p->jabatan?->jenjang ?? '',
                         $p->jenis_kepegawaian,
                         $jabatan->nama_jabatan
                     );
@@ -306,59 +288,5 @@ class FlattenedTreeService
         }
 
         return $ids;
-    }
-
-    /**
-     * Build the virtual root row (Level 0: root UNOR).
-     */
-    private function makeRootRow(
-        Collection $allUnor,
-        ?Unor $rootUnor,
-        array $kebutuhanMap,
-        array $bezettingMap,
-        array $proyeksiPensiunPerJabatan,
-        bool $withProjections,
-    ): array {
-        $totalKebutuhan = 0;
-        $totalBezetting = 0;
-        $totalPensiun = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
-
-        foreach ($kebutuhanMap as $unorId => $jabatanKeb) {
-            $totalKebutuhan += array_sum($jabatanKeb);
-        }
-        foreach ($bezettingMap as $unorId => $jabatanBez) {
-            $totalBezetting += array_sum($jabatanBez);
-        }
-
-        if ($withProjections) {
-            foreach ($proyeksiPensiunPerJabatan as $jabatanId => $years) {
-                for ($n = 1; $n <= 5; $n++) {
-                    $totalPensiun[$n] += $years[$n] ?? 0;
-                }
-            }
-        }
-
-        $rootId = $rootUnor ? 'u-' . $rootUnor->id : 'u-0';
-
-        return [
-            'id'                  => $rootId,
-            'parent_id'           => null,
-            'type'                => 'unor',
-            'level'               => 0,
-            'nama_jabatan'        => $rootUnor ? $rootUnor->nama_unor : 'Pemerintah Kota Palu',
-            'jenis_jabatan'       => null,
-            'jenjang'             => null,
-            'kelas_jabatan'       => null,
-            'kebutuhan'           => $totalKebutuhan,
-            'bezetting'           => $totalBezetting,
-            'selisih'             => $totalBezetting - $totalKebutuhan,
-            'pegawai'             => [],
-            'pegawai_pensiun'     => [],
-            'has_children'        => true,
-            'unor_id'             => $rootUnor ? $rootUnor->id : null,
-            'kode_unor'           => $rootUnor ? $rootUnor->kode_unor : null,
-            'kebutuhan_proyeksi'  => $withProjections ? $totalPensiun : [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
-            'pensiun_proyeksi'    => $totalPensiun,
-        ];
     }
 }
