@@ -78,8 +78,8 @@ class BezettingControllerTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
 
-        $response->assertSee('Filter Unit Organisasi');
-        $response->assertSee('Semua Unit Organisasi');
+        $response->assertSee('OPD');
+        $response->assertSee('Semua OPD');
     }
 
     #[Test]

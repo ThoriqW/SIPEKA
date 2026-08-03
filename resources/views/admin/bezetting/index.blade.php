@@ -16,10 +16,10 @@
         @if($opdList->isNotEmpty())
         <form method="GET" class="mb-4">
             <div class="flex items-center gap-3">
-                <label for="unor_id" class="text-sm font-medium text-gray-700">Filter Unit Organisasi:</label>
+                <label for="unor_id" class="text-sm font-medium text-gray-700">OPD:</label>
                 <select id="unor_id" name="unor_id" onchange="this.form.submit()"
                         class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm w-72">
-                    <option value="">-- Semua Unit Organisasi --</option>
+                    <option value="">-- Semua OPD --</option>
                     @foreach($opdList as $id => $nama)
                     <option value="{{ $id }}" {{ request('unor_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>
                     @endforeach

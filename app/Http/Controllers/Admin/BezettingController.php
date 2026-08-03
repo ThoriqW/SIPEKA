@@ -25,7 +25,9 @@ class BezettingController extends Controller
             unorId: $opdId,
             withProjections: false,
         );
-        $opdList = Unor::orderBy('nama_unor')->pluck('nama_unor', 'id');
+        $opdList = Unor::whereNotNull('parent_id')
+            ->whereHas('parent', fn($q) => $q->whereNull('parent_id'))
+            ->orderBy('nama_unor')->pluck('nama_unor', 'id');
 
         return view('admin.bezetting.index', compact('tree', 'opdList'));
     }
