@@ -63,10 +63,8 @@ class TugasTambahanTest extends TestCase
     #[Test]
     public function tugas_tambahan_does_not_change_jabatan_utama()
     {
-        // Seeder sudah assign Kepala Sekolah ke Guru Kelas
-        $guru = Pegawai::whereHas('jabatan', function ($q) {
-            $q->where('kode_jabatan', 'DIKBUD-006');
-        })->first();
+        // Ambil pegawai pertama yang punya penempatan aktif
+        $guru = Pegawai::whereHas('penempatanAktif')->first();
 
         $this->assertNotNull($guru);
         $this->assertNotNull($guru->jabatan_id, 'Pegawai harus memiliki jabatan utama');

@@ -9,7 +9,9 @@ class UnorSeeder extends Seeder
 {
     public function run(): void
     {
+        // ─────────────────────────────────────────────
         // Level 0: Root
+        // ─────────────────────────────────────────────
         $pemkot = Unor::create([
             'nama_unor' => 'Pemerintah Kota Palu',
             'kode_unor' => 'PEMKOT',
@@ -17,40 +19,172 @@ class UnorSeeder extends Seeder
             'parent_id' => null,
         ]);
 
-        // Level 1: OPD di bawah Pemerintah Kota Palu
-        $unors = [
-            ['nama_unor' => 'Dinas Pendidikan dan Kebudayaan', 'kode_unor' => 'DIKBUD', 'singkatan' => 'Dikbud'],
-            ['nama_unor' => 'Dinas Kesehatan', 'kode_unor' => 'DINKES', 'singkatan' => 'Dinkes'],
-            ['nama_unor' => 'Dinas Pekerjaan Umum dan Penataan Ruang', 'kode_unor' => 'PUPR', 'singkatan' => 'PUPR'],
-            ['nama_unor' => 'Badan Kepegawaian dan Pengembangan SDM', 'kode_unor' => 'BKPSDM', 'singkatan' => 'BKPSDM'],
-            ['nama_unor' => 'Sekretariat Daerah', 'kode_unor' => 'SETDA', 'singkatan' => 'Setda'],
-        ];
+        // ─────────────────────────────────────────────
+        // Level 1: 3 OPD
+        // ─────────────────────────────────────────────
+        $bkpsdm = Unor::create([
+            'nama_unor' => 'Badan Kepegawaian dan Pengembangan Sumber Daya Manusia',
+            'kode_unor' => 'BKPSDM',
+            'singkatan' => 'BKPSDM',
+            'parent_id' => $pemkot->id,
+        ]);
 
-        foreach ($unors as $data) {
-            $data['parent_id'] = $pemkot->id;
-            Unor::create($data);
-        }
+        $dinkes = Unor::create([
+            'nama_unor' => 'Dinas Kesehatan',
+            'kode_unor' => 'DINKES',
+            'singkatan' => 'Dinkes',
+            'parent_id' => $pemkot->id,
+        ]);
 
-        // Level 2: Sub-UNOR contoh
-        $dikbud = Unor::where('kode_unor', 'DIKBUD')->first();
-        $dinkes = Unor::where('kode_unor', 'DINKES')->first();
+        $dikbud = Unor::create([
+            'nama_unor' => 'Dinas Pendidikan',
+            'kode_unor' => 'DIKBUD',
+            'singkatan' => 'Dikbud',
+            'parent_id' => $pemkot->id,
+        ]);
 
-        if ($dikbud) {
-            Unor::create([
-                'nama_unor' => 'SMP Negeri 1',
-                'kode_unor' => 'SMPN1',
-                'singkatan' => 'SMPN 1',
-                'parent_id' => $dikbud->id,
-            ]);
-        }
+        // ─────────────────────────────────────────────
+        // BKPSDMD — children
+        // ─────────────────────────────────────────────
+        $bkpsdmSekr = Unor::create([
+            'nama_unor' => 'Sekretariat',
+            'kode_unor' => 'BKPSDM-SEKR',
+            'singkatan' => 'Sekr',
+            'parent_id' => $bkpsdm->id,
+        ]);
 
-        if ($dinkes) {
-            Unor::create([
-                'nama_unor' => 'Puskesmas Talise',
-                'kode_unor' => 'PKM-TALISE',
-                'singkatan' => 'PKM Talise',
-                'parent_id' => $dinkes->id,
-            ]);
-        }
+        Unor::create([
+            'nama_unor' => 'Sub Bagian Umum dan Kepegawaian',
+            'kode_unor' => 'BKPSDM-SUB-UMUM',
+            'parent_id' => $bkpsdmSekr->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Sub Bagian Keuangan',
+            'kode_unor' => 'BKPSDM-SUB-KEU',
+            'parent_id' => $bkpsdmSekr->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Sub Bagian Perencanaan',
+            'kode_unor' => 'BKPSDM-SUB-REN',
+            'parent_id' => $bkpsdmSekr->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Pengadaan, Pemberhentian dan Informasi',
+            'kode_unor' => 'BKPSDM-BID-PPI',
+            'parent_id' => $bkpsdm->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Mutasi dan Promosi',
+            'kode_unor' => 'BKPSDM-BID-MP',
+            'parent_id' => $bkpsdm->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Pengembangan Kompetensi',
+            'kode_unor' => 'BKPSDM-BID-PK',
+            'parent_id' => $bkpsdm->id,
+        ]);
+
+        // ─────────────────────────────────────────────
+        // Dinas Kesehatan — children
+        // ─────────────────────────────────────────────
+        $dinkesSekr = Unor::create([
+            'nama_unor' => 'Sekretariat',
+            'kode_unor' => 'DINKES-SEKR',
+            'singkatan' => 'Sekr',
+            'parent_id' => $dinkes->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Sub Bagian Umum dan Kepegawaian',
+            'kode_unor' => 'DINKES-SUB-UMUM',
+            'parent_id' => $dinkesSekr->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Sub Bagian Keuangan',
+            'kode_unor' => 'DINKES-SUB-KEU',
+            'parent_id' => $dinkesSekr->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Sub Bagian Perencanaan',
+            'kode_unor' => 'DINKES-SUB-REN',
+            'parent_id' => $dinkesSekr->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Pelayanan Kesehatan',
+            'kode_unor' => 'DINKES-BID-YANKES',
+            'parent_id' => $dinkes->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Pencegahan dan Pengendalian Penyakit',
+            'kode_unor' => 'DINKES-BID-P2P',
+            'parent_id' => $dinkes->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Kesehatan Masyarakat',
+            'kode_unor' => 'DINKES-BID-KESMAS',
+            'parent_id' => $dinkes->id,
+        ]);
+
+        // ─────────────────────────────────────────────
+        // Dinas Pendidikan — children
+        // ─────────────────────────────────────────────
+        $dikbudSekr = Unor::create([
+            'nama_unor' => 'Sekretariat',
+            'kode_unor' => 'DIKBUD-SEKR',
+            'singkatan' => 'Sekr',
+            'parent_id' => $dikbud->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Sub Bagian Umum dan Kepegawaian',
+            'kode_unor' => 'DIKBUD-SUB-UMUM',
+            'parent_id' => $dikbudSekr->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Sub Bagian Keuangan',
+            'kode_unor' => 'DIKBUD-SUB-KEU',
+            'parent_id' => $dikbudSekr->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Sub Bagian Perencanaan',
+            'kode_unor' => 'DIKBUD-SUB-REN',
+            'parent_id' => $dikbudSekr->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Pendidikan Anak Usia Dini',
+            'kode_unor' => 'DIKBUD-BID-PAUD',
+            'parent_id' => $dikbud->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Sekolah Dasar',
+            'kode_unor' => 'DIKBUD-BID-SD',
+            'parent_id' => $dikbud->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Sekolah Menengah Pertama',
+            'kode_unor' => 'DIKBUD-BID-SMP',
+            'parent_id' => $dikbud->id,
+        ]);
+
+        Unor::create([
+            'nama_unor' => 'Bidang Guru dan Tenaga Kependidikan',
+            'kode_unor' => 'DIKBUD-BID-GTK',
+            'parent_id' => $dikbud->id,
+        ]);
     }
 }

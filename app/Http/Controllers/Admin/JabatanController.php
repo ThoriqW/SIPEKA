@@ -57,11 +57,23 @@ class JabatanController extends Controller
         // Komputasi currentIndukId dari old input (untuk restore form setelah error)
         $currentIndukId = old('induk_id');
         if (!$currentIndukId && old('unor_id') && $pemkot) {
-            $unitUnor = Unor::find(old('unor_id'));
+            $unitUnor = Unor::with('parent')->find(old('unor_id'));
             if ($unitUnor) {
-                $currentIndukId = ($unitUnor->parent_id == $pemkot->id)
-                    ? $unitUnor->id
-                    : $unitUnor->parent_id;
+                // Walk up UNOR tree sampai ketemu yang ada di indukList
+                $cursor = $unitUnor;
+                while ($cursor) {
+                    if (isset($indukList[$cursor->id])) {
+                        $currentIndukId = $cursor->id;
+                        break;
+                    }
+                    $cursor = $cursor->parent;
+                }
+                // Fallback
+                if ($currentIndukId === null) {
+                    $currentIndukId = ($unitUnor->parent_id == $pemkot->id)
+                        ? $unitUnor->id
+                        : $unitUnor->parent_id;
+                }
             }
         }
 
@@ -200,9 +212,21 @@ class JabatanController extends Controller
                 && $pemkot) {
                 $currentIndukId = $pemkot->id;
             } else {
-                $currentIndukId = ($currentOpd->parent_id == $pemkot->id)
-                    ? $currentOpd->id
-                    : $currentOpd->parent_id;
+                // Walk up UNOR tree sampai ketemu yang ada di indukList
+                $cursor = $currentOpd;
+                while ($cursor) {
+                    if (isset($indukList[$cursor->id])) {
+                        $currentIndukId = $cursor->id;
+                        break;
+                    }
+                    $cursor = $cursor->parent;
+                }
+                // Fallback: jika tidak ketemu, gunakan parent langsung
+                if ($currentIndukId === null) {
+                    $currentIndukId = ($currentOpd->parent_id == $pemkot->id)
+                        ? $currentOpd->id
+                        : $currentOpd->parent_id;
+                }
             }
         }
 

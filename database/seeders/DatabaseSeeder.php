@@ -13,10 +13,8 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             ReferensiJabatanSeeder::class,
             JabatanSeeder::class,
-            SotkSeeder::class,
             KebutuhanSeeder::class,
             PegawaiSeeder::class,
-            PenempatanSeeder::class,
             MasterTugasTambahanSeeder::class,
             TugasTambahanSeeder::class,
         ]);

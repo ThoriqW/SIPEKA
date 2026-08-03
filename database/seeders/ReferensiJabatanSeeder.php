@@ -14,12 +14,11 @@ class ReferensiJabatanSeeder extends Seeder
         // ============================================================
         $struktural = [
             'Kepala Dinas' => 'Pimpinan Tinggi Pratama',
-            'Sekretaris Dinas' => 'Administrator',
+            'Sekretaris' => 'Administrator',
             'Kepala Bidang' => 'Administrator',
             'Kepala Sub Bagian' => 'Pengawas',
             'Kepala Sub Bidang' => 'Pengawas',
             'Kepala Badan' => 'Pimpinan Tinggi Pratama',
-            'Sekretaris Badan' => 'Administrator',
             'Kepala UPTD' => 'Administrator',
             'Kepala Bagian' => 'Administrator',
             'Kepala Seksi' => 'Pengawas',
