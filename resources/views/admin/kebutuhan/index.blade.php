@@ -8,7 +8,7 @@
                 <h1 class="text-2xl font-semibold text-gray-900">Kebutuhan</h1>
                 <p class="text-sm text-gray-500 mt-1">Tabel pohon kebutuhan pegawai — Unit Organisasi & Jabatan</p>
             </div>
-            <a href="{{ route('admin.kebutuhan.export') }}" class="mt-3 sm:mt-0 inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none transition">
+            <a href="{{ route('admin.kebutuhan.export') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
                 Export Excel
             </a>
         </div>
