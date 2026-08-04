@@ -15,6 +15,7 @@ class ReferensiJabatan extends Model
         'jenis_jabatan',
         'jenjang',
         'sub_jabatan',
+        'kelompok',
         'parent_id',
     ];
 

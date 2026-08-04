@@ -95,10 +95,10 @@
                     </div>
                 </div>
                 <table class="w-full text-sm"><tbody class="divide-y divide-gray-100">
-                    @foreach(['Guru', 'Kesehatan', 'Non Guru & Non Kesehatan'] as $label)
+                    @foreach(['Tenaga Guru', 'Tenaga Kesehatan', 'Non Guru & Non Kesehatan'] as $label)
                     <tr>
                         <td class="py-2 text-gray-600">{{ $label }}</td>
-                        <td class="py-2 text-right font-medium text-gray-900">{{ number_format($pegawaiFungsionalPerGroup[$label] ?? 0) }}</td>
+                        <td class="py-2 text-right font-medium text-gray-900">{{ number_format($counts[$label] ?? 0) }}</td>
                     </tr>
                     @endforeach
                     @php $totalPelaksana = ($pegawaiPerJenisJenjang['Pelaksana'] ?? collect())->sum('total'); @endphp

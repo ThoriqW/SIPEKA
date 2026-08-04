@@ -3,12 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\KebutuhanPegawai;
-use App\Models\Jabatan;
+use App\Models\Pegawai;
 use App\Models\ReferensiJabatan;
 use App\Models\Unor;
-use App\Models\Pegawai;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -16,8 +13,13 @@ class DashboardController extends Controller
     {
         $totalPns = Pegawai::where('jenis_kepegawaian', 'PNS')->count();
         $totalPppk = Pegawai::where('jenis_kepegawaian', 'PPPK')->count();
-        $totalOpd = Unor::count();
         $totalPegawai = Pegawai::count();
+
+        // Total Perangkat Daerah = UNOR level 1 (anak langsung Pemkot)
+        $pemkot = Unor::whereNull('parent_id')->first();
+        $totalOpd = $pemkot
+            ? Unor::where('parent_id', $pemkot->id)->count()
+            : Unor::count();
 
         // Total kebutuhan seluruh jabatan dari tabel kebutuhan_pegawai
         $totalKebutuhan = KebutuhanPegawai::whereNull('tahun')->sum('jumlah');
@@ -31,56 +33,52 @@ class DashboardController extends Controller
             ->get()
             ->groupBy('jenis_jabatan');
 
-        // Kategori Fungsional: kumpulkan nama-nama master per group
-        $guru = ReferensiJabatan::where('nama_jabatan', 'Guru')
-            ->where('jenis_jabatan', 'Fungsional')->whereNull('parent_id')->first();
-        $dokter = ReferensiJabatan::where('nama_jabatan', 'Dokter')
-            ->where('jenis_jabatan', 'Fungsional')->whereNull('parent_id')->first();
+        // Nama-nama jabatan per kelompok — dari master_jabatan (source of truth)
+        $namaPerKelompok = ReferensiJabatan::whereNotNull('kelompok')
+            ->selectRaw('kelompok, GROUP_CONCAT(DISTINCT nama_jabatan) as names')
+            ->groupBy('kelompok')
+            ->pluck('names', 'kelompok')
+            ->map(fn($names) => explode(',', $names))
+            ->all();
 
-        $namaGuru = ['Guru'];
+        // Pegawai Fungsional per kategori — proses di PHP
+        $pegawaiFungsional = Pegawai::with('jabatan')
+            ->whereHas('jabatan', fn($q) => $q->where('jenis_jabatan', 'Fungsional'))
+            ->get();
 
-        if ($guru) {
-            $namaGuru = array_merge($namaGuru, ReferensiJabatan::where('parent_id', $guru->id)->pluck('nama_jabatan')->toArray());
-        }
-
-        // Hardcode known NAKES names from the seeder + children of Dokter
-        $nakesNames = [
-            'Administrator Kesehatan', 'Apoteker', 'Asisten Apoteker', 'Asisten Penata Anestesi',
-            'Bidan', 'Dokter', 'Dokter Gigi', 'Entomolog Kesehatan', 'Epidemiolog Kesehatan',
-            'Fisikawan Medis', 'Fisioterapis', 'Nutrisionis', 'Pembimbing Kesehatan Kerja',
-            'Penata Anestesi', 'Perawat', 'Perekam Medis', 'Pranata Laboratorium Kesehatan',
-            'Psikolog Klinis', 'Radiografer', 'Teknisi Elektromedis', 'Teknisi Transfusi Darah',
-            'Tenaga Promosi Kesehatan dan Ilmu Perilaku', 'Tenaga Sanitasi Lingkungan',
-            'Terapis Gigi dan Mulut', 'Okupasi Terapis', 'Terapis Wicara',
+        $counts = [
+            'Tenaga Guru'               => 0,
+            'Tenaga Kesehatan'           => 0,
+            'Non Guru & Non Kesehatan'   => 0,
         ];
-        if ($dokter) {
-            $nakesNames = array_merge($nakesNames, ReferensiJabatan::where('parent_id', $dokter->id)->pluck('nama_jabatan')->toArray());
+
+        foreach ($pegawaiFungsional as $p) {
+            $parentName = explode(' - ', $p->jabatan->nama_jabatan)[0];
+
+            $matched = false;
+            foreach ($namaPerKelompok as $kelompok => $names) {
+                if (in_array($parentName, $names, true)) {
+                    $label = match ($kelompok) {
+                        'Tenaga Guru'       => 'Tenaga Guru',
+                        'Tenaga Kesehatan'   => 'Tenaga Kesehatan',
+                        'Tenaga Teknis'     => 'Non Guru & Non Kesehatan',
+                        default             => 'Non Guru & Non Kesehatan',
+                    };
+                    $counts[$label]++;
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                $counts['Non Guru & Non Kesehatan']++;
+            }
         }
-
-        // Pegawai Fungsional per kategori group (tanpa rinci jenjang)
-        // Ekstrak parent name untuk matching (ambil sebelum " - " jika format Parent-Sub)
-        $guruPlaceholders = implode(',', array_fill(0, count($namaGuru), '?'));
-        $nakesPlaceholders = implode(',', array_fill(0, count($nakesNames), '?'));
-        $allBindings = array_merge($namaGuru, $nakesNames);
-
-        $pegawaiFungsionalPerGroup = Pegawai::join('jabatan', 'pegawai.jabatan_id', '=', 'jabatan.id')
-            ->where('jabatan.jenis_jabatan', 'Fungsional')
-            ->selectRaw("
-                CASE
-                    WHEN SUBSTRING_INDEX(jabatan.nama_jabatan, ' - ', 1) IN ({$guruPlaceholders}) THEN 'Guru'
-                    WHEN SUBSTRING_INDEX(jabatan.nama_jabatan, ' - ', 1) IN ({$nakesPlaceholders}) THEN 'Kesehatan'
-                    ELSE 'Non Guru & Non Kesehatan'
-                END as kategori,
-                COUNT(*) as total
-            ", $allBindings)
-            ->groupBy('kategori')
-            ->orderBy('kategori')
-            ->pluck('total', 'kategori');
 
         return view('dashboard', compact(
             'totalPns', 'totalPppk', 'totalOpd', 'totalPegawai',
             'totalKebutuhan', 'pegawaiPerJenisJenjang',
-            'pegawaiFungsionalPerGroup'
+            'counts'
         ));
     }
 }

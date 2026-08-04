@@ -38,6 +38,7 @@ class ReferensiJabatanSeeder extends Seeder
                 'jenis_jabatan' => 'Struktural',
                 'jenjang' => $jenjang,
                 'sub_jabatan' => null,
+                'kelompok' => null,
                 'parent_id' => null,
             ]);
         }
@@ -64,6 +65,7 @@ class ReferensiJabatanSeeder extends Seeder
                 'jenis_jabatan' => 'Pelaksana',
                 'jenjang' => 'Pelaksana',
                 'sub_jabatan' => null,
+                'kelompok' => null,
                 'parent_id' => null,
             ]);
         }
@@ -107,6 +109,7 @@ class ReferensiJabatanSeeder extends Seeder
                 'jenis_jabatan' => 'Fungsional',
                 'jenjang' => null,
                 'sub_jabatan' => null,
+                'kelompok' => 'Tenaga Kesehatan',
                 'parent_id' => null,
             ]);
             if ($nama === 'Dokter') {
@@ -164,6 +167,7 @@ class ReferensiJabatanSeeder extends Seeder
                 'jenis_jabatan' => 'Fungsional',
                 'jenjang' => null,
                 'sub_jabatan' => $nama,
+                'kelompok' => 'Tenaga Kesehatan',
                 'parent_id' => $dokterId,
             ]);
         }
@@ -176,6 +180,7 @@ class ReferensiJabatanSeeder extends Seeder
             'jenis_jabatan' => 'Fungsional',
             'jenjang' => null,
             'sub_jabatan' => null,
+            'kelompok' => 'Tenaga Guru',
             'parent_id' => null,
         ]);
 
@@ -205,6 +210,7 @@ class ReferensiJabatanSeeder extends Seeder
                 'jenis_jabatan' => 'Fungsional',
                 'jenjang' => null,
                 'sub_jabatan' => $nama,
+                'kelompok' => 'Tenaga Guru',
                 'parent_id' => $guru->id,
             ]);
         }
@@ -241,6 +247,7 @@ class ReferensiJabatanSeeder extends Seeder
                 'jenis_jabatan' => 'Fungsional',
                 'jenjang' => null,
                 'sub_jabatan' => null,
+                'kelompok' => 'Tenaga Teknis',
                 'parent_id' => null,
             ]);
         }
