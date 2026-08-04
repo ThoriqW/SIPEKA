@@ -5,20 +5,24 @@ namespace App\Services;
 class BupCalculator
 {
     /**
-     * Hitung Batas Usia Pensiun berdasarkan jenjang, jenis kepegawaian, dan nama jabatan.
+     * Hitung Batas Usia Pensiun berdasarkan atribut jabatan.
      *
-     * Aturan:
+     * Aturan BUP:
+     *   60  jika Jabatan Guru (semua jenjang, PNS & PPPK)
      *   65  jika jenjang = "Ahli Utama"
      *   60  jika jenjang ∈ {"Ahli Madya", "Pimpinan Tinggi Pratama"}
-     *        ATAU pegawai adalah Guru
      *   58  selain itu
      *
-     * @param string      $jenjang           Jenjang pegawai (dari tabel pegawai / jabatan)
-     * @param string      $jenisKepegawaian  PNS | PPPK
-     * @param string|null $namaJabatan       Nama jabatan (opsional, untuk deteksi Guru via nama)
+     * @param string      $jenjang     Jenjang jabatan (dari tabel jabatan)
+     * @param string|null $namaJabatan Nama jabatan (format: "Guru - Matematika" atau "Pranata Komputer")
      */
-    public function hitungBup(string $jenjang, string $jenisKepegawaian, ?string $namaJabatan = null): int
+    public function hitungBup(string $jenjang, ?string $namaJabatan = null): int
     {
+        // Guru → 60 tahun (mengoverride semua aturan jenjang, termasuk Ahli Utama)
+        if ($this->isGuru($jenjang, $namaJabatan)) {
+            return 60;
+        }
+
         if ($jenjang === 'Ahli Utama') {
             return 65;
         }
@@ -27,38 +31,28 @@ class BupCalculator
             return 60;
         }
 
-        if ($this->isGuru($jenjang, $namaJabatan)) {
-            return 60;
-        }
-
         return 58;
     }
 
     /**
-     * Deteksi apakah pegawai adalah Guru berdasarkan jenjang atau nama jabatan.
-     * Karena enum Jenjang tidak memiliki case 'Guru', deteksi dilakukan via:
-     * 1. Jenjang = 'Guru' (jika suatu saat ditambahkan)
-     * 2. Nama jabatan mengandung kata "Guru" (case-insensitive)
-     */
-    private function isGuru(string $jenjang, ?string $namaJabatan): bool
-    {
-        if ($jenjang === 'Guru') {
-            return true;
-        }
-
-        if ($namaJabatan !== null && str_contains(mb_strtolower($namaJabatan), 'guru')) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Hitung tanggal pensiun = tanggal_lahir + BUP tahun.
+     *
+     * @todo Untuk PPPK, logika dapat diperluas menggunakan $jenisKepegawaian
+     *       jika data tanggal_akhir_kontrak sudah tersedia:
+     *       if (PPPK) { return min(tanggal_akhir_kontrak, tanggal_lahir + 70 tahun) }
+     *
+     * @param \DateTimeInterface|string $tanggalLahir
+     * @param string                   $jenjang          Jenjang jabatan
+     * @param string                   $jenisKepegawaian PNS | PPPK (saat ini belum digunakan)
+     * @param string|null              $namaJabatan      Nama jabatan (untuk deteksi Guru)
      */
-    public function hitungTanggalPensiun(\DateTimeInterface|string $tanggalLahir, string $jenjang, string $jenisKepegawaian, ?string $namaJabatan = null): \DateTimeImmutable
-    {
-        $bup = $this->hitungBup($jenjang, $jenisKepegawaian, $namaJabatan);
+    public function hitungTanggalPensiun(
+        \DateTimeInterface|string $tanggalLahir,
+        string $jenjang,
+        string $jenisKepegawaian,
+        ?string $namaJabatan = null
+    ): \DateTimeImmutable {
+        $bup = $this->hitungBup($jenjang, $namaJabatan);
 
         if (is_string($tanggalLahir)) {
             $tanggalLahir = new \DateTimeImmutable($tanggalLahir);
@@ -68,5 +62,33 @@ class BupCalculator
         }
 
         return $tanggalLahir->modify("+{$bup} years");
+    }
+
+    /**
+     * Deteksi apakah jabatan adalah Guru berdasarkan jenjang atau nama jabatan.
+     *
+     * Format nama_jabatan di tabel jabatan:
+     *   "Guru - Guru Bahasa Indonesia" → parent = "Guru"
+     *   "Guru - Matematika"            → parent = "Guru"
+     *   "Pranata Komputer"             → parent = "Pranata Komputer" (bukan Guru)
+     *
+     * @param string      $jenjang     Jenjang jabatan
+     * @param string|null $namaJabatan Nama jabatan lengkap (termasuk sub-jabatan jika ada)
+     */
+    private function isGuru(string $jenjang, ?string $namaJabatan): bool
+    {
+        // Deteksi via jenjang (safety net)
+        if ($jenjang === 'Guru') {
+            return true;
+        }
+
+        if ($namaJabatan === null) {
+            return false;
+        }
+
+        // Format: "Guru - Guru Bahasa Indonesia" → ambil bagian sebelum " - "
+        $parentName = explode(' - ', $namaJabatan)[0];
+
+        return $parentName === 'Guru';
     }
 }

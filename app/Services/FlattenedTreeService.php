@@ -116,17 +116,74 @@ class FlattenedTreeService
 
         $hasChildren = !empty($childUnors) || $sotkEntries->isNotEmpty();
 
-        // ── Aggregate totals for UNOR row (direct SOTK only) ──
+        // ── Build jabatan rows first to compute UNOR-level aggregates ──
+        $jabatanLevel = $level + 1;
+        $jabatanRows = [];
+
         $aggKebutuhan = 0;
         $aggBezetting = 0;
+        $aggPensiunProyeksi = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+        $aggKebutuhanProyeksi = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
 
         foreach ($sotkEntries as $sotk) {
-            $jabId = $sotk->jabatan_id;
-            $aggKebutuhan += $kebutuhanMap[$unor->id][$jabId] ?? 0;
-            $aggBezetting += $bezettingMap[$unor->id][$jabId] ?? 0;
+            if (!$sotk->jabatan) continue;
+            $jabatan = $sotk->jabatan;
+            $jabId = $jabatan->id;
+
+            $kebutuhan = $kebutuhanMap[$unor->id][$jabId] ?? 0;
+            $bezetting = $bezettingMap[$unor->id][$jabId] ?? 0;
+            $selisih = $bezetting - $kebutuhan;
+
+            // Proyeksi dari struktur baru: [unor_id][jabatan_id]['counts'|'pegawai']
+            $proyeksiData = $proyeksiPensiunPerJabatan[$unor->id][$jabId] ?? null;
+            $jabatanPensiunCounts = $proyeksiData['counts'] ?? [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+            $jabatanPensiunPegawai = $proyeksiData['pegawai'] ?? [];
+
+            // Akumulasi untuk UNOR row
+            $aggKebutuhan += $kebutuhan;
+            $aggBezetting += $bezetting;
+            for ($n = 1; $n <= 5; $n++) {
+                $aggPensiunProyeksi[$n] += $jabatanPensiunCounts[$n];
+            }
+
+            $row = [
+                'id'                  => $jabId,
+                'parent_id'           => $unorIdStr,
+                'type'                => 'jabatan',
+                'level'               => $jabatanLevel,
+                'nama_jabatan'        => $jabatan->nama_jabatan,
+                'jenis_jabatan'       => $jabatan->jenis_jabatan,
+                'jenjang'             => $jabatan->jenjang,
+                'kelas_jabatan'       => $jabatan->kelas_jabatan,
+                'kebutuhan'           => $kebutuhan,
+                'bezetting'           => $bezetting,
+                'selisih'             => $selisih,
+                'pegawai'             => $pegawaiMap[$unor->id][$jabId] ?? [],
+                'has_children'        => false,
+                'unor_id'             => $unor->id,
+                'kode_unor'           => $unor->kode_unor,
+                'kebutuhan_proyeksi'  => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
+                'pensiun_proyeksi'    => $jabatanPensiunCounts,
+                'pegawai_pensiun'     => $jabatanPensiunPegawai,
+            ];
+
+            if ($withProjections) {
+                $row['kebutuhan_proyeksi'] = [
+                    1 => $jabatanPensiunCounts[1] ?? 0,
+                    2 => $jabatanPensiunCounts[2] ?? 0,
+                    3 => $jabatanPensiunCounts[3] ?? 0,
+                    4 => $jabatanPensiunCounts[4] ?? 0,
+                    5 => $jabatanPensiunCounts[5] ?? 0,
+                ];
+            }
+
+            $jabatanRows[] = $row;
         }
 
-        // ── UNOR row (tidak menampilkan pegawai — hanya jabatan) ──
+        // kebutuhan_proyeksi pada UNOR = pensiun_proyeksi (rasio 1:1)
+        $aggKebutuhanProyeksi = $aggPensiunProyeksi;
+
+        // ── UNOR row ──
         $result[] = [
             'id'                  => $unorIdStr,
             'parent_id'           => $parentId,
@@ -143,55 +200,13 @@ class FlattenedTreeService
             'has_children'        => $hasChildren,
             'unor_id'             => $unor->id,
             'kode_unor'           => $unor->kode_unor,
-            'kebutuhan_proyeksi'  => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
-            'pensiun_proyeksi'    => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
+            'kebutuhan_proyeksi'  => $aggKebutuhanProyeksi,
+            'pensiun_proyeksi'    => $aggPensiunProyeksi,
             'pegawai_pensiun'     => [],
         ];
 
-        // ── Jabatan rows (leaf nodes under this UNOR) ──
-        $jabatanLevel = $level + 1;
-        foreach ($sotkEntries as $sotk) {
-            if (!$sotk->jabatan) continue;
-            $jabatan = $sotk->jabatan;
-            $jabId = $jabatan->id;
-
-            $kebutuhan = $kebutuhanMap[$unor->id][$jabId] ?? 0;
-            $bezetting = $bezettingMap[$unor->id][$jabId] ?? 0;
-            $selisih = $bezetting - $kebutuhan;
-
-            $jabatanPensiun = $proyeksiPensiunPerJabatan[$jabId] ?? [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
-
-            $row = [
-                'id'              => $jabId,
-                'parent_id'       => $unorIdStr,
-                'type'            => 'jabatan',
-                'level'           => $jabatanLevel,
-                'nama_jabatan'    => $jabatan->nama_jabatan,
-                'jenis_jabatan'   => $jabatan->jenis_jabatan,
-                'jenjang'         => $jabatan->jenjang,
-                'kelas_jabatan'   => $jabatan->kelas_jabatan,
-                'kebutuhan'       => $kebutuhan,
-                'bezetting'       => $bezetting,
-                'selisih'         => $selisih,
-                'pegawai'         => $pegawaiMap[$unor->id][$jabId] ?? [],
-                'has_children'    => false,
-                'unor_id'         => $unor->id,
-                'kode_unor'       => $unor->kode_unor,
-                'kebutuhan_proyeksi' => [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0],
-                'pensiun_proyeksi'   => $jabatanPensiun,
-                'pegawai_pensiun'    => [],
-            ];
-
-            if ($withProjections) {
-                $row['kebutuhan_proyeksi'] = [
-                    1 => $jabatanPensiun[1] ?? 0,
-                    2 => $jabatanPensiun[2] ?? 0,
-                    3 => $jabatanPensiun[3] ?? 0,
-                    4 => $jabatanPensiun[4] ?? 0,
-                    5 => $jabatanPensiun[5] ?? 0,
-                ];
-            }
-
+        // ── Append jabatan rows ──
+        foreach ($jabatanRows as $row) {
             $result[] = $row;
         }
 
@@ -267,7 +282,7 @@ class FlattenedTreeService
     }
 
     /**
-     * Propagate child UNOR totals (kebutuhan, bezetting, pegawai) upward to parents.
+     * Propagate child UNOR totals (kebutuhan, bezetting, pegawai, proyeksi) upward to parents.
      * Walks the flat array in reverse so children are processed before parents.
      */
     private function propagateTotalsUpward(array &$result): void
@@ -288,6 +303,12 @@ class FlattenedTreeService
             $result[$pIdx]['kebutuhan'] += $row['kebutuhan'];
             $result[$pIdx]['bezetting'] += $row['bezetting'];
             $result[$pIdx]['selisih'] = $result[$pIdx]['bezetting'] - $result[$pIdx]['kebutuhan'];
+
+            // Propagasi proyeksi anak UNOR ke parent UNOR
+            for ($n = 1; $n <= 5; $n++) {
+                $result[$pIdx]['pensiun_proyeksi'][$n] += $row['pensiun_proyeksi'][$n];
+                $result[$pIdx]['kebutuhan_proyeksi'][$n] += $row['kebutuhan_proyeksi'][$n];
+            }
         }
     }
 

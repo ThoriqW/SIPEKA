@@ -27,8 +27,8 @@ class ProjectionService
     }
 
     /**
-     * Hitung proyeksi pensiun per jabatan untuk 5 tahun ke depan.
-     * Returns [jabatan_id => [1 => count, ..., 5 => count]]
+     * Hitung proyeksi pensiun per UNOR + jabatan untuk 5 tahun ke depan.
+     * Returns [unor_id => [jabatan_id => ['counts' => [1=>count,...], 'pegawai' => [...]]]]
      *
      * @param int|null $opdId Filter by OPD (null = all OPDs)
      */
@@ -38,8 +38,8 @@ class ProjectionService
         $result = [];
 
         $query = Pegawai::query()
-            ->with('jabatan')
-            ->select(['id', 'tanggal_lahir', 'jenis_kepegawaian', 'jabatan_id'])
+            ->with(['jabatan', 'penempatanAktif'])
+            ->select(['id', 'nip', 'nama', 'tanggal_lahir', 'jenis_kepegawaian', 'jabatan_id'])
             ->whereNotNull('jabatan_id');
 
         if ($opdId !== null) {
@@ -49,6 +49,14 @@ class ProjectionService
         $pegawaiList = $query->get();
 
         foreach ($pegawaiList as $pegawai) {
+            // Hanya proses pegawai yang memiliki penempatan aktif
+            if (!$pegawai->penempatanAktif) {
+                continue;
+            }
+
+            $unorId = $pegawai->penempatanAktif->unor_id;
+            $jabatanId = $pegawai->jabatan_id;
+
             $tanggalPensiun = $this->bupCalculator->hitungTanggalPensiun(
                 $pegawai->tanggal_lahir,
                 $pegawai->jabatan?->jenjang ?? '',
@@ -56,21 +64,29 @@ class ProjectionService
                 $pegawai->jabatan->nama_jabatan ?? null
             );
             $tahunPensiun = (int) $tanggalPensiun->format('Y');
-            $jabatanId = $pegawai->jabatan_id;
 
-            for ($n = 1; $n <= 5; $n++) {
-                if ($tahunPensiun === $t + ($n - 1)) {
-                    $result[$jabatanId][$n] = ($result[$jabatanId][$n] ?? 0) + 1;
-                }
+            // Hitung offset tahun (1..5) dari tahun berjalan
+            $n = $tahunPensiun - $t + 1;
+
+            // Hanya catat jika dalam rentang proyeksi 5 tahun
+            if ($n >= 1 && $n <= 5) {
+                $result[$unorId][$jabatanId]['counts'][$n] = ($result[$unorId][$jabatanId]['counts'][$n] ?? 0) + 1;
+                $result[$unorId][$jabatanId]['pegawai'][] = [
+                    'nip'             => $pegawai->nip,
+                    'nama'            => $pegawai->nama,
+                    'tahun_pensiun'   => $tahunPensiun,
+                ];
             }
         }
 
-        // Pastikan semua jabatan memiliki array lengkap 1..5
-        foreach ($result as $jabatanId => $years) {
-            for ($n = 1; $n <= 5; $n++) {
-                $result[$jabatanId][$n] = $result[$jabatanId][$n] ?? 0;
+        // Pastikan semua entri memiliki array counts lengkap 1..5
+        foreach ($result as $unorId => $jabatans) {
+            foreach ($jabatans as $jabatanId => $data) {
+                for ($n = 1; $n <= 5; $n++) {
+                    $result[$unorId][$jabatanId]['counts'][$n] = $result[$unorId][$jabatanId]['counts'][$n] ?? 0;
+                }
+                ksort($result[$unorId][$jabatanId]['counts']);
             }
-            ksort($result[$jabatanId]);
         }
 
         return $result;
