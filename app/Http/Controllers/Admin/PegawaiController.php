@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Jabatan;
+use App\Models\MasterTugasTambahan;
 use App\Models\Pegawai;
 use App\Models\PenempatanPegawai;
+use App\Models\TugasTambahanPegawai;
 use App\Models\Unor;
 use App\Enums\GolonganPangkat;
 use App\Enums\JenisKepegawaian;
@@ -17,7 +19,7 @@ class PegawaiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pegawai::query()->with(['jabatan', 'penempatanAktif.unor.parent']);
+        $query = Pegawai::query()->with(['jabatan', 'penempatanAktif.unor.parent', 'tugasTambahan.tugasTambahan']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -93,7 +95,7 @@ class PegawaiController extends Controller
 
     public function edit(Pegawai $pegawai)
     {
-        $pegawai->load('penempatanAktif.unor');
+        $pegawai->load(['penempatanAktif.unor', 'tugasTambahan.tugasTambahan', 'tugasTambahan.unor']);
         $pemkot = Unor::whereNull('parent_id')->first();
         $opdList = Unor::where('parent_id', $pemkot?->id)
             ->orderBy('nama_unor')->pluck('nama_unor', 'id');
@@ -108,6 +110,16 @@ class PegawaiController extends Controller
             $currentIndukId = $induk?->id;
         }
 
+        $tugasTambahanList = MasterTugasTambahan::orderBy('nama_tugas')->get();
+
+        // Semua UNOR (kecuali root) dengan breadcrumb — untuk dropdown Tugas Tambahan
+        $allUnor = Unor::with('parent')->get()->keyBy('id');
+        $unorList = $allUnor
+            ->reject(fn($u) => $u->parent_id === null) // exclude root
+            ->mapWithKeys(fn($u) => [$u->id => $this->buildBreadcrumb($u, $allUnor)])
+            ->sort()
+            ->all();
+
         return view('admin.pegawai.edit', [
             'pegawai' => $pegawai,
             'opdList' => $opdList,
@@ -116,6 +128,8 @@ class PegawaiController extends Controller
             'pppkGolonganList' => GolonganPangkat::pppkLabels(),
             'jenisKepegawaianList' => JenisKepegawaian::labels(),
             'pendidikanList' => Pendidikan::labels(),
+            'tugasTambahanList' => $tugasTambahanList,
+            'unorList' => $unorList,
         ]);
     }
 
@@ -179,6 +193,85 @@ class PegawaiController extends Controller
     }
 
     /**
+     * Tambah tugas tambahan ke pegawai.
+     */
+    public function storeTugasTambahan(Request $request, Pegawai $pegawai)
+    {
+        $validated = $request->validate([
+            'tugas_tambahan_id' => 'required|exists:master_tugas_tambahan,id',
+            'unor_id'           => 'required|exists:unor,id',
+            'tanggal_mulai'     => 'required|date',
+            'tanggal_selesai'   => 'nullable|date|after_or_equal:tanggal_mulai',
+        ]);
+
+        // Jika tugas + UNOR sama persis sudah aktif → nonaktifkan yang lama (perbarui)
+        $existing = TugasTambahanPegawai::where('pegawai_id', $pegawai->id)
+            ->where('tugas_tambahan_id', $validated['tugas_tambahan_id'])
+            ->where('unor_id', $validated['unor_id'])
+            ->where('is_active', true)
+            ->first();
+
+        if ($existing) {
+            $existing->update([
+                'is_active'       => false,
+                'tanggal_selesai' => $validated['tanggal_mulai'],
+            ]);
+        }
+
+        TugasTambahanPegawai::create([
+            'pegawai_id'        => $pegawai->id,
+            'tugas_tambahan_id' => $validated['tugas_tambahan_id'],
+            'unor_id'           => $validated['unor_id'],
+            'tanggal_mulai'     => $validated['tanggal_mulai'],
+            'tanggal_selesai'   => $validated['tanggal_selesai'] ?? null,
+            'is_active'         => true,
+        ]);
+
+        return redirect()->route('admin.pegawai.edit', $pegawai)
+            ->with('success', 'Tugas Tambahan berhasil ditambahkan.');
+    }
+
+    /**
+     * Cabut tugas tambahan dari pegawai (soft — set is_active=false).
+     * Record tetap tersimpan sebagai riwayat.
+     * Tanggal selesai hanya di-set ke now() jika memang belum di-set atau sudah lewat.
+     */
+    public function cabutTugasTambahan(Pegawai $pegawai, TugasTambahanPegawai $tugasTambahan)
+    {
+        if ($tugasTambahan->pegawai_id !== $pegawai->id) {
+            abort(404);
+        }
+
+        $data = ['is_active' => false];
+
+        // Jangan overwrite tanggal_selesai jika sudah di-set dan belum lewat
+        if ($tugasTambahan->tanggal_selesai === null || $tugasTambahan->tanggal_selesai->isPast()) {
+            $data['tanggal_selesai'] = now()->toDateString();
+        }
+
+        $tugasTambahan->update($data);
+
+        return redirect()->route('admin.pegawai.edit', $pegawai)
+            ->with('success', 'Tugas Tambahan berhasil dicabut.');
+    }
+
+    /**
+     * Hapus permanen record tugas tambahan dari database.
+     * Hanya untuk record yang salah input atau belum pernah aktif.
+     */
+    public function destroyTugasTambahan(Pegawai $pegawai, TugasTambahanPegawai $tugasTambahan)
+    {
+        if ($tugasTambahan->pegawai_id !== $pegawai->id) {
+            abort(404);
+        }
+
+        $tugasTambahan->delete();
+
+        return redirect()->route('admin.pegawai.edit', $pegawai)
+            ->with('success', 'Tugas Tambahan berhasil dihapus.');
+    }
+
+    /**
      * Rekursif kumpulkan semua ID turunan dari suatu Unor.
      */
     private function collectDescendants($parentId, $allUnor): array
@@ -191,5 +284,22 @@ class PegawaiController extends Controller
             }
         }
         return $ids;
+    }
+
+    /**
+     * Build breadcrumb path untuk UNOR — berhenti sebelum root.
+     * Contoh: "Dinas Kesehatan » Bidang Pelayanan Kesehatan"
+     */
+    private function buildBreadcrumb(Unor $unor, $allUnor): string
+    {
+        $parts = [$unor->nama_unor];
+        $cursor = $unor;
+        while ($cursor->parent_id) {
+            $parent = $allUnor->get($cursor->parent_id);
+            if (!$parent || !$parent->parent_id) break; // stop di root
+            array_unshift($parts, $parent->nama_unor);
+            $cursor = $parent;
+        }
+        return implode(' » ', $parts);
     }
 }

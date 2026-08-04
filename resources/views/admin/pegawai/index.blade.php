@@ -62,7 +62,20 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $pegawaiList->firstItem() + $key }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $p->nip }}</td>
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $p->nama }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                {{ $p->nama }}
+                                @php
+                                    $today = now()->toDateString();
+                                    $aktifTugas = $p->tugasTambahan->filter(function($tt) use ($today) {
+                                        return $tt->is_active && ($tt->tanggal_selesai === null || $tt->tanggal_selesai->format('Y-m-d') >= $today);
+                                    });
+                                @endphp
+                                @foreach($aktifTugas as $tt)
+                                <span class="inline-block ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700 font-normal">
+                                    {{ $tt->tugasTambahan->nama_tugas ?? '' }}
+                                </span>
+                                @endforeach
+                            </td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $indukPegawai->nama_unor ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $p->jabatan->nama_jabatan ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">

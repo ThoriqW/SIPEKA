@@ -71,6 +71,110 @@
                 </div>
             </form>
         </div>
+
+        {{-- Tugas Tambahan --}}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Tugas Tambahan</h2>
+
+            {{-- Daftar tugas tambahan aktif --}}
+            @php
+                $today = now()->toDateString();
+                $aktifTugas = $pegawai->tugasTambahan->filter(function($tt) use ($today) {
+                    return $tt->is_active && ($tt->tanggal_selesai === null || $tt->tanggal_selesai->format('Y-m-d') >= $today);
+                });
+            @endphp
+            @if($aktifTugas->isNotEmpty())
+            <div class="mb-6">
+                <table class="min-w-full divide-y divide-gray-200 border rounded-md">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tugas</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">UNOR</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tgl Mulai</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tgl Selesai</th>
+                            <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase w-20">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @foreach($aktifTugas as $tt)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm text-gray-900">{{ $tt->tugasTambahan->nama_tugas }}</td>
+                            <td class="px-4 py-2 text-sm text-gray-500">{{ $tt->unor->nama_unor ?? '-' }}</td>
+                            <td class="px-4 py-2 text-sm text-gray-500">{{ $tt->tanggal_mulai ? $tt->tanggal_mulai->format('d/m/Y') : '-' }}</td>
+                            <td class="px-4 py-2 text-sm text-gray-500">{{ $tt->tanggal_selesai ? $tt->tanggal_selesai->format('d/m/Y') : '-' }}</td>
+                            <td class="px-4 py-2 text-sm text-center">
+                                <form action="{{ route('admin.pegawai.tugas-tambahan.cabut', [$pegawai, $tt]) }}" method="POST" class="inline" onsubmit="return confirm('Cabut tugas tambahan ini?')">
+                                    @csrf @method('PATCH')
+                                    <button class="text-yellow-600 hover:text-yellow-900 mr-2">Cabut</button>
+                                </form>
+                                <form action="{{ route('admin.pegawai.tugas-tambahan.destroy', [$pegawai, $tt]) }}" method="POST" class="inline" onsubmit="return confirm('Hapus permanen record ini?')">
+                                    @csrf @method('DELETE')
+                                    <button class="text-red-600 hover:text-red-900">Hapus</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <p class="text-sm text-gray-400 mb-4">Belum ada tugas tambahan.</p>
+            @endif
+
+            {{-- Form tambah tugas tambahan --}}
+            <div class="border-t pt-4">
+                <h3 class="text-sm font-medium text-gray-700 mb-3">Tambah / Perbarui Tugas Tambahan</h3>
+                <p class="text-xs text-gray-400 mb-3">Jika tugas dan UNOR sama dengan yang sudah aktif, data akan diperbarui.</p>
+                <form action="{{ route('admin.pegawai.tugas-tambahan.store', $pegawai) }}" method="POST">
+                    @csrf
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tugas Tambahan</label>
+                            <select name="tugas_tambahan_id" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">-- Pilih --</option>
+                                @foreach($tugasTambahanList as $t)
+                                <option value="{{ $t->id }}">{{ $t->nama_tugas }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        {{-- Unit Organisasi — searchable dropdown --}}
+                        <div x-data="{ openUnor: false, searchUnor: '', selectedText: '' }" class="relative">
+                            <input type="hidden" name="unor_id" x-ref="unorId">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
+                            <div class="relative">
+                                <input type="text" x-model="searchUnor" x-ref="searchUnorInput"
+                                       @focus="openUnor = true" @click="openUnor = true"
+                                       @input="openUnor = true"
+                                       @blur="setTimeout(() => { openUnor = false; if (searchUnor && searchUnor !== selectedText) searchUnor = '' }, 150)"
+                                       :placeholder="selectedText || 'Cari Unit Organisasi'"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-8">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+                                      @click.stop="$refs.searchUnorInput.focus(); openUnor = true">▾</span>
+                            </div>
+                            <div x-show="openUnor" x-cloak
+                                 @mousedown.prevent
+                                 class="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                                @foreach($unorList as $id => $nama)
+                                <div @click="openUnor = false; searchUnor = ''; selectedText = '{{ $nama }}'; $refs.unorId.value = '{{ $id }}'"
+                                     x-show="!searchUnor || '{{ strtolower($nama) }}'.includes(searchUnor.toLowerCase())"
+                                     class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer">{{ $nama }}</div>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                            <input type="date" name="tanggal_mulai" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value="{{ date('Y-m-d') }}">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Selesai</label>
+                            <input type="date" name="tanggal_selesai" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <p class="text-xs text-gray-400 mt-0.5">Kosongkan jika masih aktif</p>
+                        </div>
+                    </div>
+                    <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">+ Tambah Tugas</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 @endsection

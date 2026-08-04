@@ -41,4 +41,17 @@ class TugasTambahanPegawai extends Model
     {
         return $this->belongsTo(Unor::class);
     }
+
+    /**
+     * Scope: hanya tugas tambahan yang benar-benar aktif —
+     * is_active = true DAN (tanggal_selesai null ATAU belum lewat).
+     */
+    public function scopeAktif($query)
+    {
+        return $query->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('tanggal_selesai')
+                  ->orWhere('tanggal_selesai', '>=', now()->toDateString());
+            });
+    }
 }

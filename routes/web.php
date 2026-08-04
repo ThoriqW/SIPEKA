@@ -37,6 +37,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Pegawai & Jabatan
     Route::resource('pegawai', \App\Http\Controllers\Admin\PegawaiController::class);
+    Route::post('pegawai/{pegawai}/tugas-tambahan', [\App\Http\Controllers\Admin\PegawaiController::class, 'storeTugasTambahan'])
+        ->name('pegawai.tugas-tambahan.store');
+    Route::patch('pegawai/{pegawai}/tugas-tambahan/{tugasTambahan}/cabut', [\App\Http\Controllers\Admin\PegawaiController::class, 'cabutTugasTambahan'])
+        ->name('pegawai.tugas-tambahan.cabut');
+    Route::delete('pegawai/{pegawai}/tugas-tambahan/{tugasTambahan}', [\App\Http\Controllers\Admin\PegawaiController::class, 'destroyTugasTambahan'])
+        ->name('pegawai.tugas-tambahan.destroy');
     Route::resource('jabatan', \App\Http\Controllers\Admin\JabatanController::class);
 
     // Kebutuhan & Bezetting
