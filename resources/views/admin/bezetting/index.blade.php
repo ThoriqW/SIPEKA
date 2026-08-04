@@ -77,7 +77,14 @@
                         <td class="px-3 py-2 text-sm text-center font-medium {{ ($row['selisih'] ?? 0) < 0 ? 'text-red-600' : (($row['selisih'] ?? 0) > 0 ? 'text-green-600' : 'text-gray-500') }}">{{ $row['selisih'] ?? 0 }}</td>
                         <td class="px-3 py-2 text-sm text-gray-500">
                             @forelse($row['pegawai'] as $peg)
-                            <div class="text-xs">{{ $peg['nip'] }} — {{ $peg['nama'] }}</div>
+                            <div class="text-xs">
+                                {{ $peg['nip'] }} — {{ $peg['nama'] }}
+                                @if(!empty($peg['tugas_tambahan']))
+                                @foreach($peg['tugas_tambahan'] as $namaTugas)
+                                <span class="inline-block ml-1 px-1 py-0 text-[10px] leading-tight rounded-full bg-purple-100 text-purple-700 font-normal">{{ $namaTugas }}</span>
+                                @endforeach
+                                @endif
+                            </div>
                             @empty
                             <span class="text-xs text-gray-300">-</span>
                             @endforelse

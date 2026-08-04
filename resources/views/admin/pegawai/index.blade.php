@@ -71,7 +71,7 @@
                                     });
                                 @endphp
                                 @foreach($aktifTugas as $tt)
-                                <span class="inline-block ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700 font-normal">
+                                <span class="inline-block ml-1 px-1 py-0 text-[10px] leading-tight rounded-full bg-purple-100 text-purple-700 font-normal">
                                     {{ $tt->tugasTambahan->nama_tugas ?? '' }}
                                 </span>
                                 @endforeach

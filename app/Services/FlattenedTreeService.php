@@ -262,20 +262,36 @@ class FlattenedTreeService
     /**
      * Build map of pegawai per (unor_id, jabatan_id) from active penempatan.
      *
-     * @return array<int, array<int, array<int, array{ nip: string, nama: string }>>>
+     * @return array<int, array<int, array<int, array{ nip: string, nama: string, tugas_tambahan: string[] }>>>
      */
     private function buildPegawaiMap(?array $unorIds = null): array
     {
-        $query = PenempatanPegawai::with('pegawai')->where('is_active', true);
+        $query = PenempatanPegawai::with('pegawai.tugasTambahan.tugasTambahan')
+            ->where('is_active', true);
         if ($unorIds !== null) {
             $query->whereIn('unor_id', $unorIds);
         }
         $map = [];
+        $today = now()->toDateString();
         foreach ($query->get() as $p) {
             if (!$p->pegawai) continue;
+
+            // Kumpulkan tugas tambahan aktif (yang belum expired)
+            $tugasAktif = [];
+            if ($p->pegawai->tugasTambahan) {
+                foreach ($p->pegawai->tugasTambahan as $tt) {
+                    if (!$tt->is_active) continue;
+                    if ($tt->tanggal_selesai !== null && $tt->tanggal_selesai->format('Y-m-d') < $today) continue;
+                    if ($tt->tugasTambahan) {
+                        $tugasAktif[] = $tt->tugasTambahan->nama_tugas;
+                    }
+                }
+            }
+
             $map[$p->unor_id][$p->jabatan_id][] = [
-                'nip'  => $p->pegawai->nip,
-                'nama' => $p->pegawai->nama,
+                'nip'            => $p->pegawai->nip,
+                'nama'           => $p->pegawai->nama,
+                'tugas_tambahan' => $tugasAktif,
             ];
         }
         return $map;
