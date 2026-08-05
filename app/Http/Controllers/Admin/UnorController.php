@@ -121,10 +121,17 @@ class UnorController extends Controller
     public function destroy(Unor $unor)
     {
         if ($unor->children()->exists()) return back()->with('error', 'Tidak dapat dihapus karena masih memiliki sub-Unit Organisasi.');
-        if ($unor->pegawai()->exists()) return back()->with('error', 'Tidak dapat dihapus karena masih memiliki pegawai.');
         if ($unor->sotkEntries()->exists()) return back()->with('error', 'Tidak dapat dihapus karena masih memiliki jabatan di SOTK.');
         if ($unor->penempatanPegawai()->exists()) return back()->with('error', 'Tidak dapat dihapus karena masih memiliki data penempatan pegawai.');
-        $unor->delete();
+        if ($unor->tugasTambahanPegawai()->exists()) return back()->with('error', 'Tidak dapat dihapus karena masih memiliki data tugas tambahan pegawai.');
+        if ($unor->kebutuhanPegawai()->exists()) return back()->with('error', 'Tidak dapat dihapus karena masih memiliki data kebutuhan pegawai.');
+
+        try {
+            $unor->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return back()->with('error', 'Unit Organisasi tidak dapat dihapus karena masih digunakan oleh data lain.');
+        }
+
         return redirect()->route('admin.unor.index')->with('success', 'Unit Organisasi berhasil dihapus.');
     }
 

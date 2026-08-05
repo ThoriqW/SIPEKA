@@ -50,4 +50,12 @@ class Unor extends Model
     {
         return $this->hasMany(PenempatanPegawai::class);
     }
+
+    /**
+     * Tugas tambahan pegawai di UNOR ini.
+     */
+    public function tugasTambahanPegawai(): HasMany
+    {
+        return $this->hasMany(TugasTambahanPegawai::class);
+    }
 }
