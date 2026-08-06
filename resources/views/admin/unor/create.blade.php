@@ -13,7 +13,7 @@
                 @csrf
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi <span class="text-red-500">*</span></label>
                         <input type="text" name="nama_unor" value="{{ old('nama_unor') }}"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nama_unor') border-red-500 @enderror">
                         @error('nama_unor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -50,6 +50,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kode Unit Organisasi</label>
                         <input type="text" name="kode_unor" value="{{ old('kode_unor') }}" maxlength="255"
+                               placeholder="Kosongkan untuk kode otomatis (U-001, U-002, ...)"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kode_unor') border-red-500 @enderror">
                         @error('kode_unor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>

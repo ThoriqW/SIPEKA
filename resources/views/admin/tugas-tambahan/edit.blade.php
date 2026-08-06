@@ -13,7 +13,7 @@
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="nama_tugas" class="block text-sm font-medium text-gray-700 mb-1">Nama Tugas</label>
+                        <label for="nama_tugas" class="block text-sm font-medium text-gray-700 mb-1">Nama Tugas <span class="text-red-500">*</span></label>
                         <input type="text" name="nama_tugas" id="nama_tugas" value="{{ old('nama_tugas', $tugasTambahan->nama_tugas) }}"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nama_tugas') border-red-500 @enderror">
                         @error('nama_tugas')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror

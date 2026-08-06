@@ -15,7 +15,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi <span class="text-red-500">*</span></label>
                         <input type="text" name="nama_unor" value="{{ old('nama_unor', $unor->nama_unor) }}"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nama_unor') border-red-500 @enderror">
                         @error('nama_unor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -51,7 +51,7 @@
 
                     {{-- Kode UNOR — editable --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode UNOR</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode UNOR <span class="text-red-500">*</span></label>
                         <input type="text" name="kode_unor" value="{{ old('kode_unor', $unor->kode_unor) }}" maxlength="255"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kode_unor') border-red-500 @enderror">
                         <p class="text-xs text-gray-400 mt-0.5">Gunakan huruf besar, angka, dash (-), atau underscore (_). Kode menentukan urutan di tabel Bezetting & Kebutuhan.</p>
