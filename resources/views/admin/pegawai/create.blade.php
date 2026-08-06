@@ -108,7 +108,9 @@ function pegawaiForm() {
         nipError: '',
         nipSuccess: false,
         initGolongan(jenis) {
-            this.onJenisKepegawaianChange(jenis || 'PNS', '{{ old('golongan_pangkat', '') }}');
+            if (jenis) {
+                this.onJenisKepegawaianChange(jenis, '{{ old('golongan_pangkat', '') }}');
+            }
         },
         onJenisKepegawaianChange(jenis, preSelect) {
             var list = jenis === 'PPPK' ? golonganPPPK : golonganPNS;

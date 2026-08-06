@@ -207,7 +207,9 @@ function pegawaiForm() {
         nipError: '',
         nipSuccess: false,
         initGolongan(jenis) {
-            this.onJenisKepegawaianChange(jenis || 'PNS', currentGolongan);
+            if (jenis) {
+                this.onJenisKepegawaianChange(jenis, currentGolongan);
+            }
         },
         onJenisKepegawaianChange(jenis, preSelect) {
             var list = jenis === 'PPPK' ? golonganPPPK : golonganPNS;
