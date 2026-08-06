@@ -42,7 +42,7 @@ class FlattenedTreeService
             $ids[] = $unorId;
             $unorQuery->whereIn('id', $ids);
         }
-        $allUnor = $unorQuery->orderBy('kode_unor')->get()->keyBy('id');
+        $allUnor = $unorQuery->get()->keyBy('id');
 
         // ── Build UNOR parent→children map ──
         $unorChildrenMap = [];
@@ -57,6 +57,19 @@ class FlattenedTreeService
                 $rootUnors[] = $unor;
             }
         }
+
+        // ── Sort children: OPD level by nama_unor, deeper levels by kode_unor ──
+        $pemkotId = Unor::whereNull('parent_id')->value('id');
+        foreach ($unorChildrenMap as $parentKey => &$children) {
+            if ($parentKey == $pemkotId) {
+                // PEMKOT's direct children = OPDs → sort by nama_unor
+                usort($children, fn($a, $b) => strcmp($a->nama_unor, $b->nama_unor));
+            } else {
+                // All other levels → sort by kode_unor
+                usort($children, fn($a, $b) => strcmp($a->kode_unor, $b->kode_unor));
+            }
+        }
+        unset($children);
 
         // ── Compute descendant IDs for map filtering ──
         $descendantIds = ($unorId !== null) ? [...$this->getAllDescendantUnorIds($unorId), $unorId] : null;

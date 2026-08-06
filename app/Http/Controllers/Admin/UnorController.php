@@ -10,14 +10,16 @@ class UnorController extends Controller
 {
     public function index()
     {
-        $allUnor = Unor::with('children')->orderBy('nama_unor')->get()->keyBy('id');
+        $allUnor = Unor::with('children')->get()->keyBy('id');
 
         // Build tree: depth-first flat array (skip root level — show only OPDs)
         $tree = [];
-        $rootUnors = $allUnor->filter(fn($u) => $u->parent_id === null);
-        foreach ($rootUnors as $root) {
-            // Skip root UNOR, start from its children (level 0)
-            foreach ($allUnor->filter(fn($u) => $u->parent_id === $root->id) as $child) {
+        $root = $allUnor->first(fn($u) => $u->parent_id === null);
+        if ($root) {
+            // OPD level (children of root): sort by nama_unor
+            $opds = $allUnor->filter(fn($u) => $u->parent_id === $root->id)
+                ->sortBy('nama_unor');
+            foreach ($opds as $child) {
                 $this->flattenUnor($child, null, 0, $tree, $allUnor);
             }
         }
@@ -29,8 +31,9 @@ class UnorController extends Controller
     {
         $unorIdStr = 'u-' . $unor->id;
 
-        // Get children of this UNOR
-        $children = $allUnor->filter(fn($u) => $u->parent_id === $unor->id);
+        // Get children of this UNOR, sorted by kode_unor
+        $children = $allUnor->filter(fn($u) => $u->parent_id === $unor->id)
+            ->sortBy('kode_unor');
 
         $result[] = [
             'id' => $unorIdStr,
