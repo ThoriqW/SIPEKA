@@ -57,15 +57,14 @@ class UnorHierarchyTest extends TestCase
     }
 
     #[Test]
-    public function it_has_singkatan_field()
+    public function it_has_kode_unor_editable()
     {
         $unor = Unor::create([
             'nama_unor' => 'Dinas Test',
-            'kode_unor' => 'DT',
-            'singkatan' => 'Dintest',
+            'kode_unor' => 'DT-TEST',
             'parent_id' => null,
         ]);
 
-        $this->assertEquals('Dintest', $unor->singkatan);
+        $this->assertEquals('DT-TEST', $unor->kode_unor);
     }
 }

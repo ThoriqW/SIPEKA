@@ -8,8 +8,7 @@
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.unor.index') }}" class="hover:text-gray-700">Unit Organisasi</a> / {{ $unor->nama_unor }}</p>
         </div>
 
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-             x-data="unorForm({{ $rootUnor ? $rootUnor->id : 'null' }})">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <form method="POST" action="{{ route('admin.unor.update', $unor) }}">
                 @csrf
                 @method('PUT')
@@ -42,7 +41,7 @@
                              @mousedown.prevent
                              class="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                             @foreach($parentList as $id => $nama)
-                            <div @click="open = false; search = ''; selectedText = '{{ $nama }}'; $refs.parentId.value = '{{ $id }}'; onParentChange({{ $id }})"
+                            <div @click="open = false; search = ''; selectedText = '{{ $nama }}'; $refs.parentId.value = '{{ $id }}'"
                                  x-show="!search || '{{ strtolower($nama) }}'.includes(search.toLowerCase())"
                                  class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer {{ $currentParentId == $id ? 'bg-blue-100' : '' }}">{{ $nama }}</div>
                             @endforeach
@@ -50,13 +49,13 @@
                         @error('parent_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
 
-                    {{-- Singkatan — hanya untuk OPD-level (induk = root) --}}
-                    <div x-show="showSingkatan" x-cloak>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Singkatan</label>
-                        <input type="text" name="singkatan" value="{{ old('singkatan', $unor->singkatan) }}" maxlength="10"
-                               placeholder="Contoh: BKPSDMD"
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('singkatan') border-red-500 @enderror">
-                        @error('singkatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    {{-- Kode UNOR — editable --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode UNOR</label>
+                        <input type="text" name="kode_unor" value="{{ old('kode_unor', $unor->kode_unor) }}" maxlength="255"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kode_unor') border-red-500 @enderror">
+                        <p class="text-xs text-gray-400 mt-0.5">Gunakan huruf besar, angka, dash (-), atau underscore (_). Kode menentukan urutan di tabel Bezetting & Kebutuhan.</p>
+                        @error('kode_unor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
@@ -69,15 +68,4 @@
 </div>
 @endsection
 
-@section('scripts')
-<script>
-function unorForm(rootUnorId) {
-    return {
-        showSingkatan: {{ $currentParentId && $currentParentId == ($rootUnor ? $rootUnor->id : null) ? 'true' : 'false' }},
-        onParentChange(parentId) {
-            this.showSingkatan = (parentId == rootUnorId);
-        }
-    }
-}
-</script>
-@append
+

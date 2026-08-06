@@ -15,7 +15,6 @@ class UnorSeeder extends Seeder
         $pemkot = Unor::create([
             'nama_unor' => 'Pemerintah Kota Palu',
             'kode_unor' => 'PEMKOT',
-            'singkatan' => 'Pemkot',
             'parent_id' => null,
         ]);
 
@@ -25,21 +24,18 @@ class UnorSeeder extends Seeder
         $bkpsdm = Unor::create([
             'nama_unor' => 'Badan Kepegawaian dan Pengembangan Sumber Daya Manusia',
             'kode_unor' => 'BKPSDM',
-            'singkatan' => 'BKPSDM',
             'parent_id' => $pemkot->id,
         ]);
 
         $dinkes = Unor::create([
             'nama_unor' => 'Dinas Kesehatan',
             'kode_unor' => 'DINKES',
-            'singkatan' => 'Dinkes',
             'parent_id' => $pemkot->id,
         ]);
 
         $dikbud = Unor::create([
             'nama_unor' => 'Dinas Pendidikan',
             'kode_unor' => 'DIKBUD',
-            'singkatan' => 'Dikbud',
             'parent_id' => $pemkot->id,
         ]);
 
@@ -49,7 +45,6 @@ class UnorSeeder extends Seeder
         $bkpsdmSekr = Unor::create([
             'nama_unor' => 'Sekretariat',
             'kode_unor' => 'BKPSDM-SEKR',
-            'singkatan' => 'Sekr',
             'parent_id' => $bkpsdm->id,
         ]);
 
@@ -95,7 +90,6 @@ class UnorSeeder extends Seeder
         $dinkesSekr = Unor::create([
             'nama_unor' => 'Sekretariat',
             'kode_unor' => 'DINKES-SEKR',
-            'singkatan' => 'Sekr',
             'parent_id' => $dinkes->id,
         ]);
 
@@ -141,7 +135,6 @@ class UnorSeeder extends Seeder
         $dikbudSekr = Unor::create([
             'nama_unor' => 'Sekretariat',
             'kode_unor' => 'DIKBUD-SEKR',
-            'singkatan' => 'Sekr',
             'parent_id' => $dikbud->id,
         ]);
 

@@ -14,7 +14,6 @@ class Unor extends Model
         'nama_unor',
         'kode_unor',
         'parent_id',
-        'singkatan',
     ];
 
     public function parent(): BelongsTo

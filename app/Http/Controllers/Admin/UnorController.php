@@ -41,7 +41,6 @@ class UnorController extends Controller
             'level' => $level,
             'nama' => $unor->nama_unor,
             'kode' => $unor->kode_unor,
-            'singkatan' => $unor->singkatan,
             'has_children' => $children->isNotEmpty(),
             'unor_id' => $unor->id,
         ];
@@ -67,19 +66,21 @@ class UnorController extends Controller
         $parentId = $request->parent_id;
         $validated = $request->validate([
             'nama_unor' => 'required|string|max:255|unique:unor,nama_unor,NULL,id,parent_id,' . ($parentId ?? 'NULL'),
-            'singkatan' => 'nullable|string|max:10',
+            'kode_unor' => 'nullable|string|max:255|unique:unor,kode_unor|regex:/^[A-Z0-9_-]+$/',
             'parent_id' => 'nullable|exists:unor,id',
         ]);
 
-        // Auto-generate kode UNOR
-        $lastKode = Unor::where('kode_unor', 'LIKE', 'U-%')
-            ->orderByRaw('CAST(SUBSTRING(kode_unor, 3) AS UNSIGNED) DESC')
-            ->value('kode_unor');
-        $nextNum = 1;
-        if ($lastKode && preg_match('/U-(\d+)/', $lastKode, $m)) {
-            $nextNum = (int) $m[1] + 1;
+        // Auto-generate kode UNOR jika tidak diisi
+        if (empty($validated['kode_unor'])) {
+            $lastKode = Unor::where('kode_unor', 'LIKE', 'U-%')
+                ->orderByRaw('CAST(SUBSTRING(kode_unor, 3) AS UNSIGNED) DESC')
+                ->value('kode_unor');
+            $nextNum = 1;
+            if ($lastKode && preg_match('/U-(\d+)/', $lastKode, $m)) {
+                $nextNum = (int) $m[1] + 1;
+            }
+            $validated['kode_unor'] = 'U-' . str_pad((string) $nextNum, 3, '0', STR_PAD_LEFT);
         }
-        $validated['kode_unor'] = 'U-' . str_pad((string) $nextNum, 3, '0', STR_PAD_LEFT);
 
         Unor::create($validated);
         return redirect()->route('admin.unor.index')->with('success', 'Unit Organisasi berhasil ditambahkan.');
@@ -104,12 +105,9 @@ class UnorController extends Controller
         $parentId = $request->parent_id;
         $validated = $request->validate([
             'nama_unor' => 'required|string|max:255|unique:unor,nama_unor,' . $unor->id . ',id,parent_id,' . ($parentId ?? 'NULL'),
-            'singkatan' => 'nullable|string|max:10',
+            'kode_unor' => 'required|string|max:255|unique:unor,kode_unor,' . $unor->id . '|regex:/^[A-Z0-9_-]+$/',
             'parent_id' => 'nullable|exists:unor,id',
         ]);
-
-        // Kode UNOR tidak dapat diubah (auto-generated)
-        unset($validated['kode_unor']);
 
         $newParentId = $validated['parent_id'] ? (int) $validated['parent_id'] : null;
         if ($newParentId && $this->wouldCreateCycle($unor, $newParentId)) {

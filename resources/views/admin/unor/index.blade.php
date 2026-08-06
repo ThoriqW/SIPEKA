@@ -17,6 +17,7 @@
                     <tr>
                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">No</th>
                         <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi</th>
+                        <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-40">Kode</th>
                         <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase w-32">Aksi</th>
                     </tr>
                 </thead>
@@ -43,6 +44,7 @@
                             @endif
                             {{ $row['nama'] }}
                         </td>
+                        <td class="px-3 py-3 text-sm text-gray-500 font-mono">{{ $row['kode'] ?? '-' }}</td>
                         <td class="px-3 py-3 text-sm text-center">
                             <a href="{{ route('admin.unor.edit', $row['unor_id']) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">Edit</a>
                             <form action="{{ route('admin.unor.destroy', $row['unor_id']) }}" method="POST" class="inline" onsubmit="return confirm('Hapus Unit Organisasi ini?')">
@@ -53,7 +55,7 @@
                     </tr>
                     @endforeach
                     @if(empty($tree))
-                    <tr><td colspan="3" class="px-6 py-10 text-center text-gray-500">Tidak ada data Unit Organisasi.</td></tr>
+                    <tr><td colspan="4" class="px-6 py-10 text-center text-gray-500">Tidak ada data Unit Organisasi.</td></tr>
                     @endif
                 </tbody>
             </table>
