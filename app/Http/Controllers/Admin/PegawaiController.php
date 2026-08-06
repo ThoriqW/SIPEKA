@@ -204,6 +204,36 @@ class PegawaiController extends Controller
             'tanggal_selesai'   => 'nullable|date|after_or_equal:tanggal_mulai',
         ]);
 
+        // Cek A: Pegawai sudah punya tugas tambahan jenis ini di UNOR lain?
+        $konflikPegawai = TugasTambahanPegawai::where('pegawai_id', $pegawai->id)
+            ->where('tugas_tambahan_id', $validated['tugas_tambahan_id'])
+            ->where('is_active', true)
+            ->where('unor_id', '!=', $validated['unor_id'])
+            ->with('unor', 'tugasTambahan')
+            ->first();
+
+        if ($konflikPegawai) {
+            $namaTugas = $konflikPegawai->tugasTambahan->nama_tugas ?? 'tugas ini';
+            $namaUnor = $konflikPegawai->unor->nama_unor ?? 'UNOR lain';
+            return redirect()->route('admin.pegawai.edit', $pegawai)
+                ->with('error', "Pegawai ini sudah memiliki tugas \"{$namaTugas}\" di {$namaUnor}. Tidak dapat menambahkan tugas yang sama di UNOR berbeda.");
+        }
+
+        // Cek B: UNOR ini sudah punya tugas tambahan jenis ini oleh pegawai lain?
+        $konflikUnor = TugasTambahanPegawai::where('tugas_tambahan_id', $validated['tugas_tambahan_id'])
+            ->where('unor_id', $validated['unor_id'])
+            ->where('is_active', true)
+            ->where('pegawai_id', '!=', $pegawai->id)
+            ->with('pegawai', 'tugasTambahan')
+            ->first();
+
+        if ($konflikUnor) {
+            $namaTugas = $konflikUnor->tugasTambahan->nama_tugas ?? 'tugas ini';
+            $namaPegawai = $konflikUnor->pegawai->nama ?? 'pegawai lain';
+            return redirect()->route('admin.pegawai.edit', $pegawai)
+                ->with('error', "UNOR ini sudah memiliki tugas \"{$namaTugas}\" oleh {$namaPegawai}. Satu UNOR hanya boleh memiliki satu pemegang tugas tambahan dengan jenis yang sama.");
+        }
+
         // Jika tugas + UNOR sama persis sudah aktif → nonaktifkan yang lama (perbarui)
         $existing = TugasTambahanPegawai::where('pegawai_id', $pegawai->id)
             ->where('tugas_tambahan_id', $validated['tugas_tambahan_id'])
