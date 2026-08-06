@@ -17,7 +17,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {{-- Jenis Jabatan — regular select --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Jabatan</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Jabatan <span class="text-red-500">*</span></label>
                         <select name="jenis_jabatan" x-on:change="onJenisChange($el.value)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenis_jabatan') border-red-500 @enderror">
                             <option value="">-- Pilih Jenis Jabatan --</option>
@@ -84,7 +84,7 @@
 
                     {{-- Kelas Jabatan --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kelas Jabatan</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kelas Jabatan <span class="text-red-500">*</span></label>
                         <input type="number" name="kelas_jabatan" value="{{ old('kelas_jabatan') }}" min="1"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kelas_jabatan') border-red-500 @enderror">
                         @error('kelas_jabatan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -92,7 +92,7 @@
 
                     {{-- Jenjang — regular select --}}
                     <div x-show="selectedJenis !== 'Pelaksana' && jenjangList.length > 0">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenjang <span class="text-red-500">*</span></label>
                         <select name="jenjang"                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jenjang') border-red-500 @enderror">
                             <option value="">-- Pilih Jenjang --</option>
                             <template x-for="item in jenjangList" :key="item.id">
@@ -103,7 +103,7 @@
                     </div>
 
                     {{-- Kebutuhan --}}
-                    <div x-show="selectedJenis === 'Fungsional' || selectedJenis === 'Pelaksana'" x-cloak>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kebutuhan</label>
                         <input type="number" name="kebutuhan" value="{{ old('kebutuhan') }}" min="0"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kebutuhan') border-red-500 @enderror">
@@ -112,10 +112,10 @@
 
                     {{-- Unor Induk — regular select --}}
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk <span class="text-red-500">*</span></label>
                         <select name="induk_id" x-on:change="onIndukChange($el.value)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('unor_id') border-red-500 @enderror">
-                            <option value="">-- Pilih Unit Organisasi Induk --</option>
+                            <option value="">-- Pilih Unit Organisasi Induk <span class="text-red-500">*</span> --</option>
                             @foreach($indukList as $id => $nama)
                                 <option value="{{ $id }}" {{ old('induk_id', $currentIndukId) == $id ? 'selected' : '' }}>{{ $nama }}</option>
                             @endforeach
@@ -125,7 +125,7 @@
 
                     {{-- Unit Organisasi — regular select --}}
                     <div x-show="unitList.length > 0" x-cloak>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi <span class="text-red-500">*</span></label>
                         <select name="unor_id" x-ref="unitSelect"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('unor_id') border-red-500 @enderror">
                             <option value="">-- Pilih Unit Organisasi --</option>

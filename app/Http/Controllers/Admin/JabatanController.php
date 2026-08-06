@@ -99,11 +99,17 @@ class JabatanController extends Controller
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'nullable|string|max:255',
             'kebutuhan' => 'nullable|integer|min:0',
+            'induk_id' => 'required|exists:unor,id',
             'unor_id' => 'required|exists:unor,id',
         ]);
 
         $unorId = (int) $validated['unor_id'];
         unset($validated['unor_id'], $validated['kebutuhan']);
+
+        // Validasi: jenjang wajib untuk Struktural & Fungsional
+        if ($validated['jenis_jabatan'] !== 'Pelaksana' && empty($validated['jenjang'])) {
+            return back()->withInput()->with('error', 'Jenjang wajib dipilih untuk jabatan ' . $validated['jenis_jabatan'] . '.');
+        }
 
         // Validasi: nama_jabatan harus ada di referensi jabatan (cek parent-sub format)
         $parts = explode(' - ', $validated['nama_jabatan']);
@@ -190,8 +196,57 @@ class JabatanController extends Controller
 
         $unorByInduk = $this->buildUnorByInduk($indukList, $pemkot);
 
-        // Resolve primary UNOR dari SOTK
-        $currentUnitId = $jabatan->sotkEntries->first()?->unor_id;
+        // Determine current induk — pakai old input jika ada (recovery dari validasi error)
+        $currentIndukId = old('induk_id');
+
+        // Jika old('induk_id') tidak ada tapi old('unor_id') ada, resolve induk dari unor_id
+        if (!$currentIndukId && old('unor_id') && $pemkot) {
+            $unitUnor = Unor::with('parent')->find(old('unor_id'));
+            if ($unitUnor) {
+                $cursor = $unitUnor;
+                while ($cursor) {
+                    if (isset($indukList[$cursor->id])) {
+                        $currentIndukId = $cursor->id;
+                        break;
+                    }
+                    $cursor = $cursor->parent;
+                }
+                if ($currentIndukId === null) {
+                    $currentIndukId = ($unitUnor->parent_id == $pemkot->id)
+                        ? $unitUnor->id
+                        : $unitUnor->parent_id;
+                }
+            }
+        }
+
+        // Fallback: resolve dari data jabatan existing
+        if (!$currentIndukId) {
+            $currentOpd = $jabatan->sotkEntries->first()?->unor;
+            if ($currentOpd) {
+                if ($jabatan->jenis_jabatan === 'Struktural'
+                    && $jabatan->jenjang === 'Pimpinan Tinggi Pratama'
+                    && $pemkot) {
+                    $currentIndukId = $pemkot->id;
+                } else {
+                    $cursor = $currentOpd;
+                    while ($cursor) {
+                        if (isset($indukList[$cursor->id])) {
+                            $currentIndukId = $cursor->id;
+                            break;
+                        }
+                        $cursor = $cursor->parent;
+                    }
+                    if ($currentIndukId === null) {
+                        $currentIndukId = ($currentOpd->parent_id == $pemkot->id)
+                            ? $currentOpd->id
+                            : $currentOpd->parent_id;
+                    }
+                }
+            }
+        }
+
+        // Resolve currentUnitId — pakai old input jika ada
+        $currentUnitId = old('unor_id', $jabatan->sotkEntries->first()?->unor_id);
 
         // Load kebutuhan existing
         $kebutuhan = null;
@@ -200,34 +255,6 @@ class JabatanController extends Controller
                 ->where('jabatan_id', $jabatan->id)
                 ->whereNull('tahun')
                 ->value('jumlah');
-        }
-
-        // Determine current induk
-        $currentOpd = $jabatan->sotkEntries->first()?->unor;
-        $currentIndukId = null;
-        if ($currentOpd) {
-            // JPTP: induk adalah Pemkot
-            if ($jabatan->jenis_jabatan === 'Struktural'
-                && $jabatan->jenjang === 'Pimpinan Tinggi Pratama'
-                && $pemkot) {
-                $currentIndukId = $pemkot->id;
-            } else {
-                // Walk up UNOR tree sampai ketemu yang ada di indukList
-                $cursor = $currentOpd;
-                while ($cursor) {
-                    if (isset($indukList[$cursor->id])) {
-                        $currentIndukId = $cursor->id;
-                        break;
-                    }
-                    $cursor = $cursor->parent;
-                }
-                // Fallback: jika tidak ketemu, gunakan parent langsung
-                if ($currentIndukId === null) {
-                    $currentIndukId = ($currentOpd->parent_id == $pemkot->id)
-                        ? $currentOpd->id
-                        : $currentOpd->parent_id;
-                }
-            }
         }
 
         return view('admin.jabatan.edit', [
@@ -255,11 +282,17 @@ class JabatanController extends Controller
             'kelas_jabatan' => 'required|integer|min:1',
             'jenjang' => 'nullable|string|max:255',
             'kebutuhan' => 'nullable|integer|min:0',
+            'induk_id' => 'required|exists:unor,id',
             'unor_id' => 'required|exists:unor,id',
         ]);
 
         $unorId = (int) $validated['unor_id'];
         unset($validated['unor_id'], $validated['kebutuhan']);
+
+        // Validasi: jenjang wajib untuk Struktural & Fungsional
+        if ($validated['jenis_jabatan'] !== 'Pelaksana' && empty($validated['jenjang'])) {
+            return back()->withInput()->with('error', 'Jenjang wajib dipilih untuk jabatan ' . $validated['jenis_jabatan'] . '.');
+        }
 
         // Validasi: nama_jabatan harus ada di referensi jabatan
         $namaUntukCek = explode(' - ', $validated['nama_jabatan'])[0];

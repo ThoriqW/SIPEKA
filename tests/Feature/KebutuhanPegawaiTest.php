@@ -33,6 +33,7 @@ class KebutuhanPegawaiTest extends TestCase
             'kelas_jabatan' => 8,
             'jenjang' => 'Ahli Muda',
             'kebutuhan' => 5,
+            'induk_id' => $unor->id,
             'unor_id' => $unor->id,
         ]);
 
@@ -59,12 +60,14 @@ class KebutuhanPegawaiTest extends TestCase
         $user = User::where('role', 'admin')->first();
         $jabatan = Jabatan::where('nama_jabatan', 'Pengelola Keuangan')->first();
         $unorId = $jabatan->sotkEntries()->first()?->unor_id;
+        $indukId = Unor::where('kode_unor', 'BKPSDM')->first()->id;
 
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
             'nama_jabatan' => $jabatan->nama_jabatan,
             'jenis_jabatan' => $jabatan->jenis_jabatan,
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
+            'induk_id' => $indukId,
             'kebutuhan' => 10,
             'unor_id' => $unorId,
         ]);
@@ -84,12 +87,14 @@ class KebutuhanPegawaiTest extends TestCase
         $user = User::where('role', 'admin')->first();
         $jabatan = Jabatan::where('nama_jabatan', 'Pengelola Keuangan')->first();
         $unorId = $jabatan->sotkEntries()->first()?->unor_id;
+        $indukId = Unor::where('kode_unor', 'BKPSDM')->first()->id;
 
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
             'nama_jabatan' => $jabatan->nama_jabatan,
             'jenis_jabatan' => $jabatan->jenis_jabatan,
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
+            'induk_id' => $indukId,
             'kebutuhan' => 0,
             'unor_id' => $unorId,
         ]);
@@ -109,12 +114,14 @@ class KebutuhanPegawaiTest extends TestCase
         $user = User::where('role', 'admin')->first();
         $jabatan = Jabatan::where('nama_jabatan', 'Pengelola Keuangan')->first();
         $unorId = $jabatan->sotkEntries()->first()?->unor_id;
+        $indukId = Unor::where('kode_unor', 'BKPSDM')->first()->id;
 
         $this->actingAs($user)->put(route('admin.jabatan.update', $jabatan), [
             'nama_jabatan' => $jabatan->nama_jabatan,
             'jenis_jabatan' => $jabatan->jenis_jabatan,
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
+            'induk_id' => $indukId,
             'kebutuhan' => 3,
             'unor_id' => $unorId,
         ]);

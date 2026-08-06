@@ -64,7 +64,7 @@ class PegawaiControllerTest extends TestCase
             'jenis_kepegawaian' => 'PNS',
             'tanggal_lahir' => '2000-01-01',
             'golongan_pangkat' => 'III/a',
-            'pendidikan' => 'S1',
+            'pendidikan' => 'D4/S1',
             'induk_id' => $unorId,
             'jabatan_id' => $jabatan->id,
         ]);
@@ -92,7 +92,7 @@ class PegawaiControllerTest extends TestCase
         Pegawai::create([
             'nip' => '200001012025011001', 'nama' => 'Pegawai 1',
             'jenis_kepegawaian' => 'PNS', 'tanggal_lahir' => '2000-01-01',
-            'golongan_pangkat' => 'III/a', 'pendidikan' => 'S1',
+            'golongan_pangkat' => 'III/a', 'pendidikan' => 'D4/S1',
             'jabatan_id' => $jabatan->id,
         ]);
 
@@ -103,7 +103,7 @@ class PegawaiControllerTest extends TestCase
             'jenis_kepegawaian' => 'PNS',
             'tanggal_lahir' => '2000-02-01',
             'golongan_pangkat' => 'III/b',
-            'pendidikan' => 'S1',
+            'pendidikan' => 'D4/S1',
             'induk_id' => $unorId,
             'jabatan_id' => $jabatan->id,
         ]);

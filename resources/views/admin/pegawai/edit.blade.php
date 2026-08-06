@@ -12,36 +12,36 @@
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">NIP (18 digit)</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">NIP (18 digit) <span class="text-red-500">*</span></label>
                         <input type="text" name="nip" x-ref="nip" maxlength="18" value="{{ old('nip', $pegawai->nip) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nip') border-red-500 @enderror">
                         @error('nip')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                         <button type="button" x-on:click="fetch('/admin/pegawai/extract-tanggal-lahir?nip=' + $refs.nip.value).then(r => r.json()).then(d => { if(d.success) $refs.tanggal_lahir.value = d.tanggal_lahir })" class="mt-2 text-sm text-blue-600 hover:text-blue-800">Isi Otomatis Tanggal Lahir dari NIP</button>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama <span class="text-red-500">*</span>
                         <input type="text" name="nama" value="{{ old('nama', $pegawai->nama) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nama') border-red-500 @enderror">
                         @error('nama')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kepegawaian</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kepegawaian <span class="text-red-500">*</span></label>
                         <select name="jenis_kepegawaian" x-on:change="onJenisKepegawaianChange($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             @foreach($jenisKepegawaianList as $val => $label)<option value="{{ $val }}" {{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) == $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach
                         </select>
                         @error('jenis_kepegawaian')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir <span class="text-red-500">*</span></label>
                         <input type="date" name="tanggal_lahir" x-ref="tanggal_lahir" value="{{ old('tanggal_lahir', $pegawai->tanggal_lahir ? $pegawai->tanggal_lahir->format('Y-m-d') : '') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Golongan/Pangkat</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Golongan/Pangkat <span class="text-red-500">*</span></label>
                         <select name="golongan_pangkat" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('golongan_pangkat') border-red-500 @enderror">
                             <option value="">-- Pilih Golongan/Pangkat --</option>
                         </select>
                         @error('golongan_pangkat')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan <span class="text-red-500">*</span></label>
                         <select name="pendidikan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             @foreach($pendidikanList as $val => $label)<option value="{{ $val }}" {{ old('pendidikan', $pegawai->pendidikan) == $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach
                         </select>

@@ -63,10 +63,9 @@ class PegawaiController extends Controller
             'nama' => 'required|string|max:255',
             'jenis_kepegawaian' => 'required|in:PNS,PPPK',
             'tanggal_lahir' => 'required|date',
-            'golongan_pangkat' => 'required',
-            'pendidikan' => 'required',
+            'golongan_pangkat' => 'required|string|max:10',
+            'pendidikan' => 'required|in:SD,SMP,SMA,D1,D2,D3,D4/S1,S2,S3',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
-            'induk_id' => 'nullable|required_with:jabatan_id|exists:unor,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
 
@@ -100,9 +99,11 @@ class PegawaiController extends Controller
         $opdList = Unor::where('parent_id', $pemkot?->id)
             ->orderBy('nama_unor')->pluck('nama_unor', 'id');
 
-        // Komputasi Unor Induk dari penempatan (walk-up)
-        $currentIndukId = null;
-        if ($pegawai->penempatanAktif?->unor && $pemkot) {
+        // Komputasi Unor Induk — pakai old input jika ada (recovery dari validasi error)
+        $currentIndukId = old('induk_id');
+
+        // Fallback: resolusi dari data existing
+        if (!$currentIndukId && $pegawai->penempatanAktif?->unor && $pemkot) {
             $induk = $pegawai->penempatanAktif->unor;
             while ($induk && $induk->parent_id !== $pemkot->id) {
                 $induk = $induk->parent;
@@ -140,10 +141,9 @@ class PegawaiController extends Controller
             'nama' => 'required|string|max:255',
             'jenis_kepegawaian' => 'required|in:PNS,PPPK',
             'tanggal_lahir' => 'required|date',
-            'golongan_pangkat' => 'required',
-            'pendidikan' => 'required',
+            'golongan_pangkat' => 'required|string|max:10',
+            'pendidikan' => 'required|in:SD,SMP,SMA,D1,D2,D3,D4/S1,S2,S3',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
-            'induk_id' => 'nullable|required_with:jabatan_id|exists:unor,id',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
 
