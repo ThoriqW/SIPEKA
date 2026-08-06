@@ -15,7 +15,23 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">NIP (18 digit) <span class="text-red-500">*</span></label>
                         <input type="text" name="nip" x-ref="nip" maxlength="18" value="{{ old('nip', $pegawai->nip) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nip') border-red-500 @enderror">
                         @error('nip')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                        <button type="button" x-on:click="fetch('/admin/pegawai/extract-tanggal-lahir?nip=' + $refs.nip.value).then(r => r.json()).then(d => { if(d.success) $refs.tanggal_lahir.value = d.tanggal_lahir })" class="mt-2 text-sm text-blue-600 hover:text-blue-800">Isi Otomatis Tanggal Lahir dari NIP</button>
+                        <div class="mt-2 flex items-center gap-2">
+                            <button type="button"
+                                    x-on:click="nipLoading = true; nipError = ''; nipSuccess = false; fetch('/admin/pegawai/extract-tanggal-lahir?nip=' + $refs.nip.value).then(r => r.json()).then(d => { if(d.success) { $refs.tanggal_lahir.value = d.tanggal_lahir; nipSuccess = true; nipLoading = false; setTimeout(() => nipSuccess = false, 2000); } else { nipError = d.message || 'NIP tidak valid'; nipLoading = false; } }).catch(() => { nipError = 'Gagal memproses NIP'; nipLoading = false; })"
+                                    :disabled="nipLoading"
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                <svg x-show="!nipLoading" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <svg x-show="nipLoading" class="animate-spin w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                <span x-text="nipLoading ? 'Memproses...' : 'Isi Tanggal Lahir'"></span>
+                            </button>
+                            <span x-show="nipSuccess" x-cloak class="text-xs text-green-600">✓ Terisi</span>
+                            <span x-show="nipError" x-cloak class="text-xs text-red-600" x-text="nipError"></span>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nama <span class="text-red-500">*</span>
@@ -187,6 +203,9 @@ function pegawaiForm() {
     var currentJenis = '{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}';
     return {
         opdSelected: false,
+        nipLoading: false,
+        nipError: '',
+        nipSuccess: false,
         initGolongan(jenis) {
             this.onJenisKepegawaianChange(jenis || 'PNS', currentGolongan);
         },
