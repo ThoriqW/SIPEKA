@@ -37,7 +37,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Role -->
                     <div>
-                        <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                        <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role <span class="text-red-500">*</span></label>
                         @if($isSelf)
                             <input type="text" value="{{ old('role', $user->role) === 'admin' ? 'Admin' : 'User' }}" readonly class="w-full rounded-md border-gray-300 bg-gray-100 shadow-sm text-gray-600 cursor-not-allowed">
                             <p class="mt-1 text-xs text-gray-400">Anda tidak dapat mengubah role sendiri.</p>

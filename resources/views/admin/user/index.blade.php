@@ -60,7 +60,7 @@
                                     <button class="text-red-600 hover:text-red-900">Hapus</button>
                                 </form>
                                 @else
-                                <span class="text-gray-400 text-xs">Admin</span>
+                                <span class="text-gray-400 text-xs">Akun sendiri</span>
                                 @endif
                             </td>
                         </tr>
