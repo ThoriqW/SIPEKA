@@ -14,7 +14,7 @@
         </div>
 
         @if($opdList->isNotEmpty())
-        <form method="GET" class="mb-4">
+        <form method="GET" class="mb-4" x-data>
             <div class="flex items-center gap-3">
                 <label for="unor_id" class="text-sm font-medium text-gray-700">OPD:</label>
                 <select id="unor_id" name="unor_id" x-on:change="$el.form.submit()"
