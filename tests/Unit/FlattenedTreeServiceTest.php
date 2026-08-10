@@ -162,9 +162,9 @@ class FlattenedTreeServiceTest extends TestCase
         PenempatanPegawai::query()->delete();
         Pegawai::query()->delete();
         Jabatan::query()->delete();
-        // Delete child UNORs first (FK self-ref)
-        Unor::whereNotNull('parent_id')->delete();
-        Unor::whereNull('parent_id')->delete();
+        // Null-kan parent_id dulu (FK restrict), lalu hapus semua UNOR
+        Unor::query()->update(['parent_id' => null]);
+        Unor::query()->delete();
 
         $tree = $this->service->buildFlatTree();
         $this->assertIsArray($tree);

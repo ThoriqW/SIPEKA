@@ -20,10 +20,10 @@
                     </div>
 
                     {{-- Unit Organisasi Induk — searchable dropdown --}}
-                    <div x-data="{ open: false, search: '', selectedText: '{{ old('parent_id') ? $parentList[old('parent_id')] ?? '' : '' }}' }"
+                    <div x-data="{ open: false, search: '', selectedText: '{{ $defaultParentId ? $parentList[$defaultParentId] ?? '' : '' }}' }"
                          class="relative">
-                        <input type="hidden" name="parent_id" x-ref="parentId" value="{{ old('parent_id') }}">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk</label>
+                        <input type="hidden" name="parent_id" x-ref="parentId" value="{{ $defaultParentId }}">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk @if($rootUnor) <span class="text-red-500">*</span> @endif</label>
                         <div class="relative">
                             <input type="text" x-model="search" x-ref="searchInput"
                                    @focus="open = true" @click="open = true"
@@ -40,7 +40,7 @@
                             @foreach($parentList as $id => $nama)
                             <div @click="open = false; search = ''; selectedText = '{{ $nama }}'; $refs.parentId.value = '{{ $id }}'"
                                  x-show="!search || '{{ strtolower($nama) }}'.includes(search.toLowerCase())"
-                                 class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer {{ old('parent_id') == $id ? 'bg-blue-100' : '' }}">{{ $nama }}</div>
+                                 class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer {{ $defaultParentId == $id ? 'bg-blue-100' : '' }}">{{ $nama }}</div>
                             @endforeach
                         </div>
                         @error('parent_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -50,7 +50,6 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kode Unit Organisasi</label>
                         <input type="text" name="kode_unor" value="{{ old('kode_unor') }}" maxlength="255"
-                               placeholder="Kosongkan untuk kode otomatis (U-001, U-002, ...)"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kode_unor') border-red-500 @enderror">
                         @error('kode_unor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>

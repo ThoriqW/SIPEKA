@@ -12,19 +12,34 @@ class UnorController extends Controller
     {
         $allUnor = Unor::with('children')->get()->keyBy('id');
 
-        // Build tree: depth-first flat array (skip root level — show only OPDs)
+        // Build tree: depth-first flat array — iterasi SEMUA root
         $tree = [];
-        $root = $allUnor->first(fn($u) => $u->parent_id === null);
-        if ($root) {
-            // OPD level (children of root): sort by nama_unor
-            $opds = $allUnor->filter(fn($u) => $u->parent_id === $root->id)
+        $rootUnors = $allUnor->filter(fn($u) => $u->parent_id === null);
+
+        foreach ($rootUnors as $root) {
+            $rootChildren = $allUnor->filter(fn($u) => $u->parent_id === $root->id)
                 ->sortBy('nama_unor');
-            foreach ($opds as $child) {
-                $this->flattenUnor($child, null, 0, $tree, $allUnor);
+
+            $rootIdStr = 'u-' . $root->id;
+            $tree[] = [
+                'id' => $rootIdStr,
+                'parent_id' => '',
+                'level' => 0,
+                'nama' => $root->nama_unor,
+                'kode' => $root->kode_unor,
+                'has_children' => $rootChildren->isNotEmpty(),
+                'unor_id' => $root->id,
+            ];
+
+            foreach ($rootChildren as $child) {
+                $this->flattenUnor($child, $root->id, 1, $tree, $allUnor);
             }
         }
 
-        return view('admin.unor.index', compact('tree'));
+        // ID semua root (format string 'u-{id}') untuk inisialisasi expandedItems di view
+        $rootIds = $rootUnors->pluck('id')->map(fn($id) => 'u-' . $id)->values()->toArray();
+
+        return view('admin.unor.index', compact('tree', 'rootIds'));
     }
 
     private function flattenUnor(Unor $unor, ?int $parentId, int $level, array &$result, $allUnor): void
@@ -58,16 +73,26 @@ class UnorController extends Controller
             ->mapWithKeys(fn($u) => [$u->id => $this->buildBreadcrumb($u, $allUnor)])
             ->sort()
             ->all();
-        return view('admin.unor.create', compact('parentList', 'rootUnor'));
+
+        // Jika root sudah ada, jadikan root sebagai parent default
+        $defaultParentId = old('parent_id') ?: ($rootUnor?->id);
+
+        return view('admin.unor.create', compact('parentList', 'rootUnor', 'defaultParentId'));
     }
 
     public function store(Request $request)
     {
         $parentId = $request->parent_id;
+        $rootExists = Unor::whereNull('parent_id')->exists();
+
+        $parentRules = $rootExists
+            ? ['required', 'exists:unor,id']
+            : ['nullable', 'exists:unor,id'];
+
         $validated = $request->validate([
             'nama_unor' => 'required|string|max:255|unique:unor,nama_unor,NULL,id,parent_id,' . ($parentId ?? 'NULL'),
             'kode_unor' => 'nullable|string|max:255|unique:unor,kode_unor|regex:/^[A-Z0-9_-]+$/',
-            'parent_id' => 'nullable|exists:unor,id',
+            'parent_id' => $parentRules,
         ]);
 
         // Auto-generate kode UNOR jika tidak diisi
@@ -103,10 +128,17 @@ class UnorController extends Controller
     public function update(Request $request, Unor $unor)
     {
         $parentId = $request->parent_id;
+
+        // Cegah menjadikan UNOR non-root sebagai root baru jika root sudah ada
+        $rootLainExists = Unor::whereNull('parent_id')->where('id', '!=', $unor->id)->exists();
+        $parentRules = ($unor->parent_id !== null && $rootLainExists)
+            ? ['required', 'exists:unor,id']
+            : ['nullable', 'exists:unor,id'];
+
         $validated = $request->validate([
             'nama_unor' => 'required|string|max:255|unique:unor,nama_unor,' . $unor->id . ',id,parent_id,' . ($parentId ?? 'NULL'),
             'kode_unor' => 'required|string|max:255|unique:unor,kode_unor,' . $unor->id . '|regex:/^[A-Z0-9_-]+$/',
-            'parent_id' => 'nullable|exists:unor,id',
+            'parent_id' => $parentRules,
         ]);
 
         $newParentId = $validated['parent_id'] ? (int) $validated['parent_id'] : null;

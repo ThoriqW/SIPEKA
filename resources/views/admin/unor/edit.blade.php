@@ -54,7 +54,6 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kode UNOR <span class="text-red-500">*</span></label>
                         <input type="text" name="kode_unor" value="{{ old('kode_unor', $unor->kode_unor) }}" maxlength="255"
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kode_unor') border-red-500 @enderror">
-                        <p class="text-xs text-gray-400 mt-0.5">Gunakan huruf besar, angka, dash (-), atau underscore (_). Kode menentukan urutan di tabel Bezetting & Kebutuhan.</p>
                         @error('kode_unor')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                 </div>
