@@ -125,7 +125,23 @@ class FlattenedTreeService
     ): void {
         $unorIdStr = 'u-' . $unor->id;
         $childUnors = $unorChildrenMap[$unor->id] ?? [];
-        $sotkEntries = $unor->sotkEntries ?? collect();
+        $sotkEntries = ($unor->sotkEntries ?? collect())->sort(function ($a, $b) {
+            if (!$a->jabatan || !$b->jabatan) return 0;
+
+            // 1. Jenis jabatan: Struktural → Fungsional → Pelaksana
+            $jenisOrder = ['Struktural' => 0, 'Fungsional' => 1, 'Pelaksana' => 2];
+            $jenisA = $jenisOrder[$a->jabatan->jenis_jabatan] ?? 99;
+            $jenisB = $jenisOrder[$b->jabatan->jenis_jabatan] ?? 99;
+            if ($jenisA !== $jenisB) return $jenisA <=> $jenisB;
+
+            // 2. Kelas jabatan DESC (kelas lebih tinggi = posisi lebih atas)
+            $kelasA = $a->jabatan->kelas_jabatan ?? 0;
+            $kelasB = $b->jabatan->kelas_jabatan ?? 0;
+            if ($kelasA !== $kelasB) return $kelasB <=> $kelasA;
+
+            // 3. Nama jabatan alfabetis
+            return strcmp($a->jabatan->nama_jabatan, $b->jabatan->nama_jabatan);
+        });
 
         $hasChildren = !empty($childUnors) || $sotkEntries->isNotEmpty();
 
