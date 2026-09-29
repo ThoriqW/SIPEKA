@@ -12,7 +12,7 @@
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">NIP (18 digit) <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">NIP<span class="text-red-500">*</span></label>
                         <input type="text" name="nip" x-ref="nip" maxlength="18" value="{{ old('nip', $pegawai->nip) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nip') border-red-500 @enderror">
                         @error('nip')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                         <div class="mt-2 flex items-center gap-2">
