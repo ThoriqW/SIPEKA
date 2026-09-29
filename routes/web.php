@@ -48,8 +48,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Kebutuhan & Bezetting
     Route::get('kebutuhan', [\App\Http\Controllers\Admin\KebutuhanController::class, 'index'])->name('kebutuhan.index');
     Route::get('kebutuhan/export', [\App\Http\Controllers\Admin\KebutuhanController::class, 'export'])->name('kebutuhan.export');
+    Route::get('kebutuhan/unor/{unor}/children', [\App\Http\Controllers\Admin\KebutuhanController::class, 'children'])->name('kebutuhan.children');
     Route::get('bezetting', [\App\Http\Controllers\Admin\BezettingController::class, 'index'])->name('bezetting.index');
     Route::get('bezetting/export', [\App\Http\Controllers\Admin\BezettingController::class, 'export'])->name('bezetting.export');
+    Route::get('bezetting/unor/{unor}/children', [\App\Http\Controllers\Admin\BezettingController::class, 'children'])->name('bezetting.children');
 });
 
 require __DIR__.'/auth.php';

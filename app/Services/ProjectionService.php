@@ -30,9 +30,12 @@ class ProjectionService
      * Hitung proyeksi pensiun per UNOR + jabatan untuk 5 tahun ke depan.
      * Returns [unor_id => [jabatan_id => ['counts' => [1=>count,...], 'pegawai' => [...]]]]
      *
-     * @param int|null $opdId Filter by OPD (null = all OPDs)
+     * @param int[]|null $unorIds Batasi ke UNOR tertentu. Pemanggil bertanggung jawab
+     *                           menyertakan turunan UNOR yang dimaksud — pola ini sama
+     *                           dengan pembatasan kebutuhan/bezetting di FlattenedTreeService.
+     *                           null = seluruh UNOR.
      */
-    public function hitungProyeksiPensiunPerJabatan(?int $opdId = null): array
+    public function hitungProyeksiPensiunPerJabatan(?array $unorIds = null): array
     {
         $t = (int) date('Y');
         $result = [];
@@ -42,8 +45,8 @@ class ProjectionService
             ->select(['id', 'nip', 'nama', 'tanggal_lahir', 'jenis_kepegawaian', 'jabatan_id'])
             ->whereNotNull('jabatan_id');
 
-        if ($opdId !== null) {
-            $query->whereHas('penempatanAktif', fn($q) => $q->where('unor_id', $opdId));
+        if ($unorIds !== null) {
+            $query->whereHas('penempatanAktif', fn($q) => $q->whereIn('unor_id', $unorIds));
         }
 
         $pegawaiList = $query->get();

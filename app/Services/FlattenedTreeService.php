@@ -35,12 +35,14 @@ class FlattenedTreeService
         ?int $unorId = null,
         bool $withProjections = false,
     ): array {
+        // ── Hitung UNOR yang terlibat sekali saja: dipakai untuk filter query,
+        //    pembatasan map kebutuhan/bezetting, dan pembatasan proyeksi pensiun. ──
+        $descendantIds = ($unorId !== null) ? [...$this->getAllDescendantUnorIds($unorId), $unorId] : null;
+
         // ── Load UNORs ──
         $unorQuery = Unor::with(['children', 'sotkEntries.jabatan']);
-        if ($unorId !== null) {
-            $ids = $this->getAllDescendantUnorIds($unorId);
-            $ids[] = $unorId;
-            $unorQuery->whereIn('id', $ids);
+        if ($descendantIds !== null) {
+            $unorQuery->whereIn('id', $descendantIds);
         }
         $allUnor = $unorQuery->get()->keyBy('id');
 
@@ -71,9 +73,6 @@ class FlattenedTreeService
         }
         unset($children);
 
-        // ── Compute descendant IDs for map filtering ──
-        $descendantIds = ($unorId !== null) ? [...$this->getAllDescendantUnorIds($unorId), $unorId] : null;
-
         // ── Pre-load kebutuhan, bezetting & pegawai per (unor_id, jabatan_id) ──
         $kebutuhanMap = $this->buildKebutuhanMap($descendantIds);
         $bezettingMap = $this->buildBezettingMap($descendantIds);
@@ -81,7 +80,7 @@ class FlattenedTreeService
 
         // ── Pre-compute pensiun projections per jabatan ──
         $proyeksiPensiunPerJabatan = $withProjections
-            ? $this->projectionService->hitungProyeksiPensiunPerJabatan($unorId)
+            ? $this->projectionService->hitungProyeksiPensiunPerJabatan($descendantIds)
             : [];
 
         $result = [];
@@ -106,6 +105,110 @@ class FlattenedTreeService
         $this->propagateTotalsUpward($result);
 
         return $result;
+    }
+
+    /**
+     * Baris yang dikirim saat halaman pertama kali dibuka: baris root beserta
+     * anak langsungnya. Baris lebih dalam tidak ikut dikirim — dimuat saat
+     * node-nya dibuka (lihat buildChildrenRows).
+     *
+     * Root berada di level 0 dan anak langsungnya di level 1, sehingga irisan
+     * level <= 1 tepat sama dengan "root + anak langsungnya".
+     *
+     * @return array Baris dengan bentuk sama seperti buildFlatTree(), ditambah
+     *               kunci `no` (1..n di dalam fragmen) dan `expanded`.
+     */
+    public function buildInitialRows(?int $unorId = null, bool $withProjections = false): array
+    {
+        $rows = array_filter(
+            $this->buildFlatTree($unorId, $withProjections),
+            fn (array $row) => $row['level'] <= 1,
+        );
+
+        return $this->renumber(array_values($rows));
+    }
+
+    /**
+     * Baris anak langsung dari satu UNOR — dipakai saat node dibuka.
+     *
+     * buildFlatTree() memperlakukan $unorId sebagai root (level 0), sehingga
+     * anak langsungnya ber-level 1. Karena node itu sendiri berada di level
+     * yang berbeda di pohon halaman, level anak-anaknya digeser agar indentasi
+     * dan data-level-nya sesuai posisi aslinya.
+     *
+     * @param int|null $pageRootUnorId UNOR yang menjadi root halaman (filter OPD), null bila tanpa filter
+     * @return array Baris dengan bentuk sama seperti buildFlatTree(), ditambah kunci `no` dan `expanded`
+     */
+    public function buildChildrenRows(
+        int $unorId,
+        bool $withProjections = false,
+        ?int $pageRootUnorId = null,
+    ): array {
+        $parentKey = 'u-' . $unorId;
+
+        $rows = array_values(array_filter(
+            $this->buildFlatTree($unorId, $withProjections),
+            fn (array $row) => $row['parent_id'] === $parentKey,
+        ));
+
+        $offset = $this->levelOf($unorId, $pageRootUnorId);
+        foreach ($rows as &$row) {
+            $row['level'] += $offset;
+        }
+        unset($row);
+
+        return $this->renumber($rows);
+    }
+
+    /**
+     * Beri nomor urut 1..n di dalam fragmen dan tandai baris mana yang
+     * dirender dalam keadaan terbuka (hanya root pada muatan awal).
+     */
+    private function renumber(array $rows): array
+    {
+        foreach ($rows as $i => &$row) {
+            $row['no'] = $i + 1;
+            $row['expanded'] = $row['level'] === 0 && $row['has_children'];
+        }
+        unset($row);
+
+        return $rows;
+    }
+
+    /**
+     * Level sebuah UNOR di pohon halaman.
+     *
+     * Bila $pageRootUnorId diberikan (halaman difilter ke satu OPD), level
+     * dihitung relatif terhadap OPD tersebut. Bila null, level dihitung dari
+     * root alami (UNOR tanpa parent).
+     */
+    private function levelOf(int $unorId, ?int $pageRootUnorId = null): int
+    {
+        if ($pageRootUnorId !== null && $unorId === $pageRootUnorId) {
+            return 0;
+        }
+
+        $parents = Unor::pluck('parent_id', 'id')->all();
+        $level = 0;
+        $cursor = $unorId;
+
+        // Batas iterasi sebagai pengaman terhadap data siklik.
+        for ($i = 0; $i < 100; $i++) {
+            $parent = $parents[$cursor] ?? null;
+
+            if ($parent === null || !array_key_exists($parent, $parents)) {
+                return $level;
+            }
+
+            $cursor = $parent;
+            $level++;
+
+            if ($pageRootUnorId !== null && $cursor === $pageRootUnorId) {
+                return $level;
+            }
+        }
+
+        return $level;
     }
 
     /**
