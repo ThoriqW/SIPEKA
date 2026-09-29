@@ -6,7 +6,7 @@
         <div class="flex items-center justify-between mb-6">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-900">Referensi Jabatan</h1>
-                <p class="text-sm text-gray-500 mt-1">Kelola referensi nama jabatan standar ASN</p>
+                <p class="text-sm text-gray-500 mt-1">Kelola Referensi Nama Jabatan ASN</p>
             </div>
             <a href="{{ route('admin.referensi-jabatan.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">+ Tambah Referensi</a>
         </div>

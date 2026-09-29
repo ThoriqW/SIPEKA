@@ -6,7 +6,7 @@
         <div class="flex items-center justify-between mb-6">
             <div>
                 <h1 class="text-2xl font-semibold text-gray-900">Daftar Jabatan</h1>
-                <p class="text-sm text-gray-500 mt-1">Kelola data jabatan struktural, fungsional, dan pelaksana</p>
+                <p class="text-sm text-gray-500 mt-1">Kelola Data Jabatan Struktural, Fungsional, dan Pelaksana</p>
             </div>
             <a href="{{ route('admin.jabatan.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium">+ Tambah Jabatan</a>
         </div>
@@ -16,8 +16,8 @@
                 <form method="GET" class="flex flex-wrap gap-4">
                     <input type="text" name="search" placeholder="Cari Jabatan" value="{{ request('search') }}" class="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     @if($opdList->isNotEmpty())
-                    <select name="unor_id" class="w-64 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        <option value="">Semua OPD</option>
+                    <select name="unor_id" class="w-72 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">-- Semua Perangkat Daerah --</option>
                         @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ request('unor_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                     </select>
                     @endif

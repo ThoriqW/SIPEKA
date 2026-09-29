@@ -8,10 +8,25 @@
                 <h1 class="text-2xl font-semibold text-gray-900">Kebutuhan</h1>
                 <p class="text-sm text-gray-500 mt-1">Unit Organisasi & Jabatan</p>
             </div>
-            <a href="{{ route('admin.kebutuhan.export') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
+            <a href="{{ route('admin.kebutuhan.export', request()->query()) }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium">
                 Export Excel
             </a>
         </div>
+
+        @if($opdList->isNotEmpty())
+        <form method="GET" class="mb-4" x-data>
+            <div class="flex items-center gap-3">
+                <label for="unor_id" class="text-sm font-medium text-gray-700">Perangkat Daerah:</label>
+                <select id="unor_id" name="unor_id" x-on:change="$el.form.submit()"
+                        class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm w-72">
+                    <option value="">-- Semua Perangkat Daerah --</option>
+                    @foreach($opdList as $id => $nama)
+                    <option value="{{ $id }}" {{ request('unor_id') == $id ? 'selected' : '' }}>{{ $nama }}</option>
+                    @endforeach
+                </select>
+            </div>
+        </form>
+        @endif
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">

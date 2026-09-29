@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Unor;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -78,20 +79,27 @@ class BezettingControllerTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('admin.bezetting.index'));
 
-        $response->assertSee('OPD');
-        $response->assertSee('Semua OPD');
+        $response->assertSee('Perangkat Daerah');
+        $response->assertSee('Semua Perangkat Daerah');
     }
 
     #[Test]
     public function admin_can_filter_bezetting_by_opd()
     {
         $user = User::where('role', 'admin')->first();
+        $pd = Unor::where('nama_unor', 'Dinas Kesehatan')->firstOrFail();
 
-        // Filter to OPD 3 (Dinkes — IDs shifted: 1=Pemkot, 2=DIKBUD, 3=DINKES)
-        $response = $this->actingAs($user)->get(route('admin.bezetting.index', ['unor_id' => 3]));
+        // Tanpa filter: akar pohon adalah Pemkot.
+        $this->actingAs($user)->get(route('admin.bezetting.index'))
+            ->assertSee('Pemerintah Kota Palu');
 
-        $response->assertStatus(200);
-        $response->assertSee('Dinas Kesehatan');
+        // Difilter: akar pohon menjadi Perangkat Daerah yang dipilih, dan
+        // Pemkot tidak lagi ikut. Nama PD lain tetap ada di dropdown, jadi
+        // yang diperiksa adalah akar pohonnya, bukan daftar pilihan.
+        $this->actingAs($user)->get(route('admin.bezetting.index', ['unor_id' => $pd->id]))
+            ->assertOk()
+            ->assertSee('Dinas Kesehatan')
+            ->assertDontSee('Pemerintah Kota Palu');
     }
 
     #[Test]

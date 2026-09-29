@@ -57,4 +57,18 @@ class Unor extends Model
     {
         return $this->hasMany(TugasTambahanPegawai::class);
     }
+
+    /**
+     * Scope daftar Perangkat Daerah — anak langsung UNOR root (Pemkot).
+     *
+     * Dipakai sebagai pilihan filter di menu Kebutuhan dan Bezetting. Satu
+     * definisi untuk keduanya supaya daftar yang tampil tidak mungkin
+     * menyimpang antarhalaman.
+     */
+    public function scopePerangkatDaerah($query)
+    {
+        return $query->whereNotNull('parent_id')
+            ->whereHas('parent', fn($q) => $q->whereNull('parent_id'))
+            ->orderBy('nama_unor');
+    }
 }
