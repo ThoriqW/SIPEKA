@@ -5,8 +5,8 @@ namespace App\Enums;
 enum Pendidikan: string
 {
     case SD = 'SD';
-    case SMP = 'SMP';
-    case SMA = 'SMA';
+    case SMP = 'SLTP Sederajat';
+    case SMA = 'SLTA Sederajat';
     case D1 = 'D1';
     case D2 = 'D2';
     case D3 = 'D3';

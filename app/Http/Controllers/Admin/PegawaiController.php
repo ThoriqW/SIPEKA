@@ -64,7 +64,7 @@ class PegawaiController extends Controller
             'jenis_kepegawaian' => 'required|in:PNS,PPPK',
             'tanggal_lahir' => 'required|date',
             'golongan_pangkat' => 'required|string|max:10',
-            'pendidikan' => 'required|in:SD,SMP,SMA,D1,D2,D3,D4/S1,S2,S3',
+            'pendidikan' => 'required|in:SD,SLTP Sederajat,SLTA Sederajat,D1,D2,D3,D4/S1,S2,S3',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
@@ -142,7 +142,7 @@ class PegawaiController extends Controller
             'jenis_kepegawaian' => 'required|in:PNS,PPPK',
             'tanggal_lahir' => 'required|date',
             'golongan_pangkat' => 'required|string|max:10',
-            'pendidikan' => 'required|in:SD,SMP,SMA,D1,D2,D3,D4/S1,S2,S3',
+            'pendidikan' => 'required|in:SD,SLTP Sederajat,SLTA Sederajat,D1,D2,D3,D4/S1,S2,S3',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
             'jabatan_id' => 'nullable|exists:jabatan,id',
         ]);
