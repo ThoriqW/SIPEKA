@@ -186,8 +186,9 @@
                                  @mousedown.prevent
                                  class="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                                 @foreach($unorList as $id => $nama)
-                                <div @click="openUnor = false; searchUnor = ''; selectedText = '{{ $nama }}'; $refs.unorId.value = '{{ $id }}'"
-                                     x-show="!searchUnor || '{{ strtolower($nama) }}'.includes(searchUnor.toLowerCase())"
+                                <div @click="openUnor = false; searchUnor = ''; selectedText = $el.dataset.nama; $refs.unorId.value = $el.dataset.id"
+                                     x-show="!searchUnor || $el.dataset.nama.toLowerCase().includes(searchUnor.toLowerCase())"
+                                     data-nama="{{ $nama }}" data-id="{{ $id }}"
                                      class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer">{{ $nama }}</div>
                                 @endforeach
                             </div>

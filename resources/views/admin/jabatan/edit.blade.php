@@ -9,7 +9,11 @@
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
              x-data="jabatanForm()"
-             x-init="init('{{ old('jenis_jabatan', $jabatan->jenis_jabatan) }}', '{{ old('nama_jabatan', $jabatan->nama_jabatan) }}', '{{ $currentIndukId }}', '{{ $currentUnitId }}')">
+             data-jenis-jabatan="{{ old('jenis_jabatan', $jabatan->jenis_jabatan) }}"
+             data-nama-jabatan="{{ old('nama_jabatan', $jabatan->nama_jabatan) }}"
+             data-induk-id="{{ $currentIndukId }}"
+             data-unit-id="{{ $currentUnitId }}"
+             data-jenjang-terpilih="{{ old('jenjang', $jabatan->jenjang) }}">
             <form action="{{ route('admin.jabatan.update', $jabatan) }}" method="POST">
                 @csrf @method('PUT')
                 <input type="hidden" name="nama_jabatan" x-ref="namaJabatanHidden"
@@ -98,7 +102,7 @@
                             <option value="">-- Pilih --</option>
                             <template x-for="item in jenjangList" :key="item.id">
                                 <option :value="item.nama" x-text="item.nama"
-                                        :selected="item.nama === '{{ old('jenjang', $jabatan->jenjang) }}'"></option>
+                                        :selected="item.nama === currentJenjang"></option>
                             </template>
                         </select>
                         @error('jenjang')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -133,7 +137,7 @@
                             <option value="">-- Pilih Unit Organisasi --</option>
                             <template x-for="u in unitList" :key="u.id">
                                 <option :value="u.id" x-text="u.nama"
-                                        :selected="u.id == '{{ $currentUnitId }}'"></option>
+                                        :selected="u.id == currentUnitId"></option>
                             </template>
                         </select>
                         @error('unor_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -150,113 +154,5 @@
 @endsection
 
 @section('scripts')
-<script>
-function jabatanForm() {
-    var options = @json($jenjangOptions);
-    var referensiData = @json($referensiJabatanData);
-    var unorData = @json($unorByInduk);
-
-    return {
-        selectedJenis: '',
-        hasChildren: false,
-        unitList: [],
-        namaJabatanList: [], subJabatanList: [], jenjangList: [],
-
-        namaSearch: '', namaOpen: false, namaSelected: '',
-        subSearch: '', subOpen: false, subSelected: '',
-
-        get filteredNamaList() { return this.filterList(this.namaJabatanList, this.namaSearch); },
-        get filteredSubList() { return this.filterList(this.subJabatanList, this.subSearch); },
-
-        filterList: function(list, s) {
-            if (!s) return list;
-            var q = s.toLowerCase();
-            return list.filter(function(i) { return (i.nama || '').toLowerCase().includes(q); });
-        },
-
-        init: function(jenis, preNama, indukId, unitId) {
-            if (jenis) this.onJenisChange(jenis, preNama);
-            if (indukId) {
-                this.unitList = unorData[indukId] || [];
-                if (unitId) {
-                    this.$nextTick(function() {
-                        var sel = document.querySelector('[x-ref="unitSelect"]');
-                        if (sel) sel.value = unitId;
-                    });
-                }
-            }
-        },
-
-        onJenisChange: function(jenis, preNama) {
-            this.selectedJenis = jenis;
-            this.hasChildren = false;
-            this.subJabatanList = [];
-            this.subSearch = ''; this.subSelected = '';
-
-            var pn = preNama || '';
-            var parentName = pn.split(' - ')[0] || '';
-            var subName = pn.split(' - ').slice(1).join(' - ') || '';
-
-            this.jenjangList = [];
-            if (jenis && options[jenis]) {
-                this.jenjangList = Object.entries(options[jenis]).map(function(e) {
-                    return {id: e[0], nama: e[1]};
-                });
-            }
-
-            this.namaJabatanList = [];
-            if (jenis && referensiData[jenis]) {
-                this.namaJabatanList = referensiData[jenis].map(function(item) {
-                    return {id: item.id, nama: item.nama, children: item.children || []};
-                });
-            }
-
-            if (parentName) this.selectNamaByName(parentName, subName);
-            this.updateHidden();
-        },
-
-        selectNamaByName: function(name, subName) {
-            this.namaSearch = ''; this.namaSelected = ''; this.namaOpen = false;
-            var match = this.namaJabatanList.find(function(i) { return i.nama === name; });
-            if (match) {
-                this.namaSelected = match.nama;
-                if (match.children && match.children.length > 0) {
-                    this.hasChildren = true;
-                    this.subJabatanList = match.children;
-                    if (subName) this.subSelected = subName;
-                }
-            }
-        },
-
-        selectNama: function(item) {
-            this.namaOpen = false; this.namaSearch = ''; this.namaSelected = item.nama;
-            this.hasChildren = false;
-            this.subJabatanList = [];
-            this.subSearch = ''; this.subSelected = '';
-            if (item.children && item.children.length > 0) {
-                this.hasChildren = true;
-                this.subJabatanList = item.children;
-            }
-            this.updateHidden();
-        },
-
-        selectSub: function(item) {
-            this.subOpen = false; this.subSearch = ''; this.subSelected = item.nama;
-            this.updateHidden();
-        },
-
-        onIndukChange: function(indukId) {
-            this.unitList = unorData[indukId] || [];
-        },
-
-        updateHidden: function() {
-            if (this.hasChildren && this.subSelected) {
-                this.$refs.namaJabatanHidden.value = this.namaSelected + ' - ' + this.subSelected;
-            } else {
-                this.$refs.namaJabatanHidden.value = this.namaSelected;
-            }
-        }
-    };
-}
-</script>
+@include('admin.jabatan._form-script')
 @append
