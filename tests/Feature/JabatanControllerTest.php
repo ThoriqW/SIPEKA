@@ -70,13 +70,18 @@ class JabatanControllerTest extends TestCase
         return $jabatan;
     }
 
-    private function payload(Unor $induk, Unor $unor): array
-    {
+    private function payload(
+        Unor $induk,
+        Unor $unor,
+        string $nama = 'Statistisi',
+        string $jenis = 'Fungsional',
+        string $jenjang = 'Ahli Muda',
+    ): array {
         return [
-            'nama_jabatan' => 'Statistisi',
-            'jenis_jabatan' => 'Fungsional',
+            'nama_jabatan' => $nama,
+            'jenis_jabatan' => $jenis,
             'kelas_jabatan' => 8,
-            'jenjang' => 'Ahli Muda',
+            'jenjang' => $jenjang,
             'kebutuhan' => 1,
             'induk_id' => $induk->id,
             'unor_id' => $unor->id,
@@ -220,6 +225,124 @@ class JabatanControllerTest extends TestCase
         // potongan dari jalur yang lebih panjang.
         $response->assertSee('Kecamatan Palu Barat » Sekretariat</td>', escape: false);
         $response->assertSee('Kecamatan Palu Barat » Kelurahan Birobuli » Sekretariat</td>', escape: false);
+    }
+
+    // ───── Aturan khusus Pimpinan Tinggi Pratama ─────
+
+    private static int $pdSeq = 0;
+
+    /** Perangkat Daerah baru — seeder sudah menghabiskan jatah JPTP di ketiga OPD-nya. */
+    private function buatPerangkatDaerah(string $nama): Unor
+    {
+        return Unor::create([
+            'nama_unor' => $nama,
+            'kode_unor' => 'PD-UJI-' . (++self::$pdSeq),
+            'parent_id' => $this->pemkot->id,
+        ]);
+    }
+
+    #[Test]
+    public function store_accepts_the_first_jptp_in_a_perangkat_daerah()
+    {
+        $pd = $this->buatPerangkatDaerah('Dinas Uji');
+
+        $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($this->pemkot, $pd, 'Kepala Dinas', 'Struktural', 'Pimpinan Tinggi Pratama'))
+            ->assertRedirect(route('admin.jabatan.index'));
+
+        $this->assertSame(1, Sotk::where('unor_id', $pd->id)->count());
+        $this->assertDatabaseHas('jabatan', ['nama_jabatan' => 'Kepala Dinas', 'jenjang' => 'Pimpinan Tinggi Pratama']);
+    }
+
+    #[Test]
+    public function store_rejects_a_second_jptp_in_the_same_perangkat_daerah()
+    {
+        $pd = $this->buatPerangkatDaerah('Dinas Uji');
+
+        $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($this->pemkot, $pd, 'Kepala Dinas', 'Struktural', 'Pimpinan Tinggi Pratama'))
+            ->assertRedirect(route('admin.jabatan.index'));
+
+        // Nama berbeda, jadi pemeriksaan duplikasi nama+jenjang tidak menangkapnya.
+        $response = $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($this->pemkot, $pd, 'Kepala Badan', 'Struktural', 'Pimpinan Tinggi Pratama'));
+
+        $response->assertSessionHas('error');
+        // Hanya JPTP pertama yang menempel di Perangkat Daerah ini.
+        $this->assertSame(1, Sotk::where('unor_id', $pd->id)->count());
+    }
+
+    #[Test]
+    public function store_rejects_jptp_below_perangkat_daerah_level()
+    {
+        $pd = $this->buatPerangkatDaerah('Dinas Uji');
+        $bidang = Unor::create(['nama_unor' => 'Bidang Uji', 'kode_unor' => 'BID-UJI', 'parent_id' => $pd->id]);
+
+        $response = $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($pd, $bidang, 'Kepala Bidang', 'Struktural', 'Pimpinan Tinggi Pratama'));
+
+        $response->assertSessionHas('error');
+        $this->assertSame(0, Sotk::where('unor_id', $bidang->id)->count());
+    }
+
+    #[Test]
+    public function store_still_allows_non_jptp_structural_at_a_sub_unit()
+    {
+        $pd = $this->buatPerangkatDaerah('Dinas Uji');
+        $bidang = Unor::create(['nama_unor' => 'Bidang Uji', 'kode_unor' => 'BID-UJI', 'parent_id' => $pd->id]);
+
+        // Aturan JPTP tidak boleh ikut membatasi jenjang struktural lain.
+        $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($pd, $bidang, 'Kepala Bidang', 'Struktural', 'Administrator'))
+            ->assertRedirect(route('admin.jabatan.index'));
+
+        $this->assertSame(1, Sotk::where('unor_id', $bidang->id)->count());
+    }
+
+    #[Test]
+    public function update_allows_keeping_the_same_jptp()
+    {
+        $pd = $this->buatPerangkatDaerah('Dinas Uji');
+
+        $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($this->pemkot, $pd, 'Kepala Dinas', 'Struktural', 'Pimpinan Tinggi Pratama'));
+
+        $jabatan = Jabatan::where('jenjang', 'Pimpinan Tinggi Pratama')
+            ->whereHas('sotkEntries', fn($q) => $q->where('unor_id', $pd->id))
+            ->firstOrFail();
+
+        // JPTP tidak boleh memblokir dirinya sendiri saat disimpan ulang.
+        $this->actingAs($this->user)
+            ->put(route('admin.jabatan.update', $jabatan), $this->payload($this->pemkot, $pd, 'Kepala Dinas', 'Struktural', 'Pimpinan Tinggi Pratama'))
+            ->assertRedirect(route('admin.jabatan.index'));
+
+        $this->assertSame($pd->id, $jabatan->sotkEntries()->value('unor_id'));
+    }
+
+    #[Test]
+    public function update_rejects_moving_a_jptp_into_a_perangkat_daerah_that_already_has_one()
+    {
+        $dinasA = $this->buatPerangkatDaerah('Dinas A');
+        $dinasB = $this->buatPerangkatDaerah('Dinas B');
+
+        $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($this->pemkot, $dinasA, 'Kepala Dinas', 'Struktural', 'Pimpinan Tinggi Pratama'))
+            ->assertRedirect(route('admin.jabatan.index'));
+        $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($this->pemkot, $dinasB, 'Kepala Badan', 'Struktural', 'Pimpinan Tinggi Pratama'))
+            ->assertRedirect(route('admin.jabatan.index'));
+
+        // "Kepala Badan" juga dibuat seeder di OPD lain — batasi ke Dinas B.
+        $jabatanB = Jabatan::where('nama_jabatan', 'Kepala Badan')
+            ->whereHas('sotkEntries', fn($q) => $q->where('unor_id', $dinasB->id))
+            ->firstOrFail();
+
+        $this->actingAs($this->user)
+            ->put(route('admin.jabatan.update', $jabatanB), $this->payload($this->pemkot, $dinasA, 'Kepala Badan', 'Struktural', 'Pimpinan Tinggi Pratama'))
+            ->assertSessionHas('error');
+
+        $this->assertSame($dinasB->id, $jabatanB->sotkEntries()->value('unor_id'),
+            'Penempatan lama tidak boleh berubah saat validasi gagal.');
     }
 
     // ─────────────────── Validasi simpan ───────────────────

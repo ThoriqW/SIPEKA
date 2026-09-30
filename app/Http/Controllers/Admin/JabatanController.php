@@ -168,6 +168,11 @@ class JabatanController extends Controller
             }
         }
 
+        // Validasi: aturan khusus Pimpinan Tinggi Pratama
+        if ($pesan = $this->jptpViolation($validated, $unorId)) {
+            return back()->withInput()->with('error', $pesan);
+        }
+
         if ($validated['jenis_jabatan'] === 'Pelaksana') $validated['jenjang'] = 'Pelaksana';
 
         // Auto-generate kode_jabatan
@@ -361,6 +366,11 @@ class JabatanController extends Controller
             }
         }
 
+        // Validasi: aturan khusus Pimpinan Tinggi Pratama
+        if ($pesan = $this->jptpViolation($validated, $unorId, $jabatan->id)) {
+            return back()->withInput()->with('error', $pesan);
+        }
+
         if ($validated['jenis_jabatan'] === 'Pelaksana') $validated['jenjang'] = 'Pelaksana';
 
         // Pastikan kode_jabatan tidak dapat diubah
@@ -440,6 +450,61 @@ class JabatanController extends Controller
         $pemkot = Unor::whereNull('parent_id')->first();
 
         return in_array($unorId, $this->selectableUnorIds($indukId, $pemkot), true);
+    }
+
+    /**
+     * Aturan khusus jabatan Pimpinan Tinggi Pratama (JPTP).
+     *
+     * Sejak refactor OPD→UNOR, jabatan tidak lagi menyimpan OPD-nya sendiri —
+     * lokasinya pindah ke tabel SOTK. Constraint database lama
+     * (`jptp_opd_unique`, satu JPTP per OPD) ikut di-drop bersama kolom
+     * `opd_id` dan tidak pernah punya pengganti, sehingga dua aturan ini
+     * ditegakkan di sini: hanya boleh satu JPTP per Perangkat Daerah, dan
+     * JPTP hanya boleh menempel di level Perangkat Daerah.
+     *
+     * @param  array  $data  Data jabatan yang sudah tervalidasi (butuh jenis_jabatan & jenjang)
+     * @param  int  $unorId  UNOR tujuan jabatan
+     * @param  int|null  $exceptJabatanId  Jabatan yang sedang disunting, agar tidak menghitung dirinya sendiri
+     * @return string|null  Pesan kesalahan bila dilanggar, null bila lolos
+     */
+    private function jptpViolation(array $data, int $unorId, ?int $exceptJabatanId = null): ?string
+    {
+        $adalahJptp = ($data['jenis_jabatan'] ?? null) === 'Struktural'
+            && ($data['jenjang'] ?? null) === Jenjang::PimpinanTinggi->value;
+
+        if (!$adalahJptp) {
+            return null;
+        }
+
+        if (!$this->isPerangkatDaerah($unorId)) {
+            return 'Jabatan Pimpinan Tinggi Pratama hanya dapat ditempatkan pada Unit Organisasi level Perangkat Daerah.';
+        }
+
+        if ($this->jptpExistsAt($unorId, $exceptJabatanId)) {
+            return 'Perangkat Daerah ini sudah memiliki jabatan Pimpinan Tinggi Pratama. Satu Perangkat Daerah hanya boleh memiliki satu.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Apakah UNOR ini berada di level Perangkat Daerah — anak langsung Pemkot?
+     */
+    private function isPerangkatDaerah(int $unorId): bool
+    {
+        return Unor::perangkatDaerah()->whereKey($unorId)->exists();
+    }
+
+    /**
+     * Apakah sudah ada jabatan JPTP lain yang menempel pada UNOR ini?
+     */
+    private function jptpExistsAt(int $unorId, ?int $exceptJabatanId = null): bool
+    {
+        return Jabatan::where('jenis_jabatan', 'Struktural')
+            ->where('jenjang', Jenjang::PimpinanTinggi->value)
+            ->when($exceptJabatanId, fn($q) => $q->where('id', '!=', $exceptJabatanId))
+            ->whereHas('sotkEntries', fn($q) => $q->where('unor_id', $unorId))
+            ->exists();
     }
 
     /**
