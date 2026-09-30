@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Jabatan;
 use App\Models\KebutuhanPegawai;
+use App\Models\PenempatanPegawai;
 use App\Models\ReferensiJabatan;
 use App\Models\Unor;
 use App\Enums\Jenjang;
@@ -529,25 +530,40 @@ class JabatanController extends Controller
     {
         $request->validate(['unor_id' => 'required|exists:unor,id']);
 
-        $indukId = $request->unor_id;
+        $indukId = (int) $request->unor_id;
         $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
         $descendantIds = $this->collectDescendants($indukId, $allUnor);
         $targetIds = array_merge([$indukId], $descendantIds);
 
-        $jabatanList = Jabatan::withCount('pegawai')
-            ->with(['sotkEntries.unor'])
+        $jabatanList = Jabatan::with(['sotkEntries.unor'])
             ->whereHas('sotkEntries', fn($q) => $q->whereIn('unor_id', $targetIds))
-            ->orderBy('nama_jabatan')->get()
-            ->map(fn($j) => [
+            ->orderBy('nama_jabatan')->get();
+
+        // Kursi Struktural yang sudah diduduki — dihitung dari penempatan
+        // aktif, sama seperti aturan yang berlaku saat menyimpan pegawai.
+        $kursiTerisi = PenempatanPegawai::where('is_active', true)
+            ->whereIn('jabatan_id', $jabatanList->pluck('id'))
+            ->pluck('jabatan_id')
+            ->flip();
+
+        $data = $jabatanList->map(function ($j) use ($allUnor, $indukId, $targetIds, $kursiTerisi) {
+            $unor = $j->sotkEntries
+                ->first(fn($s) => in_array($s->unor_id, $targetIds))
+                ?->unor;
+
+            return [
                 'id' => $j->id,
                 'nama' => $j->nama_jabatan,
                 'jenis_jabatan' => $j->jenis_jabatan,
                 'jenjang' => $j->jenjang,
-                'pegawai_count' => $j->pegawai_count,
-                'unor_nama' => $j->sotkEntries
-                    ->first(fn($s) => in_array($s->unor_id, $targetIds))
-                    ?->unor?->nama_unor,
-            ]);
-        return response()->json(['success' => true, 'data' => $jabatanList]);
+                'terisi' => $j->jenis_jabatan === 'Struktural' && $kursiTerisi->has($j->id),
+                // Jalur relatif terhadap OPD yang dipilih. Tanpa ini,
+                // beberapa "Sekretariat" di bawah satu kecamatan tampil
+                // berlabel sama dan tidak bisa dibedakan saat memilih.
+                'unor_jalur' => $unor?->pathLabel($allUnor, $indukId),
+            ];
+        });
+
+        return response()->json(['success' => true, 'data' => $data]);
     }
 }

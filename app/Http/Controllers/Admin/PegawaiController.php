@@ -74,6 +74,12 @@ class PegawaiController extends Controller
         if (!empty($validated['jabatan_id'])) {
             $jabatan = Jabatan::with('sotkEntries')->find($validated['jabatan_id']);
         }
+
+        // Validasi: jabatan Struktural hanya untuk satu pegawai
+        if ($jabatan && $this->structuralSeatTaken($jabatan)) {
+            return back()->withInput()->with('error', $this->structuralSeatMessage($jabatan));
+        }
+
         $unorId = $jabatan?->sotkEntries->first()?->unor_id ?? null;
 
         $pegawai = Pegawai::create($validated);
@@ -149,6 +155,16 @@ class PegawaiController extends Controller
 
         // Deteksi perubahan jabatan
         $jabatanChanged = (int) ($validated['jabatan_id'] ?? 0) !== (int) ($pegawai->jabatan_id ?? 0);
+
+        // Validasi: jabatan Struktural hanya untuk satu pegawai. Diperiksa
+        // sebelum menyimpan apa pun supaya tidak meninggalkan perubahan
+        // separuh jalan bila ditolak.
+        if ($jabatanChanged && !empty($validated['jabatan_id'])) {
+            $jabatanBaru = Jabatan::find($validated['jabatan_id']);
+            if ($jabatanBaru && $this->structuralSeatTaken($jabatanBaru, $pegawai->id)) {
+                return back()->withInput()->with('error', $this->structuralSeatMessage($jabatanBaru));
+            }
+        }
 
         $pegawai->update($validated);
 
@@ -316,4 +332,34 @@ class PegawaiController extends Controller
         return $ids;
     }
 
+    /**
+     * Apakah kursi jabatan Struktural ini sudah diduduki pegawai lain?
+     *
+     * Jabatan Struktural adalah satu kursi untuk satu orang — berbeda dengan
+     * Fungsional dan Pelaksana yang boleh diisi banyak pegawai.
+     *
+     * Yang dihitung adalah penempatan AKTIF, sama seperti perhitungan
+     * Bezetting, sehingga pegawai yang penempatannya dinonaktifkan otomatis
+     * membebaskan kursinya.
+     *
+     * @param  int|null  $exceptPegawaiId  Pegawai yang sedang disimpan (saat edit),
+     *                                     agar menyimpan ulang tidak memblokir dirinya sendiri.
+     */
+    private function structuralSeatTaken(Jabatan $jabatan, ?int $exceptPegawaiId = null): bool
+    {
+        if ($jabatan->jenis_jabatan !== 'Struktural') {
+            return false;
+        }
+
+        return PenempatanPegawai::where('jabatan_id', $jabatan->id)
+            ->where('is_active', true)
+            ->when($exceptPegawaiId, fn($q) => $q->where('pegawai_id', '!=', $exceptPegawaiId))
+            ->exists();
+    }
+
+    private function structuralSeatMessage(Jabatan $jabatan): string
+    {
+        return 'Jabatan Struktural "' . $jabatan->nama_jabatan . '" sudah diduduki pegawai lain. '
+            . 'Satu jabatan struktural hanya untuk satu pegawai.';
+    }
 }

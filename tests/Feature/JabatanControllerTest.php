@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Jabatan;
+use App\Models\Pegawai;
+use App\Models\PenempatanPegawai;
 use App\Models\Sotk;
 use App\Models\Unor;
 use App\Models\User;
@@ -121,6 +123,84 @@ class JabatanControllerTest extends TestCase
         $label = array_column($this->dropdownPerInduk($response->getContent())[$this->kecamatan->id], 'nama');
 
         $this->assertContains('Kelurahan Birobuli » Sekretariat', $label);
+    }
+
+    // ─────────── Endpoint jabatan per OPD (dipakai form Pegawai) ───────────
+
+    #[Test]
+    public function by_opd_labels_units_with_path_relative_to_the_selected_opd()
+    {
+        $jabatan = $this->buatJabatanDi($this->sekretariatKelurahan, 'Sekretaris');
+
+        $response = $this->actingAs($this->user)
+            ->get(route('admin.jabatan.by-opd', ['unor_id' => $this->kecamatan->id]));
+
+        $response->assertOk();
+        $data = collect($response->json('data'))->firstWhere('id', $jabatan->id);
+
+        $this->assertNotNull($data);
+        $this->assertSame('Kelurahan Birobuli » Sekretariat', $data['unor_jalur']);
+    }
+
+    #[Test]
+    public function by_opd_distinguishes_homonymous_units_below_one_opd()
+    {
+        $kelurahan = $this->buatJabatanDi($this->sekretariatKelurahan, 'Sekretaris');
+        $kecamatan = $this->buatJabatanDi($this->sekretariatKecamatan, 'Sekretaris');
+
+        $data = collect(
+            $this->actingAs($this->user)
+                ->get(route('admin.jabatan.by-opd', ['unor_id' => $this->kecamatan->id]))
+                ->json('data')
+        );
+
+        // Keduanya bernama "Sekretaris" pada UNOR bernama "Sekretariat" —
+        // inilah yang dulu tampil kembar di dropdown form Pegawai.
+        $this->assertSame('Kelurahan Birobuli » Sekretariat', $data->firstWhere('id', $kelurahan->id)['unor_jalur']);
+        $this->assertSame('Sekretariat', $data->firstWhere('id', $kecamatan->id)['unor_jalur']);
+    }
+
+    #[Test]
+    public function by_opd_marks_a_filled_structural_seat()
+    {
+        $terisi = $this->buatJabatanDi($this->sekretariatKelurahan, 'Sekretaris Kelurahan');
+        $kosong = $this->buatJabatanDi($this->sekretariatKecamatan, 'Sekretaris Kecamatan');
+
+        $fungsional = Jabatan::create([
+            'nama_jabatan' => 'Pranata Komputer', 'kode_jabatan' => 'UJI-F',
+            'jenis_jabatan' => 'Fungsional', 'kelas_jabatan' => 8, 'jenjang' => 'Ahli Pertama',
+        ]);
+        Sotk::create(['unor_id' => $this->sekretariatKecamatan->id, 'jabatan_id' => $fungsional->id]);
+
+        // Kursi struktural pertama diisi, plus satu jabatan fungsional berisi
+        // pegawai — fungsional tidak boleh dianggap "terisi".
+        foreach ([$terisi, $fungsional] as $jabatan) {
+            $pegawai = Pegawai::create([
+                'nip' => '2000010120250110' . $jabatan->id,
+                'nama' => 'Pegawai ' . $jabatan->id,
+                'jenis_kepegawaian' => 'PNS', 'tanggal_lahir' => '2000-01-01',
+                'golongan_pangkat' => 'III/a', 'pendidikan' => 'D4/S1',
+                'jabatan_id' => $jabatan->id,
+            ]);
+            PenempatanPegawai::create([
+                'pegawai_id' => $pegawai->id,
+                'unor_id' => $jabatan->sotkEntries()->value('unor_id'),
+                'jabatan_id' => $jabatan->id,
+                'tanggal_mulai' => now()->toDateString(),
+                'is_active' => true,
+            ]);
+        }
+
+        $data = collect(
+            $this->actingAs($this->user)
+                ->get(route('admin.jabatan.by-opd', ['unor_id' => $this->kecamatan->id]))
+                ->json('data')
+        );
+
+        $this->assertTrue($data->firstWhere('id', $terisi->id)['terisi']);
+        $this->assertFalse($data->firstWhere('id', $kosong->id)['terisi']);
+        $this->assertFalse($data->firstWhere('id', $fungsional->id)['terisi'],
+            'Jabatan Fungsional boleh diisi banyak pegawai, jadi tidak pernah ditandai terisi.');
     }
 
     // ─────────────────── Daftar Jabatan ───────────────────

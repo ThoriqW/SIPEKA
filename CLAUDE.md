@@ -38,7 +38,7 @@ Aturan berikut merupakan sumber kebenaran utama dan harus dibaca sebelum melakuk
 8. Jabatan tertentu seperti Guru dan Dokter dapat mempunyai **sub-jabatan sebagai atribut terstruktur**, bukan sebagai level/hierarki SOTK.
 9. Jumlah kebutuhan pegawai **tidak direpresentasikan dengan membuat jabatan/node berulang**.
 10. Satu jabatan pada satu UNOR dapat memiliki kebutuhan lebih dari satu orang.
-11. Beberapa pegawai dapat memiliki UNOR dan Jabatan yang sama.
+11. Beberapa pegawai dapat memiliki UNOR dan Jabatan yang sama — **kecuali jabatan Struktural**, yang merupakan satu kursi untuk satu pegawai. Lihat pengecualian lengkapnya pada bagian Validasi dan Integritas Data → Penempatan.
 12. **Bezetting adalah head count pegawai aktif berdasarkan UNOR + Jabatan.**
 13. `Selisih = Bezetting - Kebutuhan`.
 14. Nilai selisih:
@@ -639,8 +639,10 @@ Wajib dilakukan server-side.
 
 ## Penempatan
 
-- Beberapa pegawai boleh ditempatkan pada UNOR + Jabatan yang sama.
-- Hapus/ubah seluruh unique constraint lama yang mengasumsikan satu jabatan/posisi hanya dapat ditempati satu pegawai.
+- Beberapa pegawai boleh ditempatkan pada UNOR + Jabatan yang sama untuk jabatan **Fungsional** dan **Pelaksana**.
+- **Pengecualian jabatan Struktural:** satu jabatan Struktural adalah satu kursi untuk satu pegawai, sehingga hanya boleh memiliki satu penempatan aktif. Divalidasi di `PegawaiController::structuralSeatTaken()` pada saat menyimpan pegawai.
+- Kursi Struktural dihitung dari **penempatan aktif**, sama seperti perhitungan Bezetting. Penempatan yang dinonaktifkan membebaskan kursinya, dan pegawai yang sedang disimpan tidak memblokir dirinya sendiri.
+- Hapus/ubah seluruh unique constraint lama yang mengasumsikan satu jabatan/posisi hanya dapat ditempati satu pegawai — **kecuali** batas satu pegawai pada jabatan Struktural di atas.
 - Penempatan utama dan tugas tambahan adalah konsep berbeda.
 
 ## Tugas Tambahan
@@ -902,8 +904,10 @@ Minimal uji:
 ## Penempatan
 
 - menempatkan satu pegawai;
-- menempatkan beberapa pegawai pada UNOR + Jabatan yang sama;
-- memastikan tidak ada constraint satu Jabatan = satu pegawai;
+- menempatkan beberapa pegawai pada UNOR + Jabatan yang sama untuk jabatan Fungsional dan Pelaksana;
+- menolak pegawai kedua pada satu jabatan Struktural selama penempatannya masih aktif;
+- membebaskan kursi Struktural begitu penempatannya dinonaktifkan;
+- memastikan tidak ada constraint satu Jabatan = satu pegawai yang berlaku menyeluruh — batas pada jabatan Struktural memang disengaja;
 - mempertahankan satu penempatan aktif per pegawai jika itu aturan existing.
 
 ## Kebutuhan

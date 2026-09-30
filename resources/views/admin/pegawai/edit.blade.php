@@ -67,9 +67,9 @@
                         <input type="text" name="kualifikasi_pendidikan" value="{{ old('kualifikasi_pendidikan', $pegawai->kualifikasi_pendidikan) }}" placeholder="Contoh: S1 Teknik Informatika" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">OPD</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Perangkat Daerah</label>
                         <select name="induk_id" x-on:change="loadJabatan($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('induk_id') border-red-500 @enderror">
-                            <option value="">-- Pilih OPD --</option>
+                            <option value="">-- Pilih Perangkat Daerah --</option>
                             @foreach($opdList as $id => $nama)<option value="{{ $id }}" {{ old('induk_id', $currentIndukId) == $id ? 'selected' : '' }}>{{ $nama }}</option>@endforeach
                         </select>
                         @error('induk_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
@@ -244,13 +244,15 @@ function pegawaiForm() {
                             if (j.jenjang) {
                                 label += ' — ' + j.jenjang;
                             }
-                            if (j.unor_nama) {
-                                label += ' (' + j.unor_nama + ')';
+                            if (j.unor_jalur) {
+                                label += ' (' + j.unor_jalur + ')';
                             }
                             if (j.id == currentJabatanId) {
-                                // Allow current jabatan even if full (own position)
-                            } else if (j.jenis_jabatan === 'Struktural' && j.pegawai_count >= 1) {
+                                // Jabatan yang sedang dipegang tetap boleh dipilih
+                                // walau kursinya terisi — itu kursinya sendiri.
+                            } else if (j.terisi) {
                                 label += ' (Terisi)';
+                                opt.disabled = true;
                                 opt.style.color = '#ef4444';
                             }
                             opt.textContent = label;
