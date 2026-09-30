@@ -130,6 +130,7 @@ class KebutuhanPegawaiTest extends TestCase
             'jenis_jabatan' => $jabatan->jenis_jabatan,
             'kelas_jabatan' => $jabatan->kelas_jabatan,
             'jenjang' => $jabatan->jenjang,
+            'induk_id' => $indukId,
             'kebutuhan' => 7,
             'unor_id' => $unorId,
         ]);
@@ -140,5 +141,9 @@ class KebutuhanPegawaiTest extends TestCase
             ->count();
 
         $this->assertEquals(1, $count, 'Should be exactly 1 record');
+        $this->assertEquals(7, KebutuhanPegawai::where('unor_id', $unorId)
+            ->where('jabatan_id', $jabatan->id)
+            ->whereNull('tahun')
+            ->value('jumlah'), 'Update terakhir harus benar-benar tersimpan');
     }
 }

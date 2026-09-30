@@ -59,6 +59,51 @@ class Unor extends Model
     }
 
     /**
+     * Label jalur UNOR, mis. "Kecamatan Palu Barat » Kelurahan Birobuli » Sekretariat".
+     *
+     * Dipakai setiap kali nama UNOR ditampilkan di luar pohonnya sendiri —
+     * tanpa jalur, beberapa UNOR berbeda bisa berlabel sama persis (mis.
+     * "Sekretariat" milik kecamatan dan milik kelurahan).
+     *
+     * @param  \Illuminate\Support\Collection  $allUnorById  Seluruh UNOR di-keyBy(id), dioper agar tidak query berulang.
+     * @param  int|null  $stopAtId  Bila diisi, jalur berhenti DI ATAS UNOR tersebut dan namanya
+     *                              tidak ikut disertakan — dipakai untuk jalur relatif terhadap
+     *                              Unor Induk yang sudah dipilih di dropdown sebelahnya.
+     */
+    public function pathLabel($allUnorById, ?int $stopAtId = null): string
+    {
+        // UNOR itu sendiri adalah induknya — tidak ada jalur yang perlu ditampilkan.
+        if ($stopAtId !== null && (int) $this->id === $stopAtId) {
+            return $this->nama_unor;
+        }
+
+        $parts = [$this->nama_unor];
+        $cursor = $this;
+
+        // Batas iterasi sebagai pengaman terhadap data siklik.
+        for ($i = 0; $i < 100; $i++) {
+            $parent = $allUnorById->get($cursor->parent_id);
+
+            if (!$parent) {
+                break;
+            }
+
+            if ($stopAtId !== null) {
+                if ((int) $parent->id === $stopAtId) {
+                    break;
+                }
+            } elseif (!$parent->parent_id) {
+                break; // root (Pemkot) tidak disertakan
+            }
+
+            array_unshift($parts, $parent->nama_unor);
+            $cursor = $parent;
+        }
+
+        return implode(' » ', $parts);
+    }
+
+    /**
      * Scope daftar Perangkat Daerah — anak langsung UNOR root (Pemkot).
      *
      * Dipakai sebagai pilihan filter di menu Kebutuhan dan Bezetting. Satu

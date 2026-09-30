@@ -38,7 +38,14 @@ class JabatanController extends Controller
         $opdList = Unor::where('parent_id', $pemkot?->id)
             ->orderBy('nama_unor')->pluck('nama_unor', 'id');
 
-        return view('admin.jabatan.index', compact('jabatanList', 'opdList', 'pemkot'));
+        // Jalur lengkap tiap UNOR untuk kolom Unit Organisasi — dihitung sekali
+        // di sini agar view tidak menelusuri parent per baris.
+        $allUnor = Unor::get()->keyBy('id');
+        $unorPathList = $allUnor
+            ->mapWithKeys(fn($u) => [$u->id => $u->pathLabel($allUnor)])
+            ->all();
+
+        return view('admin.jabatan.index', compact('jabatanList', 'opdList', 'pemkot', 'unorPathList'));
     }
 
     public function create()
@@ -104,7 +111,14 @@ class JabatanController extends Controller
         ]);
 
         $unorId = (int) $validated['unor_id'];
-        unset($validated['unor_id'], $validated['kebutuhan']);
+        $indukId = (int) $validated['induk_id'];
+        // induk_id hanya konteks pemilihan di layar — tidak disimpan ke tabel jabatan.
+        unset($validated['unor_id'], $validated['kebutuhan'], $validated['induk_id']);
+
+        // Validasi: Unit Organisasi harus benar-benar berada di bawah Unor Induk
+        if (!$this->isSelectableUnder($indukId, $unorId)) {
+            return back()->withInput()->with('error', 'Unit Organisasi yang dipilih tidak berada di bawah Unit Organisasi Induk. Silakan pilih ulang.');
+        }
 
         // Validasi: jenjang wajib untuk Struktural & Fungsional
         if ($validated['jenis_jabatan'] !== 'Pelaksana' && empty($validated['jenjang'])) {
@@ -287,7 +301,14 @@ class JabatanController extends Controller
         ]);
 
         $unorId = (int) $validated['unor_id'];
-        unset($validated['unor_id'], $validated['kebutuhan']);
+        $indukId = (int) $validated['induk_id'];
+        // induk_id hanya konteks pemilihan di layar — tidak disimpan ke tabel jabatan.
+        unset($validated['unor_id'], $validated['kebutuhan'], $validated['induk_id']);
+
+        // Validasi: Unit Organisasi harus benar-benar berada di bawah Unor Induk
+        if (!$this->isSelectableUnder($indukId, $unorId)) {
+            return back()->withInput()->with('error', 'Unit Organisasi yang dipilih tidak berada di bawah Unit Organisasi Induk. Silakan pilih ulang.');
+        }
 
         // Validasi: jenjang wajib untuk Struktural & Fungsional
         if ($validated['jenis_jabatan'] !== 'Pelaksana' && empty($validated['jenjang'])) {
@@ -383,34 +404,69 @@ class JabatanController extends Controller
     }
 
     /**
-     * Build mapping induk → semua turunan (induk + children + grandchildren ...) untuk dropdown bertingkat.
+     * Daftar ID UNOR yang boleh dipilih untuk sebuah Unor Induk.
+     *
+     * Dipakai bersama oleh buildUnorByInduk() (isi dropdown) dan validasi
+     * simpan, supaya pilihan yang tampil di layar dan yang diterima server
+     * tidak mungkin berbeda.
+     *
+     * @return int[]
+     */
+    private function selectableUnorIds(int $indukId, ?Unor $pemkot): array
+    {
+        // Pemkot sebagai induk: hanya anak langsungnya (OPD). Pemkot sendiri
+        // tidak ikut karena jabatan tidak ditempatkan langsung pada root.
+        if ($pemkot && $indukId === (int) $pemkot->id) {
+            return array_map(
+                'intval',
+                Unor::where('parent_id', $pemkot->id)->orderBy('nama_unor')->pluck('id')->all()
+            );
+        }
+
+        $allUnor = Unor::whereNotNull('parent_id')->get()->keyBy('id');
+
+        return array_map('intval', array_merge([$indukId], $this->collectDescendants($indukId, $allUnor)));
+    }
+
+    /**
+     * Apakah $unorId termasuk pilihan yang sah untuk $indukId?
+     *
+     * Memakai selectableUnorIds() yang sama dengan penyusun dropdown, sehingga
+     * pasangan yang tidak mungkin dipilih di layar juga tidak diterima server.
+     */
+    private function isSelectableUnder(int $indukId, int $unorId): bool
+    {
+        $pemkot = Unor::whereNull('parent_id')->first();
+
+        return in_array($unorId, $this->selectableUnorIds($indukId, $pemkot), true);
+    }
+
+    /**
+     * Build mapping induk → pilihannya (induk + seluruh turunan) untuk dropdown bertingkat.
+     *
+     * Labelnya berupa jalur relatif terhadap induk, mis. "Kelurahan Birobuli »
+     * Sekretariat". Tanpa jalur, UNOR yang namanya sama di cabang berbeda
+     * (beberapa kelurahan yang masing-masing punya "Sekretariat") tampil
+     * kembar dan tidak bisa dibedakan saat memilih.
      */
     private function buildUnorByInduk($indukList, $pemkot = null): array
     {
-        $allUnor = Unor::whereNotNull('parent_id')->orderBy('nama_unor')->get()->keyBy('id');
+        // Termasuk root supaya jalur relatif terhadap Pemkot tetap benar.
+        $allUnor = Unor::orderBy('nama_unor')->get()->keyBy('id');
         $result = [];
 
-        foreach ($indukList as $indukId => $indukNama) {
-            // Pemkot sebagai induk: tampilkan semua OPD (anak langsung Pemkot)
-            if ($pemkot && (int) $indukId === (int) $pemkot->id) {
-                $items = [];
-                foreach ($allUnor as $unor) {
-                    if ((int) $unor->parent_id === (int) $pemkot->id) {
-                        $items[] = ['id' => $unor->id, 'nama' => $unor->nama_unor];
-                    }
+        foreach ($indukList->keys() as $indukId) {
+            $indukId = (int) $indukId;
+            $items = [];
+
+            foreach ($this->selectableUnorIds($indukId, $pemkot) as $id) {
+                $unor = $allUnor->get($id);
+                if (!$unor) {
+                    continue;
                 }
-                $result[$indukId] = $items;
-                continue;
+                $items[] = ['id' => $unor->id, 'nama' => $unor->pathLabel($allUnor, $indukId)];
             }
 
-            $items = [['id' => $indukId, 'nama' => $indukNama]];
-            $descendantIds = $this->collectDescendants($indukId, $allUnor);
-            foreach ($descendantIds as $id) {
-                $unor = $allUnor->get($id);
-                if ($unor) {
-                    $items[] = ['id' => $unor->id, 'nama' => $unor->nama_unor];
-                }
-            }
             $result[$indukId] = $items;
         }
 

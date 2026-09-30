@@ -117,7 +117,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk <span class="text-red-500">*</span></label>
                         <select name="induk_id" x-on:change="onIndukChange($el.value)"
                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('unor_id') border-red-500 @enderror">
-                            <option value="">-- Pilih Unit Organisasi Induk <span class="text-red-500">*</span> --</option>
+                            <option value="">-- Pilih Unit Organisasi Induk --</option>
                             @foreach($indukList as $id => $nama)
                                 <option value="{{ $id }}" {{ old('induk_id', $currentIndukId) == $id ? 'selected' : '' }}>{{ $nama }}</option>
                             @endforeach

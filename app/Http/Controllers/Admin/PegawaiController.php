@@ -117,7 +117,7 @@ class PegawaiController extends Controller
         $allUnor = Unor::with('parent')->get()->keyBy('id');
         $unorList = $allUnor
             ->reject(fn($u) => $u->parent_id === null) // exclude root
-            ->mapWithKeys(fn($u) => [$u->id => $this->buildBreadcrumb($u, $allUnor)])
+            ->mapWithKeys(fn($u) => [$u->id => $u->pathLabel($allUnor)])
             ->sort()
             ->all();
 
@@ -316,20 +316,4 @@ class PegawaiController extends Controller
         return $ids;
     }
 
-    /**
-     * Build breadcrumb path untuk UNOR — berhenti sebelum root.
-     * Contoh: "Dinas Kesehatan » Bidang Pelayanan Kesehatan"
-     */
-    private function buildBreadcrumb(Unor $unor, $allUnor): string
-    {
-        $parts = [$unor->nama_unor];
-        $cursor = $unor;
-        while ($cursor->parent_id) {
-            $parent = $allUnor->get($cursor->parent_id);
-            if (!$parent || !$parent->parent_id) break; // stop di root
-            array_unshift($parts, $parent->nama_unor);
-            $cursor = $parent;
-        }
-        return implode(' » ', $parts);
-    }
 }

@@ -31,7 +31,6 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">No</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jabatan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unor Induk</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Jenis</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Kelas</th>
@@ -42,30 +41,16 @@
                     <tbody class="divide-y divide-gray-200">
                         @forelse($jabatanList as $key => $j)
                         @php
-                            // Dapatkan UNOR utama dari SOTK (non-root)
+                            // UNOR utama dari SOTK (non-root)
                             $unor = $j->sotkEntries
-                                ->filter(fn($s) => $s->unor && (!$pemkot || $s->unor_id !== $pemkot->id))
-                                ->first()?->unor
+                                ->first(fn($s) => $s->unor && (!$pemkot || $s->unor_id !== $pemkot->id))
+                                ?->unor
                                 ?? $j->sotkEntries->first()?->unor;
-                            // Unor Induk: walk up until parent is Pemkot (root)
-                            $induk = $unor;
-                            if ($unor && $pemkot) {
-                                while ($induk && $induk->parent_id !== $pemkot->id) {
-                                    $induk = $induk->parent;
-                                }
-                            }
-                            // Khusus JPTP: induk adalah Pemkot, bukan OPD itu sendiri
-                            if ($j->jenis_jabatan === 'Struktural'
-                                && $j->jenjang === 'Pimpinan Tinggi Pratama'
-                                && $induk && $unor && $induk->id === $unor->id) {
-                                $induk = $pemkot;
-                            }
                         @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $jabatanList->firstItem() + $key }}</td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $j->nama_jabatan }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $induk->nama_unor ?? '-' }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $unor->nama_unor ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $unor ? ($unorPathList[$unor->id] ?? $unor->nama_unor) : '-' }}</td>
                             <td class="px-6 py-4 text-sm text-center">
                                 <span class="px-2 py-1 text-xs rounded-full {{ $j->jenis_jabatan === 'Struktural' ? 'bg-purple-100 text-purple-800' : ($j->jenis_jabatan === 'Fungsional' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">{{ $j->jenis_jabatan }}</span>
                             </td>
@@ -80,7 +65,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr><td colspan="8" class="px-6 py-10 text-center text-gray-500">Tidak ada data jabatan.</td></tr>
+                        <tr><td colspan="7" class="px-6 py-10 text-center text-gray-500">Tidak ada data jabatan.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
