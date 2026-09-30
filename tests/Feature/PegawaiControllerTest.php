@@ -76,6 +76,48 @@ class PegawaiControllerTest extends TestCase
         $this->assertEquals($jabatan->id, $pegawai->penempatanAktif->jabatan_id);
     }
 
+    // ─────── Kontrol pengisian tanggal lahir dari NIP ───────
+
+    #[Test]
+    public function date_field_offers_an_accessible_extract_control()
+    {
+        $user = User::where('role', 'admin')->first();
+        $pegawai = Pegawai::whereNotNull('jabatan_id')->firstOrFail();
+
+        // Kontrolnya kini hanya ikon, jadi nama yang bisa dibaca pembaca layar
+        // dan tooltip-nya wajib ada.
+        foreach ([route('admin.pegawai.create'), route('admin.pegawai.edit', $pegawai)] as $url) {
+            $this->actingAs($user)->get($url)
+                ->assertOk()
+                ->assertSee('title="Isi dari NIP"', escape: false)
+                ->assertSee('aria-label="Isi tanggal lahir dari NIP"', escape: false);
+        }
+    }
+
+    #[Test]
+    public function edit_form_shows_tanggal_lahir_validation_error()
+    {
+        $user = User::where('role', 'admin')->first();
+        $pegawai = Pegawai::whereNotNull('jabatan_id')->firstOrFail();
+
+        $response = $this->actingAs($user)
+            ->from(route('admin.pegawai.edit', $pegawai))
+            ->followingRedirects()
+            ->put(route('admin.pegawai.update', $pegawai), [
+                'nip' => $pegawai->nip,
+                'nama' => $pegawai->nama,
+                'jenis_kepegawaian' => $pegawai->jenis_kepegawaian,
+                'tanggal_lahir' => '',
+                'golongan_pangkat' => $pegawai->golongan_pangkat,
+                'pendidikan' => $pegawai->pendidikan,
+                'induk_id' => $pegawai->penempatanAktif?->unor_id,
+                'jabatan_id' => $pegawai->jabatan_id,
+            ]);
+
+        // Form Edit dulu tidak menampilkan pesan ini sama sekali.
+        $response->assertSee('Tanggal Lahir wajib diisi.');
+    }
+
     // ─────── Jabatan wajib & pemulihan form setelah validasi gagal ───────
 
     #[Test]

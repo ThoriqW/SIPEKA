@@ -14,25 +14,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">NIP <span class="text-red-500">*</span></label>
-                        <input type="text" name="nip" x-ref="nip" maxlength="18" value="{{ old('nip') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nip') border-red-500 @enderror">
+                        <input type="text" name="nip" x-model="nip" maxlength="18" value="{{ old('nip') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('nip') border-red-500 @enderror">
                         @error('nip')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
-                        <div class="mt-2 flex items-center gap-2">
-                            <button type="button"
-                                    x-on:click="nipLoading = true; nipError = ''; nipSuccess = false; fetch('/admin/pegawai/extract-tanggal-lahir?nip=' + $refs.nip.value).then(r => r.json()).then(d => { if(d.success) { $refs.tanggal_lahir.value = d.tanggal_lahir; nipSuccess = true; nipLoading = false; setTimeout(() => nipSuccess = false, 2000); } else { nipError = d.message || 'NIP tidak valid'; nipLoading = false; } }).catch(() => { nipError = 'Gagal memproses NIP'; nipLoading = false; })"
-                                    :disabled="nipLoading"
-                                    class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-md border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 hover:border-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                                <svg x-show="!nipLoading" class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                                <svg x-show="nipLoading" class="animate-spin w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                                </svg>
-                                <span x-text="nipLoading ? 'Memproses...' : 'Isi Tanggal Lahir'"></span>
-                            </button>
-                            <span x-show="nipSuccess" x-cloak class="text-xs text-green-600">✓ Terisi</span>
-                            <span x-show="nipError" x-cloak class="text-xs text-red-600" x-text="nipError"></span>
-                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nama <span class="text-red-500">*</span></label>
@@ -49,8 +32,29 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir <span class="text-red-500">*</span></label>
-                        <input type="date" name="tanggal_lahir" x-ref="tanggal_lahir" value="{{ old('tanggal_lahir') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('tanggal_lahir') border-red-500 @enderror">
+                        <div class="flex items-center gap-2">
+                            <input type="date" name="tanggal_lahir" x-ref="tanggal_lahir" value="{{ old('tanggal_lahir') }}" class="flex-1 min-w-0 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('tanggal_lahir') border-red-500 @enderror">
+                            {{-- Ikonnya sengaja bukan kalender: di sebelah input tanggal, ikon
+                                 kalender terbaca sebagai "buka pemilih tanggal", padahal
+                                 aksinya mengisi dari NIP. --}}
+                            <button type="button"
+                                    x-on:click="isiTanggalLahirDariNip()"
+                                    :disabled="nipLoading || !nipSiapDiisi"
+                                    title="Isi dari NIP"
+                                    aria-label="Isi tanggal lahir dari NIP"
+                                    class="shrink-0 inline-flex items-center justify-center p-2 rounded-md border border-gray-300 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:border-gray-400 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                                <svg x-show="!nipLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                                <svg x-show="nipLoading" x-cloak class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                            </button>
+                            <span x-show="nipSuccess" x-cloak class="shrink-0 text-xs text-green-600">✓ Terisi</span>
+                        </div>
                         @error('tanggal_lahir')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        <p x-show="nipError" x-cloak class="mt-1 text-sm text-red-600" x-text="nipError"></p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Golongan/Pangkat <span class="text-red-500">*</span></label>
@@ -110,9 +114,42 @@ function pegawaiForm() {
         opdSelected: false,
         jabatanLoading: false,
         jabatanGagal: false,
+        nip: @json(old('nip', '')),
         nipLoading: false,
         nipError: '',
         nipSuccess: false,
+
+        /** NIP hanya bisa diurai saat tepat 18 digit angka. */
+        get nipSiapDiisi() {
+            return /^\d{18}$/.test(String(this.nip).trim());
+        },
+
+        isiTanggalLahirDariNip() {
+            if (!this.nipSiapDiisi) {
+                return;
+            }
+
+            this.nipLoading = true;
+            this.nipError = '';
+            this.nipSuccess = false;
+
+            fetch('/admin/pegawai/extract-tanggal-lahir?nip=' + encodeURIComponent(String(this.nip).trim()))
+                .then(function(r) { return r.json(); })
+                .then(function(d) {
+                    if (d.success) {
+                        this.$refs.tanggal_lahir.value = d.tanggal_lahir;
+                        this.nipSuccess = true;
+                        setTimeout(() => { this.nipSuccess = false; }, 2000);
+                    } else {
+                        this.nipError = d.message || 'NIP tidak valid';
+                    }
+                    this.nipLoading = false;
+                }.bind(this))
+                .catch(function() {
+                    this.nipError = 'Gagal memproses NIP';
+                    this.nipLoading = false;
+                }.bind(this));
+        },
         initGolongan(jenis) {
             if (jenis) {
                 this.onJenisKepegawaianChange(jenis, '{{ old('golongan_pangkat', '') }}');
