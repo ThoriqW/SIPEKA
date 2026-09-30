@@ -76,6 +76,101 @@ class PegawaiControllerTest extends TestCase
         $this->assertEquals($jabatan->id, $pegawai->penempatanAktif->jabatan_id);
     }
 
+    // ─────── Jabatan wajib & pemulihan form setelah validasi gagal ───────
+
+    #[Test]
+    public function store_rejects_pegawai_without_jabatan()
+    {
+        $user = User::where('role', 'admin')->first();
+        $unor = $this->unorInduk();
+
+        $payload = $this->payloadPegawai(
+            $unor, $this->buatJabatan($unor, 'Fungsional', 'Ahli Pertama'), $this->nip(70), 'Tanpa Jabatan'
+        );
+        unset($payload['jabatan_id']);
+
+        $response = $this->actingAs($user)
+            ->from(route('admin.pegawai.create'))
+            ->followingRedirects()
+            ->post(route('admin.pegawai.store'), $payload);
+
+        $response->assertSee('Jabatan wajib diisi.');
+        $this->assertDatabaseMissing('pegawai', ['nip' => $this->nip(70)]);
+
+        // Blok Jabatan harus ikut tampil walau Perangkat Daerah belum dipilih,
+        // supaya pesan errornya tidak tersembunyi.
+        $response->assertSee('x-show="opdSelected || true"', escape: false);
+    }
+
+    #[Test]
+    public function update_rejects_clearing_the_jabatan()
+    {
+        $user = User::where('role', 'admin')->first();
+        $unor = $this->unorInduk();
+        $jabatan = $this->buatJabatan($unor, 'Fungsional', 'Ahli Pertama');
+
+        $this->actingAs($user)->post(route('admin.pegawai.store'),
+            $this->payloadPegawai($unor, $jabatan, $this->nip(71), 'Pegawai Uji'));
+        $pegawai = Pegawai::where('nip', $this->nip(71))->firstOrFail();
+
+        $payload = $this->payloadPegawai($unor, $jabatan, $this->nip(71), 'Pegawai Uji');
+        $payload['jabatan_id'] = '';
+
+        $this->actingAs($user)->put(route('admin.pegawai.update', $pegawai), $payload)
+            ->assertSessionHasErrors('jabatan_id');
+
+        // Tanpa penjagaan ini, update mengosongkan jabatan sekaligus
+        // menonaktifkan penempatan lama tanpa membuat pengganti.
+        $this->assertSame($jabatan->id, $pegawai->fresh()->jabatan_id);
+        $this->assertNotNull($pegawai->fresh()->penempatanAktif);
+    }
+
+    #[Test]
+    public function create_form_restores_perangkat_daerah_and_jabatan_after_a_validation_error()
+    {
+        $user = User::where('role', 'admin')->first();
+        $unor = $this->unorInduk();
+        $jabatan = $this->buatJabatan($unor, 'Fungsional', 'Ahli Pertama');
+
+        // NIP milik pegawai lain memicu validasi gagal, seperti kasus yang dilaporkan.
+        $payload = $this->payloadPegawai($unor, $jabatan, Pegawai::first()->nip, 'Duplikat');
+
+        $response = $this->actingAs($user)
+            ->from(route('admin.pegawai.create'))
+            ->followingRedirects()
+            ->post(route('admin.pegawai.store'), $payload);
+
+        $response->assertSee('value="' . $unor->id . '" selected', escape: false);
+        // Form harus memuat ulang daftar jabatan dengan pilihan sebelumnya.
+        // Tanpa ini field Jabatan tetap tersembunyi karena opdSelected tidak
+        // pernah disetel ulang.
+        $response->assertSee("loadJabatan('" . $unor->id . "', '" . $jabatan->id . "')", escape: false);
+    }
+
+    #[Test]
+    public function edit_form_prefers_the_submitted_jabatan_after_a_validation_error()
+    {
+        $user = User::where('role', 'admin')->first();
+        $unor = $this->unorInduk();
+        $jabatanAwal = $this->buatJabatan($unor, 'Fungsional', 'Ahli Pertama');
+        $jabatanBaru = $this->buatJabatan($unor, 'Fungsional', 'Ahli Muda');
+
+        $this->actingAs($user)->post(route('admin.pegawai.store'),
+            $this->payloadPegawai($unor, $jabatanAwal, $this->nip(72), 'Pegawai Uji'));
+        $pegawai = Pegawai::where('nip', $this->nip(72))->firstOrFail();
+
+        $nipLain = Pegawai::where('id', '!=', $pegawai->id)->firstOrFail()->nip;
+        $payload = $this->payloadPegawai($unor, $jabatanBaru, $nipLain, 'Pegawai Uji');
+
+        $response = $this->actingAs($user)
+            ->from(route('admin.pegawai.edit', $pegawai))
+            ->followingRedirects()
+            ->put(route('admin.pegawai.update', $pegawai), $payload);
+
+        // Yang dipulihkan harus jabatan yang tadi dikirim, bukan jabatan lama.
+        $response->assertSee("loadJabatan('" . $unor->id . "', '" . $jabatanBaru->id . "')", escape: false);
+    }
+
     // ─────── Kursi jabatan: Struktural satu orang, lainnya banyak ───────
 
     private function unorInduk(): Unor

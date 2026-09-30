@@ -66,14 +66,11 @@ class PegawaiController extends Controller
             'golongan_pangkat' => 'required|string|max:10',
             'pendidikan' => 'required|in:SD,SLTP Sederajat,SLTA Sederajat,D1,D2,D3,D4/S1,S2,S3',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
-            'jabatan_id' => 'nullable|exists:jabatan,id',
+            'jabatan_id' => 'required|exists:jabatan,id',
         ]);
 
         // Resolve UNOR dari SOTK jabatan
-        $jabatan = null;
-        if (!empty($validated['jabatan_id'])) {
-            $jabatan = Jabatan::with('sotkEntries')->find($validated['jabatan_id']);
-        }
+        $jabatan = Jabatan::with('sotkEntries')->find($validated['jabatan_id']);
 
         // Validasi: jabatan Struktural hanya untuk satu pegawai
         if ($jabatan && $this->structuralSeatTaken($jabatan)) {
@@ -150,7 +147,7 @@ class PegawaiController extends Controller
             'golongan_pangkat' => 'required|string|max:10',
             'pendidikan' => 'required|in:SD,SLTP Sederajat,SLTA Sederajat,D1,D2,D3,D4/S1,S2,S3',
             'kualifikasi_pendidikan' => 'nullable|string|max:255',
-            'jabatan_id' => 'nullable|exists:jabatan,id',
+            'jabatan_id' => 'required|exists:jabatan,id',
         ]);
 
         // Deteksi perubahan jabatan

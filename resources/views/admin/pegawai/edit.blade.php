@@ -7,7 +7,8 @@
             <h1 class="text-2xl font-semibold text-gray-900">Edit Pegawai</h1>
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.pegawai.index') }}" class="hover:text-gray-700">Pegawai</a> / Edit</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()" x-init="initGolongan('{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}'); @if($currentIndukId) loadJabatan({{ $currentIndukId }}) @endif">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()"
+             x-init="initGolongan('{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}'); @if($currentIndukId) loadJabatan('{{ $currentIndukId }}', '{{ old('jabatan_id', $pegawai->jabatan_id) }}') @endif">
             <form action="{{ route('admin.pegawai.update', $pegawai) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -74,16 +75,20 @@
                         </select>
                         @error('induk_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
-                    <div x-show="opdSelected">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
-                        <select name="jabatan_id" x-ref="jabatanSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    {{-- Blok ini juga tampil saat ada error jabatan, supaya pesannya tidak ikut tersembunyi --}}
+                    <div x-show="opdSelected || {{ $errors->has('jabatan_id') ? 'true' : 'false' }}" x-cloak>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan <span class="text-red-500">*</span></label>
+                        <select name="jabatan_id" x-ref="jabatanSelect" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('jabatan_id') border-red-500 @enderror">
                             <option value="">-- Pilih Jabatan --</option>
                         </select>
+                        @error('jabatan_id')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                        <p x-show="jabatanGagal" x-cloak class="mt-1 text-sm text-red-600">Daftar jabatan gagal dimuat. Pilih ulang Perangkat Daerah untuk mencoba lagi.</p>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-6">
                     <a href="{{ route('admin.pegawai.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">Kembali</a>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">Perbarui</button>
+                    <button type="submit" :disabled="jabatanLoading || jabatanGagal"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed">Perbarui</button>
                 </div>
             </form>
         </div>
@@ -203,6 +208,8 @@ function pegawaiForm() {
     var currentJenis = '{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}';
     return {
         opdSelected: false,
+        jabatanLoading: false,
+        jabatanGagal: false,
         nipLoading: false,
         nipError: '',
         nipSuccess: false,
@@ -224,13 +231,16 @@ function pegawaiForm() {
                 select.appendChild(opt);
             });
         },
-        loadJabatan(opdId) {
+        loadJabatan(opdId, preSelectId) {
             this.opdSelected = !!opdId;
+            this.jabatanGagal = false;
             var select = this.$refs.jabatanSelect;
             select.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
             if (!opdId) {
+                this.jabatanLoading = false;
                 return;
             }
+            this.jabatanLoading = true;
             fetch('/admin/jabatan/by-opd?unor_id=' + opdId)
                 .then(function(r) { return r.json(); })
                 .then(function(d) {
@@ -256,14 +266,19 @@ function pegawaiForm() {
                                 opt.style.color = '#ef4444';
                             }
                             opt.textContent = label;
-                            if (j.id == currentJabatanId) opt.selected = true;
                             select.appendChild(opt);
                         });
                     }
+                    // Utamakan pilihan yang tadi dikirim; kalau tidak ada,
+                    // kembali ke jabatan yang sedang dipegang pegawai ini.
+                    if (preSelectId) select.value = String(preSelectId);
+                    this.jabatanLoading = false;
                 }.bind(this))
                 .catch(function() {
                     select.innerHTML = '<option value="">-- Gagal memuat --</option>';
-                });
+                    this.jabatanGagal = true;
+                    this.jabatanLoading = false;
+                }.bind(this));
             select.onchange = null;
         }
     }
