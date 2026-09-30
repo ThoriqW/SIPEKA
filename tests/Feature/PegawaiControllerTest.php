@@ -76,6 +76,43 @@ class PegawaiControllerTest extends TestCase
         $this->assertEquals($jabatan->id, $pegawai->penempatanAktif->jabatan_id);
     }
 
+    // ─────── Satu definisi komponen untuk form Tambah & Edit ───────
+
+    #[Test]
+    public function the_form_component_lives_in_one_shared_definition()
+    {
+        // Penjaga anti-duplikasi: definisinya hanya boleh ada di partial bersama.
+        foreach (['create', 'edit'] as $view) {
+            $sumber = file_get_contents(resource_path("views/admin/pegawai/{$view}.blade.php"));
+
+            $this->assertStringNotContainsString(
+                'function pegawaiForm',
+                $sumber,
+                "View {$view} tidak boleh mendefinisikan ulang pegawaiForm()."
+            );
+        }
+
+        $this->assertStringContainsString(
+            'function pegawaiForm',
+            file_get_contents(resource_path('views/admin/pegawai/_form-script.blade.php'))
+        );
+    }
+
+    #[Test]
+    public function forms_pass_their_configuration_through_data_attributes()
+    {
+        $user = User::where('role', 'admin')->first();
+        $pegawai = Pegawai::whereNotNull('jabatan_id')->firstOrFail();
+
+        $create = $this->actingAs($user)->get(route('admin.pegawai.create'))->getContent();
+        $this->assertStringContainsString('x-data="pegawaiForm()"', $create);
+        $this->assertStringContainsString('data-jenis-kepegawaian=', $create);
+
+        $edit = $this->actingAs($user)->get(route('admin.pegawai.edit', $pegawai))->getContent();
+        $this->assertStringContainsString('data-nip="' . $pegawai->nip . '"', $edit);
+        $this->assertStringContainsString('data-jabatan-id="' . $pegawai->jabatan_id . '"', $edit);
+    }
+
     // ─────── Kontrol pengisian tanggal lahir dari NIP ───────
 
     #[Test]
@@ -186,7 +223,8 @@ class PegawaiControllerTest extends TestCase
         // Form harus memuat ulang daftar jabatan dengan pilihan sebelumnya.
         // Tanpa ini field Jabatan tetap tersembunyi karena opdSelected tidak
         // pernah disetel ulang.
-        $response->assertSee("loadJabatan('" . $unor->id . "', '" . $jabatan->id . "')", escape: false);
+        $response->assertSee('data-induk-id="' . $unor->id . '"', escape: false);
+        $response->assertSee('data-jabatan-pilih="' . $jabatan->id . '"', escape: false);
     }
 
     #[Test]
@@ -210,7 +248,8 @@ class PegawaiControllerTest extends TestCase
             ->put(route('admin.pegawai.update', $pegawai), $payload);
 
         // Yang dipulihkan harus jabatan yang tadi dikirim, bukan jabatan lama.
-        $response->assertSee("loadJabatan('" . $unor->id . "', '" . $jabatanBaru->id . "')", escape: false);
+        $response->assertSee('data-induk-id="' . $unor->id . '"', escape: false);
+        $response->assertSee('data-jabatan-pilih="' . $jabatanBaru->id . '"', escape: false);
     }
 
     // ─────── Kursi jabatan: Struktural satu orang, lainnya banyak ───────

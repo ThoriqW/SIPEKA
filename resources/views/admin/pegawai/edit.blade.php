@@ -7,8 +7,14 @@
             <h1 class="text-2xl font-semibold text-gray-900">Edit Pegawai</h1>
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.pegawai.index') }}" class="hover:text-gray-700">Pegawai</a> / Edit</p>
         </div>
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" x-data="pegawaiForm()"
-             x-init="initGolongan('{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}'); @if($currentIndukId) loadJabatan('{{ $currentIndukId }}', '{{ old('jabatan_id', $pegawai->jabatan_id) }}') @endif">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+             x-data="pegawaiForm()"
+             data-nip="{{ old('nip', $pegawai->nip) }}"
+             data-jenis-kepegawaian="{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}"
+             data-golongan-pangkat="{{ old('golongan_pangkat', $pegawai->golongan_pangkat) }}"
+             data-jabatan-id="{{ $pegawai->jabatan_id }}"
+             data-induk-id="{{ $currentIndukId }}"
+             data-jabatan-pilih="{{ old('jabatan_id', $pegawai->jabatan_id) }}">
             <form action="{{ route('admin.pegawai.update', $pegawai) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -204,122 +210,5 @@
 @endsection
 
 @section('scripts')
-<script>
-function pegawaiForm() {
-    var currentJabatanId = {{ $pegawai->jabatan_id ?? 'null' }};
-    var golonganPNS = @json($golonganPangkatList);
-    var golonganPPPK = @json($pppkGolonganList);
-    var currentGolongan = '{{ old('golongan_pangkat', $pegawai->golongan_pangkat) }}';
-    var currentJenis = '{{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) }}';
-    return {
-        opdSelected: false,
-        jabatanLoading: false,
-        jabatanGagal: false,
-        nip: @json(old('nip', $pegawai->nip)),
-        nipLoading: false,
-        nipError: '',
-        nipSuccess: false,
-
-        /** NIP hanya bisa diurai saat tepat 18 digit angka. */
-        get nipSiapDiisi() {
-            return /^\d{18}$/.test(String(this.nip).trim());
-        },
-
-        isiTanggalLahirDariNip() {
-            if (!this.nipSiapDiisi) {
-                return;
-            }
-
-            this.nipLoading = true;
-            this.nipError = '';
-            this.nipSuccess = false;
-
-            fetch('/admin/pegawai/extract-tanggal-lahir?nip=' + encodeURIComponent(String(this.nip).trim()))
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                    if (d.success) {
-                        this.$refs.tanggal_lahir.value = d.tanggal_lahir;
-                        this.nipSuccess = true;
-                        setTimeout(() => { this.nipSuccess = false; }, 2000);
-                    } else {
-                        this.nipError = d.message || 'NIP tidak valid';
-                    }
-                    this.nipLoading = false;
-                }.bind(this))
-                .catch(function() {
-                    this.nipError = 'Gagal memproses NIP';
-                    this.nipLoading = false;
-                }.bind(this));
-        },
-        initGolongan(jenis) {
-            if (jenis) {
-                this.onJenisKepegawaianChange(jenis, currentGolongan);
-            }
-        },
-        onJenisKepegawaianChange(jenis, preSelect) {
-            var list = jenis === 'PPPK' ? golonganPPPK : golonganPNS;
-            var select = document.querySelector('[name="golongan_pangkat"]');
-            select.innerHTML = '<option value="">-- Pilih Golongan/Pangkat --</option>';
-            Object.entries(list).forEach(function(_a) {
-                var val = _a[0], label = _a[1];
-                var opt = document.createElement('option');
-                opt.value = val;
-                opt.textContent = label;
-                if (preSelect && val === preSelect) opt.selected = true;
-                select.appendChild(opt);
-            });
-        },
-        loadJabatan(opdId, preSelectId) {
-            this.opdSelected = !!opdId;
-            this.jabatanGagal = false;
-            var select = this.$refs.jabatanSelect;
-            select.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
-            if (!opdId) {
-                this.jabatanLoading = false;
-                return;
-            }
-            this.jabatanLoading = true;
-            fetch('/admin/jabatan/by-opd?unor_id=' + opdId)
-                .then(function(r) { return r.json(); })
-                .then(function(d) {
-                    select.innerHTML = '<option value="">-- Pilih Jabatan --</option>';
-                    if (d.success && d.data) {
-                        d.data.forEach(function(j) {
-                            var opt = document.createElement('option');
-                            opt.value = j.id;
-                            opt.setAttribute('data-jenjang', j.jenjang || '');
-                            var label = j.nama;
-                            if (j.jenjang) {
-                                label += ' — ' + j.jenjang;
-                            }
-                            if (j.unor_jalur) {
-                                label += ' (' + j.unor_jalur + ')';
-                            }
-                            if (j.id == currentJabatanId) {
-                                // Jabatan yang sedang dipegang tetap boleh dipilih
-                                // walau kursinya terisi — itu kursinya sendiri.
-                            } else if (j.terisi) {
-                                label += ' (Terisi)';
-                                opt.disabled = true;
-                                opt.style.color = '#ef4444';
-                            }
-                            opt.textContent = label;
-                            select.appendChild(opt);
-                        });
-                    }
-                    // Utamakan pilihan yang tadi dikirim; kalau tidak ada,
-                    // kembali ke jabatan yang sedang dipegang pegawai ini.
-                    if (preSelectId) select.value = String(preSelectId);
-                    this.jabatanLoading = false;
-                }.bind(this))
-                .catch(function() {
-                    select.innerHTML = '<option value="">-- Gagal memuat --</option>';
-                    this.jabatanGagal = true;
-                    this.jabatanLoading = false;
-                }.bind(this));
-            select.onchange = null;
-        }
-    }
-}
-</script>
+@include('admin.pegawai._form-script')
 @append
