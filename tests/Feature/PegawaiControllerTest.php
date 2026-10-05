@@ -113,6 +113,81 @@ class PegawaiControllerTest extends TestCase
         $this->assertStringContainsString('data-jabatan-id="' . $pegawai->jabatan_id . '"', $edit);
     }
 
+    // ─────── Gelar depan & belakang ───────
+
+    #[Test]
+    public function store_saves_gelar_depan_and_belakang()
+    {
+        $user = User::where('role', 'admin')->first();
+        $unor = $this->unorInduk();
+        $jabatan = $this->buatJabatan($unor, 'Fungsional', 'Ahli Pertama');
+
+        $payload = $this->payloadPegawai($unor, $jabatan, $this->nip(80), 'Abdul Muis');
+        $payload['gelar_depan'] = 'Drs.';
+        $payload['gelar_belakang'] = 'S.E., M.M.';
+
+        $this->actingAs($user)->post(route('admin.pegawai.store'), $payload)
+            ->assertRedirect(route('admin.pegawai.index'));
+
+        $pegawai = Pegawai::where('nip', $this->nip(80))->firstOrFail();
+        $this->assertSame('Drs.', $pegawai->gelar_depan);
+        $this->assertSame('S.E., M.M.', $pegawai->gelar_belakang);
+        $this->assertSame('Drs. Abdul Muis, S.E., M.M.', $pegawai->namaLengkap());
+    }
+
+    #[Test]
+    public function update_saves_gelar()
+    {
+        $user = User::where('role', 'admin')->first();
+        $unor = $this->unorInduk();
+        $jabatan = $this->buatJabatan($unor, 'Fungsional', 'Ahli Pertama');
+
+        $this->actingAs($user)->post(route('admin.pegawai.store'),
+            $this->payloadPegawai($unor, $jabatan, $this->nip(81), 'Abdul Muis'));
+        $pegawai = Pegawai::where('nip', $this->nip(81))->firstOrFail();
+
+        $payload = $this->payloadPegawai($unor, $jabatan, $this->nip(81), 'Abdul Muis');
+        $payload['gelar_depan'] = 'Ir.';
+
+        $this->actingAs($user)->put(route('admin.pegawai.update', $pegawai), $payload)
+            ->assertRedirect(route('admin.pegawai.index'));
+
+        $this->assertSame('Ir. Abdul Muis', $pegawai->fresh()->namaLengkap());
+    }
+
+    #[Test]
+    public function gelar_is_optional()
+    {
+        $user = User::where('role', 'admin')->first();
+        $unor = $this->unorInduk();
+        $jabatan = $this->buatJabatan($unor, 'Fungsional', 'Ahli Pertama');
+
+        $payload = $this->payloadPegawai($unor, $jabatan, $this->nip(82), 'Supriyadi');
+        $payload['gelar_depan'] = '';
+        $payload['gelar_belakang'] = '';
+
+        $this->actingAs($user)->post(route('admin.pegawai.store'), $payload)
+            ->assertRedirect(route('admin.pegawai.index'));
+
+        $this->assertSame('Supriyadi', Pegawai::where('nip', $this->nip(82))->firstOrFail()->namaLengkap());
+    }
+
+    #[Test]
+    public function pegawai_index_shows_the_composed_name()
+    {
+        $user = User::where('role', 'admin')->first();
+
+        Pegawai::whereNotNull('jabatan_id')->firstOrFail()->update([
+            'nama' => 'Abdul Muis',
+            'gelar_depan' => 'Drs.',
+            'gelar_belakang' => 'M.Si.',
+        ]);
+
+        $this->actingAs($user)->get(route('admin.pegawai.index'))
+            ->assertOk()
+            ->assertSee('Drs. Abdul Muis, M.Si.');
+    }
+
     // ─────── Kontrol pengisian tanggal lahir dari NIP ───────
 
     #[Test]

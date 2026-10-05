@@ -61,6 +61,8 @@ class PegawaiController extends Controller
         $validated = $request->validate([
             'nip' => 'required|string|size:18|unique:pegawai,nip',
             'nama' => 'required|string|max:255',
+            'gelar_depan' => 'nullable|string|max:50',
+            'gelar_belakang' => 'nullable|string|max:100',
             'jenis_kepegawaian' => 'required|in:PNS,PPPK',
             'tanggal_lahir' => 'required|date',
             'golongan_pangkat' => 'required|string|max:10',
@@ -142,6 +144,8 @@ class PegawaiController extends Controller
         $validated = $request->validate([
             'nip' => 'required|string|size:18|unique:pegawai,nip,' . $pegawai->id,
             'nama' => 'required|string|max:255',
+            'gelar_depan' => 'nullable|string|max:50',
+            'gelar_belakang' => 'nullable|string|max:100',
             'jenis_kepegawaian' => 'required|in:PNS,PPPK',
             'tanggal_lahir' => 'required|date',
             'golongan_pangkat' => 'required|string|max:10',

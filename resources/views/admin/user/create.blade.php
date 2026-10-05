@@ -25,7 +25,7 @@
                     </div>
 
                     <!-- Untuk User: Pilih Pegawai (NIP) — searchable -->
-                    <div x-show="role === 'user'" x-data="{ pegOpen: false, pegSearch: '', pegSelected: '{{ old('nip') ? ($pegawaiList->firstWhere('nip', old('nip'))?->nip . ' — ' . $pegawaiList->firstWhere('nip', old('nip'))?->nama ?? '') : '' }}' }" class="relative">
+                    <div x-show="role === 'user'" x-data="{ pegOpen: false, pegSearch: '', pegSelected: '{{ old('nip') ? ($pegawaiList->firstWhere('nip', old('nip'))?->nip . ' — ' . $pegawaiList->firstWhere('nip', old('nip'))?->namaLengkap() ?? '') : '' }}' }" class="relative">
                         <input type="hidden" name="nip" x-ref="pegNip" value="{{ old('nip') }}">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pegawai <span class="text-red-500">*</span></label>
                         <div class="relative">
@@ -41,7 +41,7 @@
                         <div x-show="pegOpen" x-cloak @mousedown.prevent
                              class="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                             @foreach($pegawaiList as $p)
-                            @php $label = $p->nip . ' — ' . $p->nama . ' (' . ($p->penempatanAktif->unor->nama_unor ?? 'Tanpa OPD') . ')'; @endphp
+                            @php $label = $p->nip . ' — ' . $p->namaLengkap() . ' (' . ($p->penempatanAktif->unor->nama_unor ?? 'Tanpa OPD') . ')'; @endphp
                             <div @click="pegOpen = false; pegSearch = ''; pegSelected = '{{ $label }}'; $refs.pegNip.value = '{{ $p->nip }}'"
                                  x-show="!pegSearch || '{{ strtolower($label) }}'.includes(pegSearch.toLowerCase())"
                                  class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer {{ old('nip') == $p->nip ? 'bg-blue-100' : '' }}">{{ $label }}</div>

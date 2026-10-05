@@ -42,7 +42,7 @@ class ProjectionService
 
         $query = Pegawai::query()
             ->with(['jabatan', 'penempatanAktif'])
-            ->select(['id', 'nip', 'nama', 'tanggal_lahir', 'jenis_kepegawaian', 'jabatan_id'])
+            ->select(['id', 'nip', 'nama', 'gelar_depan', 'gelar_belakang', 'tanggal_lahir', 'jenis_kepegawaian', 'jabatan_id'])
             ->whereNotNull('jabatan_id');
 
         if ($unorIds !== null) {
@@ -76,7 +76,7 @@ class ProjectionService
                 $result[$unorId][$jabatanId]['counts'][$n] = ($result[$unorId][$jabatanId]['counts'][$n] ?? 0) + 1;
                 $result[$unorId][$jabatanId]['pegawai'][] = [
                     'nip'             => $pegawai->nip,
-                    'nama'            => $pegawai->nama,
+                    'nama'            => $pegawai->namaLengkap(),
                     'tahun_pensiun'   => $tahunPensiun,
                 ];
             }

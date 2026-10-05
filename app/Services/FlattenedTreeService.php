@@ -422,7 +422,7 @@ class FlattenedTreeService
 
             $map[$p->unor_id][$p->jabatan_id][] = [
                 'nip'            => $p->pegawai->nip,
-                'nama'           => $p->pegawai->nama,
+                'nama'           => $p->pegawai->namaLengkap(),
                 'tugas_tambahan' => $tugasAktif,
             ];
         }

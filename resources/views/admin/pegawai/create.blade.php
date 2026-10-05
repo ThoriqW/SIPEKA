@@ -28,6 +28,18 @@
                         @error('nama')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Gelar Depan</label>
+                        <input type="text" name="gelar_depan" value="{{ old('gelar_depan') }}"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('gelar_depan') border-red-500 @enderror">
+                        @error('gelar_depan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Gelar Belakang</label>
+                        <input type="text" name="gelar_belakang" value="{{ old('gelar_belakang') }}"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('gelar_belakang') border-red-500 @enderror">
+                        @error('gelar_belakang')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kepegawaian <span class="text-red-500">*</span></label>
                         <select name="jenis_kepegawaian" x-on:change="onJenisKepegawaianChange($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             <option value="">-- Pilih Jenis Kepegawaian --</option>
@@ -78,7 +90,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kualifikasi Pendidikan</label>
-                        <input type="text" name="kualifikasi_pendidikan" value="{{ old('kualifikasi_pendidikan') }}" placeholder="Contoh: S1 Teknik Informatika" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kualifikasi_pendidikan') border-red-500 @enderror">
+                        <input type="text" name="kualifikasi_pendidikan" value="{{ old('kualifikasi_pendidikan') }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('kualifikasi_pendidikan') border-red-500 @enderror">
                         @error('kualifikasi_pendidikan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>

@@ -63,7 +63,7 @@
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $pegawaiList->firstItem() + $key }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $p->nip }}</td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                                {{ $p->nama }}
+                                {{ $p->namaLengkap() }}
                                 @php
                                     $today = now()->toDateString();
                                     $aktifTugas = $p->tugasTambahan->filter(function($tt) use ($today) {

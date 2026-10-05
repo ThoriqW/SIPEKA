@@ -29,6 +29,18 @@
                         @error('nama')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Gelar Depan</label>
+                        <input type="text" name="gelar_depan" value="{{ old('gelar_depan', $pegawai->gelar_depan) }}"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('gelar_depan') border-red-500 @enderror">
+                        @error('gelar_depan')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Gelar Belakang</label>
+                        <input type="text" name="gelar_belakang" value="{{ old('gelar_belakang', $pegawai->gelar_belakang) }}"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 @error('gelar_belakang') border-red-500 @enderror">
+                        @error('gelar_belakang')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kepegawaian <span class="text-red-500">*</span></label>
                         <select name="jenis_kepegawaian" x-on:change="onJenisKepegawaianChange($el.value)" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             @foreach($jenisKepegawaianList as $val => $label)<option value="{{ $val }}" {{ old('jenis_kepegawaian', $pegawai->jenis_kepegawaian) == $val ? 'selected' : '' }}>{{ $label }}</option>@endforeach
@@ -76,7 +88,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Kualifikasi Pendidikan</label>
-                        <input type="text" name="kualifikasi_pendidikan" value="{{ old('kualifikasi_pendidikan', $pegawai->kualifikasi_pendidikan) }}" placeholder="Contoh: S1 Teknik Informatika" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <input type="text" name="kualifikasi_pendidikan" value="{{ old('kualifikasi_pendidikan', $pegawai->kualifikasi_pendidikan) }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Perangkat Daerah</label>
@@ -155,7 +167,7 @@
 
             {{-- Form tambah tugas tambahan --}}
             <div class="border-t pt-4">
-                <h3 class="text-sm font-medium text-gray-700 mb-3">Tambah / Perbarui Tugas Tambahan</h3>
+                <!-- <h3 class="text-sm font-medium text-gray-700 mb-3">Tambah / Perbarui Tugas Tambahan</h3> -->
                 <form action="{{ route('admin.pegawai.tugas-tambahan.store', $pegawai) }}" method="POST">
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

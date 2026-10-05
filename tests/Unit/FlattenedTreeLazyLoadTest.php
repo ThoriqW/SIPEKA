@@ -241,6 +241,40 @@ class FlattenedTreeLazyLoadTest extends TestCase
             'Agregat UNOR induk harus menjumlahkan proyeksi turunannya.');
     }
 
+    // ─────────────────────── Gelar pada nama pegawai ───────────────────────
+
+    /**
+     * Daftar pegawai dari service ini dipakai bersama oleh pohon Bezetting dan
+     * file Excel-nya, jadi satu rakitan nama berlaku untuk keduanya.
+     */
+
+    #[Test]
+    public function pegawai_names_in_the_bezetting_tree_carry_their_gelar()
+    {
+        Pegawai::where('nama', 'Pegawai Dinas')->update([
+            'gelar_depan' => 'Drs.',
+            'gelar_belakang' => 'M.Si.',
+        ]);
+
+        $row = collect($this->service->buildChildrenRows($this->dinas->id))
+            ->firstWhere('nama_jabatan', 'Pengelola Keuangan');
+
+        $this->assertSame('Drs. Pegawai Dinas, M.Si.', $row['pegawai'][0]['nama']);
+    }
+
+    #[Test]
+    public function retiring_pegawai_names_in_the_kebutuhan_tree_carry_their_gelar()
+    {
+        // Menjaga ProjectionService ikut memilih kolom gelar — tanpa itu
+        // namanya kembali polos tanpa peringatan apa pun.
+        Pegawai::where('nama', 'Pegawai Pensiun')->update(['gelar_belakang' => 'S.E.']);
+
+        $row = collect($this->service->buildFlatTree(withProjections: true))
+            ->firstWhere('nama_jabatan', 'Guru Matematika');
+
+        $this->assertSame('Pegawai Pensiun, S.E.', $row['pegawai_pensiun'][0]['nama']);
+    }
+
     // ─────────── Kesetaraan baris hasil muat-bertahap dengan pohon penuh ───────────
 
     /**

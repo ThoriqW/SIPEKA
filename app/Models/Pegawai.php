@@ -13,6 +13,8 @@ class Pegawai extends Model
 
     protected $fillable = [
         'nama',
+        'gelar_depan',
+        'gelar_belakang',
         'nip',
         'jenis_kepegawaian',
         'tanggal_lahir',
@@ -27,6 +29,27 @@ class Pegawai extends Model
         return [
             'tanggal_lahir' => 'date',
         ];
+    }
+
+    /**
+     * Nama lengkap berikut gelar, mis. "Drs. Abdul Muis, M.Si.".
+     *
+     * Satu-satunya tempat nama pegawai dirakit — dipakai setiap kali nama
+     * ditampilkan, supaya koma dan spasinya tidak berbeda antarhalaman.
+     *
+     * Data lama menyimpan gelarnya menyatu di dalam `nama` dan kolom gelarnya
+     * kosong, sehingga rakitan ini mengembalikan `nama` apa adanya. Tidak ada
+     * gelar yang tergandakan untuk kedua jenis data.
+     */
+    public function namaLengkap(): string
+    {
+        $nama = trim((string) $this->nama);
+        $gelarDepan = trim((string) $this->gelar_depan);
+        $gelarBelakang = trim((string) $this->gelar_belakang);
+
+        return ($gelarDepan !== '' ? $gelarDepan . ' ' : '')
+            . $nama
+            . ($gelarBelakang !== '' ? ', ' . $gelarBelakang : '');
     }
 
     public function jabatan(): BelongsTo
