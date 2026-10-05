@@ -9,7 +9,11 @@
         </div>
 
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <form method="POST" action="{{ route('admin.user.store') }}" x-data="{ role: '{{ old('role', 'user') }}' }">
+            {{-- Nilai awal masuk lewat data-* dan dibaca $el.dataset, bukan disisipkan
+                 ke ekspresi JS: Blade meng-escape ' menjadi &#039;, tapi browser
+                 men-decode-nya kembali sebelum Alpine membaca atribut. --}}
+            <form method="POST" action="{{ route('admin.user.store') }}"
+                  x-data="{ role: $el.dataset.role }" data-role="{{ old('role', 'user') }}">
                 @csrf
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -25,7 +29,12 @@
                     </div>
 
                     <!-- Untuk User: Pilih Pegawai (NIP) — searchable -->
-                    <div x-show="role === 'user'" x-data="{ pegOpen: false, pegSearch: '', pegSelected: '{{ old('nip') ? ($pegawaiList->firstWhere('nip', old('nip'))?->nip . ' — ' . $pegawaiList->firstWhere('nip', old('nip'))?->namaLengkap() ?? '') : '' }}' }" class="relative">
+                    @php
+                        $pegawaiTerpilih = old('nip') ? $pegawaiList->firstWhere('nip', old('nip')) : null;
+                        $pegawaiTerpilihLabel = $pegawaiTerpilih ? $pegawaiTerpilih->nip . ' — ' . $pegawaiTerpilih->namaLengkap() : '';
+                    @endphp
+                    <div x-show="role === 'user'" x-data="{ pegOpen: false, pegSearch: '', pegSelected: $el.dataset.pegSelected }"
+                         data-peg-selected="{{ $pegawaiTerpilihLabel }}" class="relative">
                         <input type="hidden" name="nip" x-ref="pegNip" value="{{ old('nip') }}">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pegawai <span class="text-red-500">*</span></label>
                         <div class="relative">
@@ -42,8 +51,9 @@
                              class="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                             @foreach($pegawaiList as $p)
                             @php $label = $p->nip . ' — ' . $p->namaLengkap() . ' (' . ($p->penempatanAktif->unor->nama_unor ?? 'Tanpa OPD') . ')'; @endphp
-                            <div @click="pegOpen = false; pegSearch = ''; pegSelected = '{{ $label }}'; $refs.pegNip.value = '{{ $p->nip }}'"
-                                 x-show="!pegSearch || '{{ strtolower($label) }}'.includes(pegSearch.toLowerCase())"
+                            <div @click="pegOpen = false; pegSearch = ''; pegSelected = $el.dataset.label; $refs.pegNip.value = $el.dataset.nip"
+                                 x-show="!pegSearch || $el.dataset.label.toLowerCase().includes(pegSearch.toLowerCase())"
+                                 data-label="{{ $label }}" data-nip="{{ $p->nip }}"
                                  class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer {{ old('nip') == $p->nip ? 'bg-blue-100' : '' }}">{{ $label }}</div>
                             @endforeach
                         </div>

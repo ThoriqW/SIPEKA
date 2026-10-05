@@ -615,7 +615,6 @@ Wajib dilakukan server-side.
 - Penempatan harus mengacu pada UNOR/SOTK yang valid.
 - Nama pegawai terdiri dari `nama` (nama inti) ditambah `gelar_depan` dan `gelar_belakang`, keduanya nullable dan bebas diketik.
 - Setiap kali nama ditampilkan, rakit lewat `Pegawai::namaLengkap()` — jangan merakit sendiri di view, karena koma dan spasinya akan berbeda antarhalaman.
-- Data lama **sengaja tidak dipisahkan**: gelarnya sudah menyatu di dalam `nama` dan kolom gelarnya kosong, sehingga `namaLengkap()` mengembalikannya apa adanya tanpa gelar ganda. Data baru memakai kedua kolom itu.
 - Pengurutan daftar pegawai tetap memakai kolom `nama` apa adanya. Akibatnya pegawai baru terurut menurut nama inti sedangkan pegawai lama menurut gelar depannya — ini diterima, bukan bug.
 - Pencarian pegawai tidak menjangkau kolom gelar, dan nama akun user tetap diambil dari `nama` mentah.
 

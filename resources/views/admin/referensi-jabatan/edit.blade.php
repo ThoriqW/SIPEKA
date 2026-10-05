@@ -8,7 +8,7 @@
             <p class="text-sm text-gray-500 mt-1"><a href="{{ route('admin.referensi-jabatan.index') }}" class="hover:text-gray-700">Referensi Jabatan</a> / Edit</p>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-             x-data="{ jenis: '{{ old('jenis_jabatan', $referensiJabatan->jenis_jabatan) }}' }">
+             x-data="{ jenis: $el.dataset.jenis }" data-jenis="{{ old('jenis_jabatan', $referensiJabatan->jenis_jabatan) }}">
             <form action="{{ route('admin.referensi-jabatan.update', $referensiJabatan) }}" method="POST">
                 @csrf @method('PUT')
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

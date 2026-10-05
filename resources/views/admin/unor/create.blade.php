@@ -20,7 +20,12 @@
                     </div>
 
                     {{-- Unit Organisasi Induk — searchable dropdown --}}
-                    <div x-data="{ open: false, search: '', selectedText: '{{ $defaultParentId ? $parentList[$defaultParentId] ?? '' : '' }}' }"
+                    {{-- Teks dari database masuk lewat data-* dan dibaca $el.dataset,
+                         bukan disisipkan ke ekspresi JS: Blade meng-escape ' menjadi
+                         &#039;, tapi browser men-decode-nya kembali sebelum Alpine
+                         membaca atribut, sehingga kutip tunggal memutus string. --}}
+                    <div x-data="{ open: false, search: '', selectedText: $el.dataset.selectedText }"
+                         data-selected-text="{{ $defaultParentId ? $parentList[$defaultParentId] ?? '' : '' }}"
                          class="relative">
                         <input type="hidden" name="parent_id" x-ref="parentId" value="{{ $defaultParentId }}">
                         <label class="block text-sm font-medium text-gray-700 mb-1">Unit Organisasi Induk @if($rootUnor) <span class="text-red-500">*</span> @endif</label>
@@ -38,8 +43,9 @@
                              @mousedown.prevent
                              class="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
                             @foreach($parentList as $id => $nama)
-                            <div @click="open = false; search = ''; selectedText = '{{ $nama }}'; $refs.parentId.value = '{{ $id }}'"
-                                 x-show="!search || '{{ strtolower($nama) }}'.includes(search.toLowerCase())"
+                            <div @click="open = false; search = ''; selectedText = $el.dataset.nama; $refs.parentId.value = $el.dataset.id"
+                                 x-show="!search || $el.dataset.nama.toLowerCase().includes(search.toLowerCase())"
+                                 data-nama="{{ $nama }}" data-id="{{ $id }}"
                                  class="px-3 py-2 text-sm hover:bg-blue-50 cursor-pointer {{ $defaultParentId == $id ? 'bg-blue-100' : '' }}">{{ $nama }}</div>
                             @endforeach
                         </div>
