@@ -624,7 +624,7 @@ Wajib dilakukan server-side.
 - Cegah circular reference pada UNOR.
 - Jabatan yang ditempatkan harus berasal dari Master Jabatan.
 - Hindari duplikasi kombinasi UNOR + Jabatan yang merepresentasikan entri SOTK yang sama.
-- Satu Perangkat Daerah hanya boleh memiliki **satu jabatan Pimpinan Tinggi Pratama (JPTP)**, dan JPTP hanya boleh ditempatkan pada UNOR **level Perangkat Daerah** — tidak di Bidang, Sekretariat, atau sub-unit lain. Dulu aturan ini dijaga constraint database `jptp_opd_unique`, yang ikut terhapus saat refactor OPD→UNOR dan tidak pernah punya pengganti. Sekarang ditegakkan di `JabatanController::jptpViolation()`.
+- Satu UNOR hanya boleh memiliki **satu jabatan Pimpinan Tinggi Pratama (JPTP)**. JPTP boleh ditempatkan pada UNOR level mana pun, termasuk unit di bawah Perangkat Daerah seperti Staf Ahli di bawah Sekretariat Daerah. Aturan lama yang membatasi JPTP hanya ke level Perangkat Daerah sudah dihapus; batasannya kini satu JPTP per UNOR. Ditegakkan di `JabatanController::jptpViolation()`.
 - Jangan membatasi jumlah pegawai berdasarkan jumlah node SOTK.
 
 ## Master Jabatan
@@ -904,8 +904,8 @@ Minimal uji:
 - mencegah circular reference;
 - menambahkan Jabatan ke UNOR;
 - mencegah duplikasi entri Jabatan yang sama pada UNOR;
-- menolak jabatan Pimpinan Tinggi Pratama kedua dalam satu Perangkat Daerah;
-- menolak jabatan Pimpinan Tinggi Pratama di bawah level Perangkat Daerah;
+- menolak jabatan Pimpinan Tinggi Pratama kedua pada UNOR yang sama;
+- mengizinkan jabatan Pimpinan Tinggi Pratama di bawah level Perangkat Daerah (mis. Staf Ahli di bawah Sekretariat Daerah);
 - memastikan kebutuhan > 1 tidak membuat node Jabatan berulang.
 
 ## Penempatan

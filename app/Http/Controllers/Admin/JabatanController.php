@@ -563,23 +563,13 @@ class JabatanController extends Controller
             return null;
         }
 
-        if (!$this->isPerangkatDaerah($unorId)) {
-            return 'Jabatan Pimpinan Tinggi Pratama hanya dapat ditempatkan pada Unit Organisasi level Perangkat Daerah.';
-        }
-
+        // Opsi A: JPTP boleh ditempatkan pada UNOR level mana pun (mis. Staf
+        // Ahli di bawah Sekretariat Daerah). Batasannya satu JPTP per UNOR.
         if ($this->jptpExistsAt($unorId, $exceptJabatanId)) {
-            return 'Perangkat Daerah ini sudah memiliki jabatan Pimpinan Tinggi Pratama. Satu Perangkat Daerah hanya boleh memiliki satu.';
+            return 'Unit Organisasi ini sudah memiliki jabatan Pimpinan Tinggi Pratama. Satu Unit Organisasi hanya boleh memiliki satu.';
         }
 
         return null;
-    }
-
-    /**
-     * Apakah UNOR ini berada di level Perangkat Daerah — anak langsung Pemkot?
-     */
-    private function isPerangkatDaerah(int $unorId): bool
-    {
-        return Unor::perangkatDaerah()->whereKey($unorId)->exists();
     }
 
     /**

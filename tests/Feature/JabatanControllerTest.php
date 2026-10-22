@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Jabatan;
 use App\Models\Pegawai;
 use App\Models\PenempatanPegawai;
+use App\Models\ReferensiJabatan;
 use App\Models\Sotk;
 use App\Models\Unor;
 use App\Models\User;
@@ -255,7 +256,7 @@ class JabatanControllerTest extends TestCase
     }
 
     #[Test]
-    public function store_rejects_a_second_jptp_in_the_same_perangkat_daerah()
+    public function store_rejects_a_second_jptp_in_the_same_unor()
     {
         $pd = $this->buatPerangkatDaerah('Dinas Uji');
 
@@ -273,16 +274,45 @@ class JabatanControllerTest extends TestCase
     }
 
     #[Test]
-    public function store_rejects_jptp_below_perangkat_daerah_level()
+    public function store_accepts_jptp_below_perangkat_daerah_level()
     {
         $pd = $this->buatPerangkatDaerah('Dinas Uji');
         $bidang = Unor::create(['nama_unor' => 'Bidang Uji', 'kode_unor' => 'BID-UJI', 'parent_id' => $pd->id]);
 
-        $response = $this->actingAs($this->user)
-            ->post(route('admin.jabatan.store'), $this->payload($pd, $bidang, 'Kepala Bidang', 'Struktural', 'Pimpinan Tinggi Pratama'));
+        // Opsi A: batasan level Perangkat Daerah sudah dihapus.
+        $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($pd, $bidang, 'Kepala Bidang', 'Struktural', 'Pimpinan Tinggi Pratama'))
+            ->assertRedirect(route('admin.jabatan.index'));
 
-        $response->assertSessionHas('error');
-        $this->assertSame(0, Sotk::where('unor_id', $bidang->id)->count());
+        $this->assertSame(1, Sotk::where('unor_id', $bidang->id)->count());
+    }
+
+    #[Test]
+    public function store_accepts_jptp_at_a_staf_ahli_unit_under_sekretariat_daerah()
+    {
+        $setda = $this->buatPerangkatDaerah('Sekretaria Daerah Uji');
+        $stafAhli = Unor::create([
+            'nama_unor' => 'Staf Ahli Uji',
+            'kode_unor' => 'SA-UJI',
+            'parent_id' => $setda->id,
+        ]);
+
+        ReferensiJabatan::create([
+            'nama_jabatan' => 'Staf Ahli Uji',
+            'jenis_jabatan' => 'Struktural',
+        ]);
+
+        // Sekda sebagai JPTP di level Perangkat Daerah.
+        $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($this->pemkot, $setda, 'Kepala Dinas', 'Struktural', 'Pimpinan Tinggi Pratama'))
+            ->assertRedirect(route('admin.jabatan.index'));
+
+        // Staf Ahli sebagai JPTP di sub-unit — diterima setelah opsi A.
+        $this->actingAs($this->user)
+            ->post(route('admin.jabatan.store'), $this->payload($setda, $stafAhli, 'Staf Ahli Uji', 'Struktural', 'Pimpinan Tinggi Pratama'))
+            ->assertRedirect(route('admin.jabatan.index'));
+
+        $this->assertSame(1, Sotk::where('unor_id', $stafAhli->id)->count());
     }
 
     #[Test]
@@ -320,7 +350,7 @@ class JabatanControllerTest extends TestCase
     }
 
     #[Test]
-    public function update_rejects_moving_a_jptp_into_a_perangkat_daerah_that_already_has_one()
+    public function update_rejects_moving_a_jptp_into_a_unor_that_already_has_one()
     {
         $dinasA = $this->buatPerangkatDaerah('Dinas A');
         $dinasB = $this->buatPerangkatDaerah('Dinas B');
