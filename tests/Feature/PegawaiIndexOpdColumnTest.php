@@ -58,11 +58,11 @@ class PegawaiIndexOpdColumnTest extends TestCase
     }
 
     #[Test]
-    public function kolom_opd_menggantikan_unor_induk()
+    public function kolom_perangkat_daerah_menggantikan_unor_induk()
     {
         $html = $this->halaman();
 
-        $this->assertStringContainsString('>OPD</th>', $html);
+        $this->assertStringContainsString('>Perangkat Daerah</th>', $html);
         $this->assertStringNotContainsString('Unor Induk', $html);
     }
 

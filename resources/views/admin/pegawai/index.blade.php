@@ -35,7 +35,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">NIP</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPD</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Perangkat Daerah</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jabatan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenjang</th>

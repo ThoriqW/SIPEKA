@@ -14,6 +14,7 @@ use App\Enums\JenisKepegawaian;
 use App\Enums\Pendidikan;
 use App\Services\NipParser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PegawaiController extends Controller
 {
@@ -86,18 +87,23 @@ class PegawaiController extends Controller
 
         $unorId = $jabatan?->sotkEntries->first()?->unor_id ?? null;
 
-        $pegawai = Pegawai::create($validated);
+        // Pegawai dan penempatannya harus tersimpan bersama. Tanpa transaksi,
+        // kegagalan saat membuat penempatan meninggalkan pegawai tanpa UNOR —
+        // ia hilang dari Bezetting dan proyeksi tanpa pesan apa pun.
+        DB::transaction(function () use ($validated, $unorId) {
+            $pegawai = Pegawai::create($validated);
 
-        // Buat penempatan otomatis
-        if ($unorId && $pegawai->jabatan_id) {
-            PenempatanPegawai::create([
-                'pegawai_id' => $pegawai->id,
-                'unor_id' => $unorId,
-                'jabatan_id' => $pegawai->jabatan_id,
-                'tanggal_mulai' => now()->toDateString(),
-                'is_active' => true,
-            ]);
-        }
+            // Buat penempatan otomatis
+            if ($unorId && $pegawai->jabatan_id) {
+                PenempatanPegawai::create([
+                    'pegawai_id' => $pegawai->id,
+                    'unor_id' => $unorId,
+                    'jabatan_id' => $pegawai->jabatan_id,
+                    'tanggal_mulai' => now()->toDateString(),
+                    'is_active' => true,
+                ]);
+            }
+        });
 
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil ditambahkan.');
     }
@@ -172,30 +178,35 @@ class PegawaiController extends Controller
             }
         }
 
-        $pegawai->update($validated);
+        // Perubahan jabatan dan penempatannya harus atomik: bila pembuatan
+        // penempatan gagal, pegawai tidak boleh tertinggal dengan jabatan baru
+        // tetapi tanpa penempatan aktif.
+        DB::transaction(function () use ($pegawai, $validated, $jabatanChanged) {
+            $pegawai->update($validated);
 
-        // Jika jabatan berubah, nonaktifkan penempatan lama & buat baru
-        if ($jabatanChanged) {
-            // Nonaktifkan penempatan aktif sebelumnya
-            PenempatanPegawai::where('pegawai_id', $pegawai->id)
-                ->where('is_active', true)
-                ->update(['is_active' => false, 'tanggal_selesai' => now()->toDateString()]);
+            // Jika jabatan berubah, nonaktifkan penempatan lama & buat baru
+            if ($jabatanChanged) {
+                // Nonaktifkan penempatan aktif sebelumnya
+                PenempatanPegawai::where('pegawai_id', $pegawai->id)
+                    ->where('is_active', true)
+                    ->update(['is_active' => false, 'tanggal_selesai' => now()->toDateString()]);
 
-            // Resolve UNOR dari SOTK jabatan baru
-            $jabatan = Jabatan::with('sotkEntries')->find($validated['jabatan_id']);
-            $unorId = $jabatan?->sotkEntries->first()?->unor_id ?? null;
+                // Resolve UNOR dari SOTK jabatan baru
+                $jabatan = Jabatan::with('sotkEntries')->find($validated['jabatan_id']);
+                $unorId = $jabatan?->sotkEntries->first()?->unor_id ?? null;
 
-            // Buat penempatan baru
-            if ($unorId && $pegawai->jabatan_id) {
-                PenempatanPegawai::create([
-                    'pegawai_id' => $pegawai->id,
-                    'unor_id' => $unorId,
-                    'jabatan_id' => $pegawai->jabatan_id,
-                    'tanggal_mulai' => now()->toDateString(),
-                    'is_active' => true,
-                ]);
+                // Buat penempatan baru
+                if ($unorId && $pegawai->jabatan_id) {
+                    PenempatanPegawai::create([
+                        'pegawai_id' => $pegawai->id,
+                        'unor_id' => $unorId,
+                        'jabatan_id' => $pegawai->jabatan_id,
+                        'tanggal_mulai' => now()->toDateString(),
+                        'is_active' => true,
+                    ]);
+                }
             }
-        }
+        });
 
         return redirect()->route('admin.pegawai.index')->with('success', 'Pegawai berhasil diperbarui.');
     }
@@ -263,21 +274,25 @@ class PegawaiController extends Controller
             ->where('is_active', true)
             ->first();
 
-        if ($existing) {
-            $existing->update([
-                'is_active'       => false,
-                'tanggal_selesai' => $validated['tanggal_mulai'],
-            ]);
-        }
+        // Menonaktifkan tugas lama dan membuat yang baru harus atomik; jika
+        // pembuatan gagal, tugas lama tidak boleh tertinggal dalam keadaan mati.
+        DB::transaction(function () use ($existing, $pegawai, $validated) {
+            if ($existing) {
+                $existing->update([
+                    'is_active'       => false,
+                    'tanggal_selesai' => $validated['tanggal_mulai'],
+                ]);
+            }
 
-        TugasTambahanPegawai::create([
-            'pegawai_id'        => $pegawai->id,
-            'tugas_tambahan_id' => $validated['tugas_tambahan_id'],
-            'unor_id'           => $validated['unor_id'],
-            'tanggal_mulai'     => $validated['tanggal_mulai'],
-            'tanggal_selesai'   => $validated['tanggal_selesai'] ?? null,
-            'is_active'         => true,
-        ]);
+            TugasTambahanPegawai::create([
+                'pegawai_id'        => $pegawai->id,
+                'tugas_tambahan_id' => $validated['tugas_tambahan_id'],
+                'unor_id'           => $validated['unor_id'],
+                'tanggal_mulai'     => $validated['tanggal_mulai'],
+                'tanggal_selesai'   => $validated['tanggal_selesai'] ?? null,
+                'is_active'         => true,
+            ]);
+        });
 
         return redirect()->route('admin.pegawai.edit', $pegawai)
             ->with('success', 'Tugas Tambahan berhasil ditambahkan.');
