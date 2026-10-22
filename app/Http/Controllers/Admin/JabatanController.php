@@ -12,6 +12,7 @@ use App\Enums\Jenjang;
 use App\Enums\JenisJabatan;
 use App\Services\KodeJabatanGenerator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class JabatanController extends Controller
 {
@@ -376,29 +377,115 @@ class JabatanController extends Controller
         // Pastikan kode_jabatan tidak dapat diubah
         unset($validated['kode_jabatan']);
 
-        $jabatan->update($validated);
-
-        // Sync SOTK jika UNOR berubah
+        // Memindahkan jabatan ke UNOR lain tidak boleh selama jabatan itu
+        // masih dipegang pegawai: penempatan pegawai tidak ikut pindah,
+        // sehingga SOTK dan penempatan akan saling bertentangan.
         $oldUnorId = $jabatan->sotkEntries->first()?->unor_id;
-        if ($oldUnorId && (int) $oldUnorId !== $unorId) {
-            // Hapus SOTK entry lama untuk UNOR sebelumnya
-            $jabatan->sotkEntries()->where('unor_id', $oldUnorId)->delete();
-            \App\Models\Sotk::create([
-                'unor_id' => $unorId,
-                'jabatan_id' => $jabatan->id,
-            ]);
+        $pindahUnor = $oldUnorId && (int) $oldUnorId !== $unorId;
+
+        if ($pindahUnor) {
+            $jumlahPegawai = $jabatan->pegawai()->count();
+            $adaPenempatan = PenempatanPegawai::where('jabatan_id', $jabatan->id)
+                ->where('is_active', true)
+                ->exists();
+
+            if ($jumlahPegawai > 0 || $adaPenempatan) {
+                $pesan = $jumlahPegawai > 0
+                    ? 'Jabatan "' . $jabatan->nama_jabatan . '" masih dipegang ' . $jumlahPegawai . ' pegawai.'
+                    : 'Jabatan "' . $jabatan->nama_jabatan . '" masih memiliki penempatan pegawai aktif.';
+
+                return back()->withInput()->with('error',
+                    $pesan . ' Pindahkan atau ubah jabatan pegawai tersebut terlebih dahulu sebelum memindahkan Unit Organisasi.');
+            }
         }
 
-        // Update kebutuhan
         $kebutuhan = $request->input('kebutuhan');
-        if ($kebutuhan !== null && $kebutuhan !== '') {
-            KebutuhanPegawai::updateOrCreate(
-                ['unor_id' => $unorId, 'jabatan_id' => $jabatan->id, 'tahun' => null],
-                ['jumlah' => (int) $kebutuhan]
-            );
-        }
+        $jumlahKebutuhan = ($kebutuhan !== null && $kebutuhan !== '') ? (int) $kebutuhan : null;
+
+        // Jabatan, SOTK, dan kebutuhan harus berpindah bersama. Jika salah
+        // satu langkah gagal, semuanya dibatalkan agar tidak ada baris yang
+        // tertinggal di UNOR lama.
+        DB::transaction(function () use ($jabatan, $validated, $pindahUnor, $oldUnorId, $unorId, $jumlahKebutuhan) {
+            $jabatan->update($validated);
+
+            // Sync SOTK jika UNOR berubah
+            if ($pindahUnor) {
+                // Hapus SOTK entry lama untuk UNOR sebelumnya
+                $jabatan->sotkEntries()->where('unor_id', $oldUnorId)->delete();
+                \App\Models\Sotk::create([
+                    'unor_id' => $unorId,
+                    'jabatan_id' => $jabatan->id,
+                ]);
+            }
+
+            $this->simpanKebutuhan($jabatan, $oldUnorId, $unorId, $pindahUnor, $jumlahKebutuhan);
+        });
 
         return redirect()->route('admin.jabatan.index')->with('success', 'Jabatan berhasil diperbarui.');
+    }
+
+    /**
+     * Simpan kebutuhan jabatan, termasuk saat jabatan dipindah UNOR.
+     *
+     * Kebutuhan disimpan per (UNOR + jabatan + tahun), sehingga perpindahan
+     * UNOR tidak boleh sekadar membuat baris baru: baris lama harus ikut
+     * pindah. Tanpa itu, total kebutuhan menghitung jabatan yang sama dua kali.
+     */
+    private function simpanKebutuhan(
+        Jabatan $jabatan,
+        ?int $oldUnorId,
+        int $unorId,
+        bool $pindahUnor,
+        ?int $jumlahKebutuhan,
+    ): void {
+        if (!$pindahUnor) {
+            if ($jumlahKebutuhan !== null) {
+                KebutuhanPegawai::updateOrCreate(
+                    ['unor_id' => $unorId, 'jabatan_id' => $jabatan->id, 'tahun' => null],
+                    ['jumlah' => $jumlahKebutuhan]
+                );
+            }
+            return;
+        }
+
+        $lama = KebutuhanPegawai::where('unor_id', $oldUnorId)
+            ->where('jabatan_id', $jabatan->id)
+            ->whereNull('tahun')
+            ->first();
+
+        $tujuan = KebutuhanPegawai::where('unor_id', $unorId)
+            ->where('jabatan_id', $jabatan->id)
+            ->whereNull('tahun')
+            ->first();
+
+        // Bila UNOR tujuan sudah punya baris (data lama/impor), baris tujuan
+        // dianggap acuan dan baris asal dihapus agar tidak ada duplikat.
+        if ($tujuan) {
+            if ($jumlahKebutuhan !== null) {
+                $tujuan->update(['jumlah' => $jumlahKebutuhan]);
+            }
+            $lama?->delete();
+            return;
+        }
+
+        // Baris asal ikut pindah. Nilai jumlah hanya diubah bila field diisi;
+        // field kosong berarti nilai lama dipertahankan.
+        if ($lama) {
+            $lama->update(array_merge(
+                ['unor_id' => $unorId],
+                $jumlahKebutuhan !== null ? ['jumlah' => $jumlahKebutuhan] : []
+            ));
+            return;
+        }
+
+        if ($jumlahKebutuhan !== null) {
+            KebutuhanPegawai::create([
+                'unor_id' => $unorId,
+                'jabatan_id' => $jabatan->id,
+                'tahun' => null,
+                'jumlah' => $jumlahKebutuhan,
+            ]);
+        }
     }
 
     public function destroy(Jabatan $jabatan)
