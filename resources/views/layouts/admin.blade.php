@@ -10,9 +10,25 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="font-sans antialiased bg-gray-100">
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen overflow-hidden"
+         x-data="{ sidebarOpen: false }"
+         @keydown.escape.window="sidebarOpen = false">
+        {{-- Latar gelap saat drawer terbuka di layar kecil --}}
+        <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"
+             class="fixed inset-0 z-40 bg-black/50 lg:hidden"></div>
+
         <!-- Sidebar -->
-        <aside class="w-64 bg-blue-900 text-white flex-shrink-0 hidden lg:flex lg:flex-col">
+        <aside id="sidebar"
+               x-show="sidebarOpen"
+               x-cloak
+               @click="if ($event.target.closest('a')) sidebarOpen = false"
+               x-transition:enter="transition ease-out duration-200"
+               x-transition:enter-start="-translate-x-full"
+               x-transition:enter-end="translate-x-0"
+               x-transition:leave="transition ease-in duration-150"
+               x-transition:leave-start="translate-x-0"
+               x-transition:leave-end="-translate-x-full"
+               class="sidebar-desktop w-64 bg-blue-900 text-white flex-shrink-0 flex flex-col fixed inset-y-0 left-0 z-50 lg:static lg:!flex">
             <div class="flex items-center justify-center h-16 border-b border-blue-800">
                 <a href="{{ route('dashboard') }}" class="text-xl font-bold tracking-wide">SIPEKA</a>
             </div>
@@ -91,7 +107,20 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="bg-white shadow-sm border-b border-gray-200">
                 <div class="flex items-center justify-between h-16 px-6">
-                    <h2 class="text-lg font-semibold text-gray-800">SIPEKA - Sistem Perencanaan Kebutuhan ASN Kota Palu</h2>
+                    <div class="flex items-center gap-3 min-w-0">
+                        {{-- Toggle hanya tampil di bawah breakpoint lg, saat sidebar menjadi drawer --}}
+                        <button type="button"
+                                @click="sidebarOpen = !sidebarOpen"
+                                :aria-expanded="sidebarOpen ? 'true' : 'false'"
+                                aria-controls="sidebar"
+                                aria-label="Buka menu navigasi"
+                                class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
+                        </button>
+                        <h2 class="text-lg font-semibold text-gray-800 truncate">SIPEKA - Sistem Perencanaan Kebutuhan ASN Kota Palu</h2>
+                    </div>
                 </div>
             </header>
             <main class="flex-1 overflow-y-auto bg-gray-100">

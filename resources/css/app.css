@@ -3,3 +3,12 @@
 @tailwind utilities;
 
 [x-cloak] { display: none !important; }
+
+/*
+ * Di layar besar sidebar harus sudah tampil sebelum Alpine sempat berjalan.
+ * x-cloak hanya diperlukan untuk drawer di layar kecil; aturan ini
+ * mengembalikan sidebar desktop lebih awal agar tidak berkedip hilang.
+ */
+@media (min-width: 1024px) {
+    aside[x-cloak].sidebar-desktop { display: flex !important; }
+}
