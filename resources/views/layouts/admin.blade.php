@@ -96,12 +96,14 @@
             </header>
             <main class="flex-1 overflow-y-auto bg-gray-100">
                 @if(session('success'))
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                {{-- Lebar mengikuti kontainer halaman (lihat @section('container_class')).
+                     Default max-w-7xl menjaga halaman yang tidak menentukannya. --}}
+                <div class="@yield('container_class', 'max-w-7xl') mx-auto px-4 sm:px-6 lg:px-8 mt-4">
                     <div class="p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">{{ session('success') }}</div>
                 </div>
                 @endif
                 @if(session('error'))
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                <div class="@yield('container_class', 'max-w-7xl') mx-auto px-4 sm:px-6 lg:px-8 mt-4">
                     <div class="p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">{{ session('error') }}</div>
                 </div>
                 @endif

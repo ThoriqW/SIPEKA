@@ -1,5 +1,8 @@
 @extends('layouts.admin')
 
+{{-- Notifikasi flash mengikuti lebar tabel halaman ini. --}}
+@section('container_class', 'max-w-full')
+
 @section('content')
 <div class="py-6">
     <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
