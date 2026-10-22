@@ -19,7 +19,7 @@ class PegawaiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Pegawai::query()->with(['jabatan', 'penempatanAktif.unor.parent', 'tugasTambahan.tugasTambahan']);
+        $query = Pegawai::query()->with(['jabatan', 'penempatanAktif.unor', 'tugasTambahan.tugasTambahan']);
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -39,7 +39,12 @@ class PegawaiController extends Controller
         $pemkot = Unor::whereNull('parent_id')->first();
         $opdList = Unor::where('parent_id', $pemkot?->id)
             ->orderBy('nama_unor')->pluck('nama_unor', 'id');
-        return view('admin.pegawai.index', compact('pegawaiList', 'opdList', 'pemkot'));
+
+        // Seluruh UNOR dimuat sekali untuk merakit jalur (Unor::pathLabel)
+        // tanpa query tambahan per baris.
+        $allUnor = Unor::orderBy('nama_unor')->get()->keyBy('id');
+
+        return view('admin.pegawai.index', compact('pegawaiList', 'opdList', 'pemkot', 'allUnor'));
     }
 
     public function create()

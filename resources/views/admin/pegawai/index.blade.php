@@ -32,7 +32,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">NIP</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unor Induk</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">OPD</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jabatan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Organisasi</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenjang</th>
@@ -44,19 +44,31 @@
                         @forelse($pegawaiList as $key => $p)
                         @php
                             $unorPegawai = $p->penempatanAktif->unor ?? null;
-                            $indukPegawai = $unorPegawai;
-                            if ($unorPegawai && $pemkot) {
-                                while ($indukPegawai && $indukPegawai->parent_id !== $pemkot->id) {
-                                    $indukPegawai = $indukPegawai->parent;
-                                }
+
+                            // OPD = anak langsung Pemerintah Kota. Dihitung dari
+                            // penempatan, bukan dari jabatan, sehingga berlaku sama
+                            // untuk semua jabatan — termasuk pimpinan OPD.
+                            $opdPegawai = $unorPegawai;
+                            $kedalaman = 0;
+                            while ($opdPegawai && $pemkot
+                                && (int) $opdPegawai->parent_id !== (int) $pemkot->id
+                                && $kedalaman < 100) {
+                                $opdPegawai = $allUnor->get($opdPegawai->parent_id);
+                                $kedalaman++;
                             }
-                            // Khusus JPTP: induk adalah Pemkot, bukan OPD itu sendiri
-                            if ($p->jabatan
-                                && $p->jabatan->jenis_jabatan === 'Struktural'
-                                && $p->jabatan->jenjang === 'Pimpinan Tinggi Pratama'
-                                && $indukPegawai && $unorPegawai
-                                && $indukPegawai->id === $unorPegawai->id) {
-                                $indukPegawai = $pemkot;
+                            if (!$pemkot || $kedalaman >= 100) {
+                                $opdPegawai = null;
+                            }
+
+                            // Jalur relatif terhadap OPD supaya unit bernama sama di
+                            // cabang berbeda (mis. dua "Sekretariat") tetap berbeda.
+                            $jalurUnit = null;
+                            $jalurPenuh = null;
+                            if ($unorPegawai) {
+                                $jalurUnit = $opdPegawai
+                                    ? $unorPegawai->pathLabel($allUnor, (int) $opdPegawai->id)
+                                    : $unorPegawai->nama_unor;
+                                $jalurPenuh = $unorPegawai->pathLabel($allUnor);
                             }
                         @endphp
                         <tr class="hover:bg-gray-50">
@@ -76,10 +88,10 @@
                                 </span>
                                 @endforeach
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500">{{ $indukPegawai->nama_unor ?? '-' }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-500">{{ $opdPegawai->nama_unor ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $p->jabatan->nama_jabatan ?? '-' }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-500">
-                                {{ $p->penempatanAktif->unor->nama_unor ?? '-' }}
+                            <td class="px-6 py-4 text-sm text-gray-500" @if($jalurPenuh) title="{{ $jalurPenuh }}" @endif>
+                                {{ $jalurUnit ?? '-' }}
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-500">{{ $p->jabatan->jenjang ?? '-' }}</td>
                             <td class="px-6 py-4 text-sm text-center"><span class="px-2 py-1 text-xs rounded-full {{ $p->jenis_kepegawaian === 'PNS' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">{{ $p->jenis_kepegawaian }}</span></td>
