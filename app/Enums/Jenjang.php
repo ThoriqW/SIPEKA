@@ -14,10 +14,10 @@ enum Jenjang: string
     case AhliMuda = 'Ahli Muda';
     case AhliMadya = 'Ahli Madya';
     case AhliUtama = 'Ahli Utama';
-    case KeterampilanPenyelia = 'Keterampilan - Penyelia';
-    case KeterampilanMahir = 'Keterampilan - Mahir';
-    case KeterampilanTerampil = 'Keterampilan - Terampil';
-    case KeterampilanPemula = 'Keterampilan - Pemula';
+    case KeterampilanPenyelia = 'Penyelia';
+    case KeterampilanMahir = 'Mahir';
+    case KeterampilanTerampil = 'Terampil';
+    case KeterampilanPemula = 'Pemula';
 
     // Pelaksana
     case Pelaksana = 'Pelaksana';

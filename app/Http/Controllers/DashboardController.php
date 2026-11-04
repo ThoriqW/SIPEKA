@@ -29,7 +29,7 @@ class DashboardController extends Controller
             ->selectRaw("jabatan.jenis_jabatan, jabatan.jenjang, COUNT(*) as total")
             ->groupBy('jabatan.jenis_jabatan', 'jabatan.jenjang')
             ->orderBy('jabatan.jenis_jabatan')
-            ->orderByRaw("FIELD(jabatan.jenjang, 'Pimpinan Tinggi Pratama', 'Administrator', 'Pengawas', 'Ahli Utama', 'Ahli Madya', 'Ahli Muda', 'Ahli Pertama', 'Keterampilan - Penyelia', 'Keterampilan - Mahir', 'Keterampilan - Terampil', 'Keterampilan - Pemula', 'Pelaksana')")
+            ->orderByRaw("FIELD(jabatan.jenjang, 'Pimpinan Tinggi Pratama', 'Administrator', 'Pengawas', 'Ahli Utama', 'Ahli Madya', 'Ahli Muda', 'Ahli Pertama', 'Penyelia', 'Mahir', 'Terampil', 'Pemula', 'Pelaksana')")
             ->get()
             ->groupBy('jenis_jabatan');
 

@@ -49,10 +49,10 @@ class JabatanSeeder extends Seeder
             'Ahli Madya',
             'Ahli Muda',
             'Ahli Pertama',
-            'Keterampilan - Penyelia',
-            'Keterampilan - Mahir',
-            'Keterampilan - Terampil',
-            'Keterampilan - Pemula',
+            'Penyelia',
+            'Mahir',
+            'Terampil',
+            'Pemula',
         ];
 
         foreach ($jenjangSuffixes as $suffix) {
